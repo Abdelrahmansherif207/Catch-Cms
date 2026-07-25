@@ -1,0 +1,138 @@
+/*
+ * Semantic Tokens
+ * Maps brand tokens → shadcn semantic tokens.
+ * Components consume these (bg-primary, text-foreground, etc.)
+ */
+
+:root {
+  /* Base */
+  --background: var(--brand-background);
+  --foreground: var(--brand-text-primary);
+
+  /* Card */
+  --card: var(--brand-background);
+  --card-foreground: var(--brand-text-primary);
+
+  /* Popover */
+  --popover: var(--brand-background);
+  --popover-foreground: var(--brand-text-primary);
+
+  /* Primary */
+  --primary: var(--brand-primary);
+  --primary-foreground: #ffffff;
+
+  /* Secondary */
+  --secondary: var(--brand-secondary);
+  --secondary-foreground: #ffffff;
+
+  /* Muted */
+  --muted: var(--brand-surface);
+  --muted-foreground: var(--brand-text-secondary);
+
+  /* Accent */
+  --accent: var(--brand-accent);
+  --accent-foreground: var(--brand-text-primary);
+
+  /* Destructive */
+  --destructive: var(--brand-secondary);
+  --destructive-foreground: #ffffff;
+
+  /* Border & Input */
+  --border: var(--brand-border);
+  --input: var(--brand-border);
+
+  /* Ring */
+  --ring: var(--brand-primary);
+
+  /* Success */
+  --success: var(--brand-success);
+  --success-foreground: #ffffff;
+
+  /* Discount */
+  --discount: var(--brand-discount);
+
+  /* Charts */
+  --chart-1: var(--brand-primary);
+  --chart-2: var(--brand-secondary);
+  --chart-3: var(--brand-accent);
+  --chart-4: var(--brand-success);
+  --chart-5: var(--brand-primary-dark);
+
+  /* Radius */
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: var(--brand-surface);
+  --sidebar-foreground: var(--brand-text-primary);
+  --sidebar-primary: var(--brand-primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--brand-border-subtle);
+  --sidebar-accent-foreground: var(--brand-text-primary);
+  --sidebar-border: var(--brand-border);
+  --sidebar-ring: var(--brand-primary);
+}
+
+.dark {
+  /* Base */
+  --background: #111318;
+  --foreground: #f0f0f0;
+
+  /* Card */
+  --card: #1a1c23;
+  --card-foreground: #f0f0f0;
+
+  /* Popover */
+  --popover: #1a1c23;
+  --popover-foreground: #f0f0f0;
+
+  /* Primary — Lighter blue for contrast on dark */
+  --primary: #4a9ade;
+  --primary-foreground: #001a33;
+
+  /* Secondary — Lighter red */
+  --secondary: #ff6b6b;
+  --secondary-foreground: #ffffff;
+
+  /* Muted */
+  --muted: #232530;
+  --muted-foreground: #999999;
+
+  /* Accent — Lighter gold */
+  --accent: #dfc06a;
+  --accent-foreground: #f0f0f0;
+
+  /* Destructive */
+  --destructive: #ff6b6b;
+  --destructive-foreground: #ffffff;
+
+  /* Border & Input */
+  --border: #2a2d38;
+  --input: #2a2d38;
+
+  /* Ring */
+  --ring: #4a9ade;
+
+  /* Success */
+  --success: #3db87a;
+  --success-foreground: #ffffff;
+
+  /* Discount */
+  --discount: #ff6b6b;
+
+  /* Charts */
+  --chart-1: #4a9ade;
+  --chart-2: #ff6b6b;
+  --chart-3: #dfc06a;
+  --chart-4: #3db87a;
+  --chart-5: #7ab8e8;
+
+  /* Sidebar */
+  --sidebar: #0d0f14;
+  --sidebar-foreground: #f0f0f0;
+  --sidebar-primary: #4a9ade;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #232530;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border: #2a2d38;
+  --sidebar-ring: #4a9ade;
+}

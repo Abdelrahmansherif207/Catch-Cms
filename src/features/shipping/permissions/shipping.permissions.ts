@@ -1,0 +1,15 @@
+export const SHIPPING_PERMISSIONS = {
+  COUNTRIES_VIEW: 'view-country',
+  COUNTRIES_CREATE: 'create-country',
+  COUNTRIES_UPDATE: 'update-country',
+  COUNTRIES_DELETE: 'delete-country',
+  GOVERNORATES_VIEW: 'view-governorate',
+  GOVERNORATES_CREATE: 'create-governorate',
+  GOVERNORATES_UPDATE: 'update-governorate',
+  GOVERNORATES_DELETE: 'delete-governorate',
+  CITIES_VIEW: 'view-city',
+  CITIES_CREATE: 'create-city',
+  CITIES_UPDATE: 'update-city',
+  CITIES_DELETE: 'delete-city',
+  MANAGE_SHIPPING_PRICES: 'manage-shipping-prices',
+} as const;
