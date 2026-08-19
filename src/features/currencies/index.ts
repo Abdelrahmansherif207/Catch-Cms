@@ -1,0 +1,10 @@
+export { CurrenciesPage } from './pages/currencies-page';
+export { ExchangeRatesPage } from './pages/exchange-rates-page';
+export { CurrenciesTable } from './components/currencies-table';
+export { CurrencyFormDialog } from './components/currency-form-dialog';
+export { CurrencyDeleteDialog } from './components/currency-delete-dialog';
+export { SetBaseCurrencyDialog } from './components/set-base-currency-dialog';
+export { SetCatalogCurrencyDialog } from './components/set-catalog-currency-dialog';
+export { ExchangeRatesTable } from './components/exchange-rates-table';
+export { ExchangeRateFormDialog } from './components/exchange-rate-form-dialog';
+export { CurrencyRateDeleteDialog } from './components/currency-rate-delete-dialog';

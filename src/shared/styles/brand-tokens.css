@@ -1,0 +1,34 @@
+/*
+ * Brand Tokens
+ * Raw design values — never consumed directly by components.
+ * Components use semantic tokens from semantic-tokens.css instead.
+ */
+
+:root {
+  /* Primary — Brand Crimson */
+  --brand-primary: #b81d24;
+  --brand-primary-dark: #8c1217;
+
+  /* Secondary — Brand Dark */
+  --brand-secondary: #1c1a1a;
+  --brand-secondary-dark: #0b0a0a;
+
+  /* Accent — Brand Rose */
+  --brand-accent: #e0b0b0;
+
+  /* Semantic Brand Colors */
+  --brand-success: #2d7a4d;
+  --brand-discount: #b81d24;
+
+  /* Backgrounds */
+  --brand-background: #ffffff;
+  --brand-surface: #faf6f5;
+
+  /* Text */
+  --brand-text-primary: #1c1a1a;
+  --brand-text-secondary: #706565;
+
+  /* Borders */
+  --brand-border: #ede4e2;
+  --brand-border-subtle: #f5eeed;
+}
