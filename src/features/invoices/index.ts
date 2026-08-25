@@ -12,11 +12,14 @@ export type {
   InvoiceNote,
   InvoiceCorrection,
   InvoiceVerificationResult,
+  InvoiceSnapshot,
+  InvoiceSnapshotItem,
+  InvoiceQrContent,
+  DebitNote,
   InvoicesListResponse,
   InvoiceDetailResponse,
   InvoiceVerificationResponse,
-  MyInvoicesListResponse,
-  MyInvoiceResponse,
+  RegenerateInvoiceResponse,
 } from './types/invoice.types';
 
 export { INVOICE_PERMISSIONS } from './permissions/invoice.permissions';
@@ -29,8 +32,6 @@ export {
   useCancelInvoice,
   useIssueDebitNote,
   useInvoiceDownload,
-  useMyInvoices,
-  useMyInvoice,
   useVerifyInvoice,
 } from './hooks/use-invoices';
 
@@ -48,6 +49,14 @@ export {
   formatMoney,
   formatDate,
   humanizeStatus,
+  getInvoiceCustomerName,
+  getInvoiceOrderNumber,
+  getSnapshotItems,
+  getPricingRows,
+  getBillingAddress,
+  getShippingAddress,
+  getPaymentView,
+  canDownloadPdf,
 } from './lib/invoice-utils';
 
 export { invoiceRoutes } from './routes/invoice.routes';
@@ -56,4 +65,3 @@ export { InvoicesPage } from './pages/invoices-page';
 export { InvoiceDetailPage } from './pages/invoice-detail-page';
 export { InvoiceVerifyPage } from './pages/invoice-verify-page';
 export { MyInvoicesPage } from './pages/my-invoices-page';
-export { MyInvoiceDetailPage } from './pages/my-invoice-detail-page';

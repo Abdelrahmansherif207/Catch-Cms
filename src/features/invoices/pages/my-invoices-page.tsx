@@ -12,9 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { useMyInvoices, useInvoiceDownload } from '../hooks/use-invoices';
+import { useInvoices, useInvoiceDownload } from '../hooks/use-invoices';
 import { InvoiceStatusBadge } from '../components/invoice-status-badge';
-import { formatMoney, formatDate } from '../lib/invoice-utils';
+import { formatMoney, formatDate, canDownloadPdf } from '../lib/invoice-utils';
 import { invoiceRoutes } from '../routes/invoice.routes';
 import type { InvoiceListItem } from '../types/invoice.types';
 
@@ -24,7 +24,7 @@ export function MyInvoicesPage() {
   const { download } = useInvoiceDownload();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useMyInvoices(page, 15);
+  const { data, isLoading } = useInvoices({ page, limit: 15 });
   const invoices = data?.data?.data ?? [];
   const links = data?.data?.links;
 
@@ -57,7 +57,7 @@ export function MyInvoicesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('invoices.invoiceNumber')}</TableHead>
-                  <TableHead>{t('invoices.status')}</TableHead>
+                  <TableHead>{t('invoices.statusColumn')}</TableHead>
                   <TableHead className="text-end">{t('invoices.total')}</TableHead>
                   <TableHead>{t('invoices.createdAt')}</TableHead>
                   <TableHead className="text-end">{t('common.actions')}</TableHead>
@@ -68,7 +68,7 @@ export function MyInvoicesPage() {
                   <TableRow
                     key={invoice.id}
                     className="cursor-pointer"
-                    onClick={() => navigate(invoiceRoutes.myInvoice(invoice.uuid))}
+                    onClick={() => navigate(invoiceRoutes.detail(invoice.id))}
                   >
                     <TableCell className="font-medium">
                       <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
@@ -89,11 +89,14 @@ export function MyInvoicesPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          disabled={!invoice.pdf_ready}
+                          disabled={!canDownloadPdf(invoice)}
                           title={t('invoices.downloadPdf')}
                           onClick={(e) => {
                             e.stopPropagation();
-                            download(invoice.uuid);
+                            download({
+                              uuid: invoice.uuid,
+                              invoice_number: invoice.invoice_number,
+                            });
                           }}
                         >
                           <Download className="h-4 w-4" />

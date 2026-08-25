@@ -7,8 +7,6 @@ import type { ApiErrorResponse } from '@/shared/api';
 import {
   fetchInvoices,
   fetchInvoiceById,
-  fetchMyInvoices,
-  fetchMyInvoiceByUuid,
   fetchInvoiceVerification,
   downloadInvoicePdf,
   regenerateInvoice,
@@ -114,13 +112,21 @@ export function useIssueDebitNote() {
   });
 }
 
+export interface InvoiceDownloadTarget {
+  uuid: string;
+  invoice_number?: string | null;
+}
+
 export function useInvoiceDownload() {
   const [isDownloading, setIsDownloading] = useState(false);
-  const download = async (uuid: string) => {
+  const queryClient = useQueryClient();
+  const download = async (invoice: InvoiceDownloadTarget) => {
     setIsDownloading(true);
     try {
-      await downloadInvoicePdf(uuid);
+      await downloadInvoicePdf(invoice.uuid, invoice.invoice_number);
       toast.success('Invoice PDF downloaded');
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.details() });
     } catch (error) {
       handleApiError(error, 'Failed to download invoice');
     } finally {
@@ -128,22 +134,6 @@ export function useInvoiceDownload() {
     }
   };
   return { download, isDownloading };
-}
-
-export function useMyInvoices(page = 1, limit = 15) {
-  return useQuery({
-    queryKey: queryKeys.invoices.myInvoices.list({ page, limit }),
-    queryFn: () => fetchMyInvoices(page, limit),
-    staleTime: 60 * 1000,
-  });
-}
-
-export function useMyInvoice(uuid: string | undefined) {
-  return useQuery({
-    queryKey: queryKeys.invoices.myInvoices.detail(uuid ?? ''),
-    queryFn: () => fetchMyInvoiceByUuid(uuid as string),
-    enabled: uuid !== undefined,
-  });
 }
 
 export function useVerifyInvoice(uuid: string | undefined) {

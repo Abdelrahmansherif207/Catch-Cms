@@ -14,11 +14,13 @@ import {
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useInvoices, useInvoiceDownload } from '../hooks/use-invoices';
 import { InvoicesTable } from '../components/invoices-table';
-import { INVOICE_STATUSES, INVOICE_PAYMENT_METHODS } from '../lib/invoice-utils';
+import {
+  INVOICE_STATUSES,
+  canDownloadPdf,
+} from '../lib/invoice-utils';
 import { INVOICE_PERMISSIONS } from '../permissions/invoice.permissions';
 
 const INVOICE_CURRENCIES = ['EGP', 'USD', 'SAR', 'AED', 'EUR'];
-const SORT_FIELDS = ['invoice_number', 'created_at', 'total', 'status'] as const;
 
 export function InvoicesPage() {
   const { t } = useTranslation();
@@ -30,11 +32,10 @@ export function InvoicesPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
   const [status, setStatus] = useState('all');
-  const [paymentMethod, setPaymentMethod] = useState('all');
   const [currency, setCurrency] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [orderBy, setOrderBy] = useState('created_at');
+  const [orderBy, setOrderBy] = useState<'created_at' | 'total' | 'status' | 'invoice_number'>('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const { data, isLoading } = useInvoices({
@@ -42,18 +43,16 @@ export function InvoicesPage() {
     limit: perPage,
     search: search || undefined,
     status: status === 'all' ? undefined : status,
-    payment_method: paymentMethod === 'all' ? undefined : paymentMethod,
     currency: currency === 'all' ? undefined : currency,
-    created_from: dateFrom || undefined,
-    created_to: dateTo || undefined,
-    order_by: orderBy,
-    sort_dir: sortDir,
+    from: dateFrom || undefined,
+    to: dateTo || undefined,
+    sort_by: orderBy,
+    sort_direction: sortDir,
   });
 
   const hasActiveFilters =
     search ||
     status !== 'all' ||
-    paymentMethod !== 'all' ||
     currency !== 'all' ||
     dateFrom ||
     dateTo;
@@ -61,14 +60,13 @@ export function InvoicesPage() {
   const handleClearFilters = () => {
     setSearch('');
     setStatus('all');
-    setPaymentMethod('all');
     setCurrency('all');
     setDateFrom('');
     setDateTo('');
     setPage(1);
   };
 
-  const handleSortChange = (field: string) => {
+  const handleSortChange = (field: 'created_at' | 'total' | 'status' | 'invoice_number') => {
     if (orderBy === field) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -116,26 +114,6 @@ export function InvoicesPage() {
                 {INVOICE_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {t(`invoices.status.${s}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={paymentMethod}
-              onValueChange={(value) => {
-                setPaymentMethod(value ?? 'all');
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="w-full md:w-[160px]">
-                <SelectValue placeholder={t('invoices.allPaymentMethods')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('invoices.allPaymentMethods')}</SelectItem>
-                {INVOICE_PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m.replace(/_/g, ' ')}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -224,9 +202,9 @@ export function InvoicesPage() {
         orderBy={orderBy}
         sortDir={sortDir}
         onSortChange={handleSortChange}
-        canDownload={canDownload && SORT_FIELDS.length > 0}
+        canDownload={canDownload}
         onDownload={(invoice) => {
-          if (invoice.pdf_ready) download(invoice.uuid);
+          if (canDownloadPdf(invoice)) download(invoice);
         }}
       />
 
