@@ -73,9 +73,9 @@ export function AddAssignmentDialog({
     try {
       const { axiosClient } = await import('@/shared/api');
       const res = await axiosClient.get('/users?search=' + encodeURIComponent(query));
-      const users = res.data?.data?.data ?? [];
+      const users: Array<{ id: number; name?: string; email?: string; avatar?: string | null }> = res.data?.data?.data ?? [];
       setSearchResults(
-        users.map((u: any) => ({
+        users.map((u) => ({
           id: u.id,
           name: u.name || u.email || 'Unknown',
           email: u.email || '',
@@ -128,7 +128,7 @@ export function AddAssignmentDialog({
   const errors = form.formState.errors;
 
   const getError = (field: string): string | undefined => {
-    const clientErr = (errors as any)[field]?.message as string | undefined;
+    const clientErr = errors[field as keyof FormValues]?.message as string | undefined;
     const serverErr = serverErrors[field]?.[0] || serverErrors['user_id']?.[0];
     return clientErr || serverErr;
   }

@@ -10,7 +10,7 @@ import {
   reorderFaqs,
   type FetchFaqsParams,
 } from '../api/faqs.api';
-import type { CreateFaqData, UpdateFaqData } from '../types/faq.types';
+import type { CreateFaqData, Faq, FaqsListResponse, UpdateFaqData } from '../types/faq.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
 function handleApiError(error: unknown, fallbackMessage: string): ApiErrorResponse {
@@ -91,15 +91,15 @@ export function useReorderFaqs() {
     mutationFn: (faqIds: number[]) => reorderFaqs(faqIds),
     onMutate: async (faqIds) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.faqs.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.faqs.lists() });
+      const queries = queryClient.getQueriesData<FaqsListResponse>({ queryKey: queryKeys.faqs.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
       queries.forEach(([queryKey, data]) => {
         if (!data?.data?.data) return;
-        const itemMap = new Map(data.data.data.map((item: any) => [item.id, item]));
+        const itemMap = new Map(data.data.data.map((item) => [item.id, item]));
         const reordered = faqIds
           .map((id) => itemMap.get(id))
-          .filter(Boolean);
+          .filter((item): item is Faq => !!item);
 
         if (reordered.length === data.data.data.length) {
           queryClient.setQueryData(queryKey, {

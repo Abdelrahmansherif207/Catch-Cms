@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
@@ -34,13 +34,21 @@ export function SearchableMultiSelect({
   const { data, isLoading } = useEntitySearch(endpoint, searchTerm);
   const [nameCache, setNameCache] = useState<Record<number, string>>({});
 
-  const availableItems = data?.data?.data || data?.data || [];
+  const availableItems = useMemo(() => {
+    const meta = data?.data;
+    return Array.isArray(meta) ? meta : meta?.data ?? [];
+  }, [data]);
 
+  const processedRef = useRef<typeof availableItems | null>(null);
   useEffect(() => {
-    if (availableItems && Array.isArray(availableItems)) {
-      const newCache = { ...nameCache };
-      let updated = false;
-      availableItems.forEach((item: any) => {
+    if (availableItems.length === 0) return;
+    if (processedRef.current === availableItems) return;
+    processedRef.current = availableItems;
+    setNameCache((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      availableItems.forEach((item) => {
+        const id = Number(item.id);
         let nameStr = '';
         if (typeof item.name === 'string') {
           try {
@@ -67,16 +75,13 @@ export function SearchableMultiSelect({
         } else {
           nameStr = `Item #${item.id}`;
         }
-        if (newCache[item.id] !== nameStr) {
-          newCache[item.id] = nameStr;
-          updated = true;
+        if (!Number.isNaN(id) && next[id] !== nameStr) {
+          next[id] = nameStr;
+          changed = true;
         }
       });
-      if (updated) {
-        setNameCache(newCache);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      return changed ? next : prev;
+    });
   }, [availableItems]);
 
   const close = useCallback(() => {
@@ -196,13 +201,14 @@ export function SearchableMultiSelect({
                 </p>
               )}
               {Array.isArray(availableItems) &&
-                availableItems.map((item: any) => {
-                  const isSelected = selectedIds.includes(item.id);
+                availableItems.map((item) => {
+                  const id = Number(item.id);
+                  const isSelected = selectedIds.includes(id);
                   return (
                     <div
                       key={item.id}
                       className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent"
-                      onClick={() => toggleItem(item.id)}
+                      onClick={() => toggleItem(id)}
                     >
                       <div
                         className={cn(
@@ -213,11 +219,11 @@ export function SearchableMultiSelect({
                         {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
                       </div>
                       <span className="text-sm truncate">
-                        {nameCache[item.id] ||
-                          item.name ||
-                          item.title ||
+                        {nameCache[id] ||
+                          (typeof item.name === 'string' ? item.name : item.name?.en) ||
+                          (typeof item.title === 'string' ? item.title : item.title?.en) ||
                           item.slug ||
-                          `Item #${item.id}`}
+                          `Item #${id}`}
                       </span>
                     </div>
                   );

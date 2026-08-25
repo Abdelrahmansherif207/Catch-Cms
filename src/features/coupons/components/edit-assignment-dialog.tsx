@@ -93,7 +93,7 @@ export function EditAssignmentDialog({
   const errors = form.formState.errors;
 
   const getError = (field: string): string | undefined => {
-    const clientErr = (errors as any)[field]?.message as string | undefined;
+    const clientErr = errors[field as keyof FormValues]?.message as string | undefined;
     const serverErr = serverErrors[field]?.[0];
     return clientErr || serverErr;
   };

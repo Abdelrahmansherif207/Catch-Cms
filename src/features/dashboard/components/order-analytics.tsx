@@ -27,12 +27,18 @@ type Period = 'daily' | 'weekly' | 'monthly';
 
 const PIE_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)'];
 
-const LineTooltip = ({ active, payload, label }: any) => {
+interface LineTooltipProps {
+  active?: boolean;
+  label?: string | number;
+  payload?: Array<{ dataKey?: string | number; name?: string | number; value: number; color?: string }>;
+}
+
+const LineTooltip = ({ active, payload, label }: LineTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">
       <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      {payload.map((entry: any, i: number) => (
+      {payload.map((entry, i) => (
         <p key={i} className="text-sm font-bold text-foreground" style={{ color: entry.color }}>
           {entry.name}: {entry.dataKey === 'orders' ? formatNumber(entry.value) : formatCurrency(entry.value)}
         </p>
@@ -41,7 +47,12 @@ const LineTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const PieTooltip = ({ active, payload }: any) => {
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name?: string | number; value: number }>;
+}
+
+const PieTooltip = ({ active, payload }: PieTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">

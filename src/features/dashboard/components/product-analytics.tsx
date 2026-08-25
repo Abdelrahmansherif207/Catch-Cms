@@ -25,7 +25,7 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
     );
   }
 
-  const nameFn = (item: { name: string | { en: string; ar: string } }) => getLocalizedName(item.name as any, lang);
+  const nameFn = (item: { name: string | { en: string; ar: string } }) => getLocalizedName(item.name, lang);
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">

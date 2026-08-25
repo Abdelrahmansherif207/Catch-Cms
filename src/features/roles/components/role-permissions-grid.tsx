@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { usePermissions } from '../hooks/use-roles';
+import type { ApiErrorResponse } from '@/shared/api';
 
 type FilterMode = 'all' | 'selected' | 'unselected';
 
@@ -18,7 +19,7 @@ export function RolePermissionsGrid({ selectedIds, onToggle }: RolePermissionsGr
   const [filter, setFilter] = useState<FilterMode>('all');
   const { data: permissionsData, isLoading, isError, error } = usePermissions();
 
-  const isForbidden = isError && (error as any)?.status === 403;
+  const isForbidden = isError && (error as unknown as ApiErrorResponse)?.status === 403;
   const permissions = permissionsData?.data ?? [];
 
   const filtered = permissions.filter((p) => {

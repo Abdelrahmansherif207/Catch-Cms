@@ -104,7 +104,7 @@ export function PromotionFormDialog({
   useEffect(() => {
     if (isEditing && promotion && promotionDetail?.data) {
       const d = promotionDetail.data;
-      let parsedName: { en?: string; ar?: string } = {};
+      let parsedName: { en?: string; ar?: string };
       try {
         parsedName =
           typeof d.name === 'string'

@@ -76,12 +76,27 @@ export async function fetchProductTypes(): Promise<string[]> {
   return data;
 }
 
-export async function searchEntities(endpoint: string, search: string, page = 1): Promise<any> {
+export interface EntitySearchItem {
+  id: number | string;
+  slug?: string;
+  name?: string | { en?: string; ar?: string } | null;
+  title?: string | { en?: string; ar?: string } | null;
+}
+
+export interface EntitySearchResponse {
+  data: EntitySearchItem[] | { data?: EntitySearchItem[]; current_page?: number; last_page?: number };
+}
+
+export async function searchEntities(
+  endpoint: string,
+  search: string,
+  page = 1
+): Promise<EntitySearchResponse> {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   params.append('per_page', '20');
   if (page > 1) params.append('page', page.toString());
-  const { data } = await axiosClient.get(
+  const { data } = await axiosClient.get<EntitySearchResponse>(
     `/${endpoint}?${params.toString()}`
   );
   return data;

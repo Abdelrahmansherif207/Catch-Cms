@@ -81,11 +81,11 @@ export function useEntitySearchInfinite(endpoint: string, search: string) {
   return useInfiniteQuery({
     queryKey: queryKeys.sections.entitySearchInfinite(endpoint, search),
     queryFn: ({ pageParam }) => searchEntities(endpoint, search, pageParam),
-    getNextPageParam: (lastPage: any) => {
-      const data = lastPage?.data;
-      if (!data) return undefined;
-      const current = data.current_page ?? 1;
-      const last = data.last_page ?? current;
+    getNextPageParam: (lastPage) => {
+      const meta = lastPage?.data;
+      if (!meta || Array.isArray(meta)) return undefined;
+      const current = meta.current_page ?? 1;
+      const last = meta.last_page ?? current;
       return current < last ? current + 1 : undefined;
     },
     initialPageParam: 1,
@@ -150,7 +150,7 @@ export function useToggleSectionActive() {
     mutationFn: (id: number) => toggleSectionActive(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.sections.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.sections.lists() });
+      const queries = queryClient.getQueriesData<SectionsListResponse>({ queryKey: queryKeys.sections.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
       queryClient.setQueriesData({ queryKey: queryKeys.sections.lists() }, (old: unknown) => {
@@ -190,7 +190,7 @@ export function useReorderSections() {
     mutationFn: (sectionIds: number[]) => reorderSections(sectionIds),
     onMutate: async (sectionIds) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.sections.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.sections.lists() });
+      const queries = queryClient.getQueriesData<SectionsListResponse>({ queryKey: queryKeys.sections.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
       queries.forEach(([queryKey, data]) => {

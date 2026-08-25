@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
@@ -62,7 +62,7 @@ export function SectionFormDialog({
   const sectionTypes = sectionTypesData?.data || [];
 
   const form = useForm<SectionFormValues>({
-    resolver: zodResolver(sectionFormSchema) as any,
+    resolver: zodResolver(sectionFormSchema) as unknown as Resolver<SectionFormValues>,
     defaultValues: sectionFormDefaults,
   });
 
@@ -92,7 +92,7 @@ export function SectionFormDialog({
       form.setValue('isActive', d.is_active);
 
       // Parse title — may be string or object
-      let parsedTitle: Record<string, string> = {};
+      let parsedTitle: Record<string, string>;
       try {
         parsedTitle = typeof d.title === 'string' ? JSON.parse(d.title) : { en: d.title, ar: d.title };
       } catch {
@@ -198,7 +198,7 @@ export function SectionFormDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
             {/* ─── Type ─── */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium">

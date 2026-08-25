@@ -95,26 +95,26 @@ export function useUpdateProduct() {
 export function useProductsImport() {
   const queryClient = useQueryClient();
   const [importId, setImportId] = useState<number | null>(null);
-  const [phase, setPhase] = useState<ImportPhase>('idle');
+  const [importPhase, setImportPhase] = useState<ImportPhase>('idle');
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => importProducts(file),
     onSuccess: (response) => {
       if (response.data?.import_id) {
         setImportId(response.data.import_id);
-        setPhase('polling');
+        setImportPhase('polling');
       }
     },
     onError: (error: unknown) => {
       handleApiError(error, 'Failed to import products');
-      setPhase('idle');
+      setImportPhase('idle');
     },
   });
 
   const statusQuery = useQuery({
     queryKey: queryKeys.products.importStatus(importId!),
     queryFn: () => getImportStatus(importId!),
-    enabled: phase === 'polling',
+    enabled: importPhase === 'polling',
     refetchInterval: (query) => {
       const status = query.state.data?.data?.status;
       if (status === 'completed' || status === 'failed') return false;
@@ -122,24 +122,28 @@ export function useProductsImport() {
     },
   });
 
-  useEffect(() => {
-    const data = statusQuery.data?.data;
-    if (!data) return;
-    if (data.status === 'completed') {
-      setPhase('completed');
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-    } else if (data.status === 'failed') {
-      setPhase('failed');
-    }
-  }, [statusQuery.data, queryClient]);
+  const status = statusQuery.data?.data ?? null;
 
   useEffect(() => {
-    if (phase !== 'polling') return;
+    if (status?.status === 'completed') {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+    }
+  }, [status, queryClient]);
+
+  useEffect(() => {
+    if (importPhase !== 'polling') return;
     const timer = setTimeout(() => {
-      setPhase('timeout');
+      setImportPhase('timeout');
     }, 180_000);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [importPhase]);
+
+  const phase: ImportPhase =
+    status?.status === 'completed'
+      ? 'completed'
+      : status?.status === 'failed'
+        ? 'failed'
+        : importPhase;
 
   const downloadErrors = useCallback(async () => {
     if (!importId) return;
@@ -160,7 +164,7 @@ export function useProductsImport() {
 
   const reset = useCallback(() => {
     setImportId(null);
-    setPhase('idle');
+    setImportPhase('idle');
     uploadMutation.reset();
   }, [uploadMutation]);
 
@@ -170,7 +174,7 @@ export function useProductsImport() {
     uploadError: uploadMutation.error,
     phase,
     importId,
-    status: statusQuery.data?.data ?? null,
+    status,
     downloadErrors,
     reset,
   };

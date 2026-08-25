@@ -6,6 +6,12 @@ interface AssignmentStatusBadgeProps {
   expiresAt: string | null;
 }
 
+function getDaysUntilExpiry(expiresAt: string): number {
+  return Math.ceil(
+    (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+}
+
 export function AssignmentStatusBadge({ isExpired, remaining, expiresAt }: AssignmentStatusBadgeProps) {
   if (isExpired) {
     return <Badge variant="destructive">Expired</Badge>;
@@ -16,9 +22,7 @@ export function AssignmentStatusBadge({ isExpired, remaining, expiresAt }: Assig
   }
 
   if (expiresAt) {
-    const daysUntilExpiry = Math.ceil(
-      (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
+    const daysUntilExpiry = getDaysUntilExpiry(expiresAt);
     if (daysUntilExpiry <= 7 && daysUntilExpiry > 0) {
       return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Expiring soon</Badge>;
     }

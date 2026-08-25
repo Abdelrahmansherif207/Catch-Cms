@@ -81,7 +81,7 @@ export function UserDetailPage() {
         </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setActivationOpen(true)}>
-            {Boolean(user.is_active) ? t('users.deactivate') : t('users.activate')}
+            {user.is_active ? t('users.deactivate') : t('users.activate')}
           </Button>
           <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             {t('common.delete')}
@@ -108,8 +108,8 @@ export function UserDetailPage() {
               {user.phone_number}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={Boolean(user.is_active) ? 'default' : 'secondary'}>
-                {Boolean(user.is_active) ? t('users.active') : t('users.inactive')}
+              <Badge variant={user.is_active ? 'default' : 'secondary'}>
+                {user.is_active ? t('users.active') : t('users.inactive')}
               </Badge>
               <Badge variant="outline" className="capitalize">{user.type}</Badge>
               {user.email_verified_at ? (

@@ -61,13 +61,13 @@ export function FaqFormDialog({
   useEffect(() => {
     if (isEditing && faq && faqDetail?.data) {
       const d = faqDetail.data;
-      let parsedTitle: Record<string, string> = {};
+      let parsedTitle: Record<string, string>;
       try {
         parsedTitle = typeof d.faq_title === 'string' ? JSON.parse(d.faq_title) : d.faq_title;
       } catch {
         parsedTitle = { en: d.faq_title, ar: d.faq_title };
       }
-      let parsedDescription: Record<string, string> = {};
+      let parsedDescription: Record<string, string>;
       try {
         parsedDescription = typeof d.faq_description === 'string' ? JSON.parse(d.faq_description) : d.faq_description;
       } catch {

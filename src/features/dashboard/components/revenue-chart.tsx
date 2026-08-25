@@ -19,7 +19,13 @@ interface RevenueChartProps {
   error: Error | null;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  label?: string | number;
+  payload?: Array<{ value: number }>;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">

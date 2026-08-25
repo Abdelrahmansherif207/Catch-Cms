@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -41,8 +41,9 @@ export function CityFormDialog({
     defaultValues: cityDefaults,
   });
 
+  const prevOpenRef = useRef(false);
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       setServerErrors({});
       if (isEditing && city) {
         form.reset({ nameEn: city.name || '', nameAr: city.name || '' });
@@ -50,6 +51,7 @@ export function CityFormDialog({
         form.reset(cityDefaults);
       }
     }
+    prevOpenRef.current = open;
   }, [open, isEditing, city, form]);
 
   const onSubmit = (values: CityFormData) => {

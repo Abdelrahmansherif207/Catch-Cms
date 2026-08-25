@@ -40,7 +40,12 @@ const STATUS_CONFIG: Record<string, { labelKey: string; color: string }> = {
   out_for_delivery: { labelKey: 'dashboard.orderStats.outForDelivery', color: '#0EA5E9' },
 };
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name?: string | number; value: number }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   return (
