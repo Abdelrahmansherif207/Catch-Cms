@@ -83,7 +83,7 @@ export function ExchangeRateFormDialog({
       }
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       // Errors handled by mutation onError
     }
   };

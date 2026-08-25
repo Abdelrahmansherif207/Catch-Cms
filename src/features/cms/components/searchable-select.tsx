@@ -5,6 +5,7 @@ import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { cn } from '@/shared/lib/utils';
 import { useEntitySearchInfinite } from '../hooks/use-sections';
+import type { EntitySearchItem } from '../api/sections.api';
 
 interface SearchableSelectProps {
   endpoint: string;
@@ -13,7 +14,7 @@ interface SearchableSelectProps {
   placeholder?: string;
 }
 
-function getItemLabel(item: any): string {
+function getItemLabel(item: EntitySearchItem): string {
   let nameStr = '';
   if (typeof item.name === 'string') {
     try {
@@ -72,13 +73,14 @@ export function SearchableSelect({
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useEntitySearchInfinite(endpoint, debouncedTerm);
 
-  const items = (data?.pages ?? []).flatMap((page: any) => {
-    const list = page?.data?.data || page?.data || [];
-    return Array.isArray(list) ? list : [];
+  const items = (data?.pages ?? []).flatMap((page) => {
+    const meta = page?.data;
+    const list = Array.isArray(meta) ? meta : meta?.data;
+    return list ?? [];
   });
 
   const selectedItem = value
-    ? items.find((item: any) => item.slug === value)
+    ? items.find((item) => item.slug === value)
     : undefined;
   const selectedLabel = selectedItem ? getItemLabel(selectedItem) : value || '';
 
@@ -139,7 +141,7 @@ export function SearchableSelect({
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const selectItem = (item: any) => {
+  const selectItem = (item: EntitySearchItem) => {
     onChange(item.slug ?? String(item.id));
     setIsOpen(false);
     setDropdownStyle(null);
@@ -217,7 +219,7 @@ export function SearchableSelect({
                   {searchTerm ? t('common.noData') : t('common.search')}
                 </p>
               )}
-              {items.map((item: any) => {
+              {items.map((item) => {
                 const isSelected = value === item.slug;
                 return (
                   <div

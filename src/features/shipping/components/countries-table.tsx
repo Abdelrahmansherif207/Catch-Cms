@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { DeleteDialog } from './delete-dialog';
 import { useDeleteCountry } from '../hooks/use-shipping';
 import type { Country } from '../types/shipping.types';
@@ -54,7 +55,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
                   <p className="font-medium">{getLocalizedName(country.name, i18n.language || 'en')}</p>
                   <p className="text-xs text-muted-foreground">{t('shipping.phoneCode')}: {country.phone_code}</p>
                 </div>
-                <Badge variant={country.status ? 'default' : 'secondary'}>{country.status ? t('shipping.active') : t('shipping.inactive')}</Badge>
+                <StatusBadge status={country.status} />
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => navigate(`/shipping/countries/${country.id}/governorates`)}>

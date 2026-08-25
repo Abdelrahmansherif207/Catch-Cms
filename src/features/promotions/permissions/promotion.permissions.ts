@@ -1,6 +1,3 @@
-export const PROMOTION_PERMISSIONS = {
-  view: 'view-promotion',
-  create: 'create-promotion',
-  update: 'update-promotion',
-  delete: 'delete-promotion',
-} as const;
+import { PERMISSIONS } from '@/shared/auth/permissions';
+
+export const PROMOTION_PERMISSIONS = PERMISSIONS.promotions;

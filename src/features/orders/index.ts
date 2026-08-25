@@ -1,9 +1,9 @@
 export { OrdersPage } from './pages/orders-page';
 export { OrderDetailPage } from './pages/order-detail-page';
 export { MyOrdersPage } from './pages/my-orders-page';
-export { OrderInvoiceViewPage } from './pages/order-invoice-view-page';
-export { useOrders, useOrder, useDeleteOrder, useMyOrders, useOrderInvoice } from './hooks/use-orders';
+export { useOrders, useOrder, useDeleteOrder, useUpdateOrderStatus, useMyOrders } from './hooks/use-orders';
 export { orderRoutes } from './routes/order.routes';
+export { ORDER_STATUSES, getAllowedStatusTransitions } from './utils/order-status';
 export type {
   OrderListItem,
   OrderDetail,
@@ -11,9 +11,9 @@ export type {
   Transaction,
   OrderPickupLocation,
   MyOrderListItem,
-  OrderInvoiceView,
   OrdersListResponse,
   OrderDetailResponse,
   MyOrdersListResponse,
-  OrderInvoiceResponse,
+  UpdateOrderStatusResponse,
+  OrderStatus,
 } from './types/order.types';

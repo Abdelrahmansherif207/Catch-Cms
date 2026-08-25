@@ -12,7 +12,11 @@ import {
   searchProducts,
   type FetchSlidersParams,
 } from '../api/sliders.api';
-import type { CreateSliderData, UpdateSliderData } from '../types/slider.types';
+import type {
+  CreateSliderData,
+  SlidersListResponse,
+  UpdateSliderData,
+} from '../types/slider.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
 function handleApiError(error: unknown, fallbackMessage: string): ApiErrorResponse {
@@ -94,16 +98,16 @@ export function useChangeSliderStatus() {
     mutationFn: (id: number) => changeSliderStatus(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.sliders.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.sliders.lists() });
+      const queries = queryClient.getQueriesData<SlidersListResponse>({ queryKey: queryKeys.sliders.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
-      queryClient.setQueriesData({ queryKey: queryKeys.sliders.lists() }, (old: any) => {
+      queryClient.setQueriesData<SlidersListResponse>({ queryKey: queryKeys.sliders.lists() }, (old) => {
         if (!old?.data?.data) return old;
         return {
           ...old,
           data: {
             ...old.data,
-            data: old.data.data.map((item: any) =>
+            data: old.data.data.map((item) =>
               item.id === id ? { ...item, status: !item.status } : item
             ),
           },
@@ -136,12 +140,12 @@ export function useReorderSliders() {
     mutationFn: (sliderIds: number[]) => reorderSliders(sliderIds),
     onMutate: async (sliderIds) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.sliders.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.sliders.lists() });
+      const queries = queryClient.getQueriesData<SlidersListResponse>({ queryKey: queryKeys.sliders.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
       queries.forEach(([queryKey, data]) => {
         if (!data?.data?.data) return;
-        const itemMap = new Map(data.data.data.map((item: any) => [item.id, item]));
+        const itemMap = new Map(data.data.data.map((item) => [item.id, item] as const));
         const reordered = sliderIds
           .map((id) => itemMap.get(id))
           .filter(Boolean);

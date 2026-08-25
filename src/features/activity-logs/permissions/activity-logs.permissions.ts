@@ -1,3 +1,3 @@
-export const ACTIVITY_LOG_PERMISSIONS = {
-  view: 'view-activity-log',
-} as const;
+import { PERMISSIONS } from '@/shared/auth/permissions';
+
+export const ACTIVITY_LOG_PERMISSIONS = PERMISSIONS.activityLogs;

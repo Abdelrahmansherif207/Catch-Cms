@@ -26,7 +26,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { FlashSaleImageCell } from './flash-sale-image-cell';
-import { FlashSaleStatusBadge } from './flash-sale-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { FlashSaleDeleteDialog } from './flash-sale-delete-dialog';
 import { useReorderFlashSales } from '../hooks/use-flash-sale';
 import type { FlashSale } from '../types/flash-sale.types';
@@ -164,7 +164,7 @@ export function FlashSaleTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
-                    <FlashSaleStatusBadge status={sale.status} />
+                    <StatusBadge status={sale.status} />
                     {sale.is_valid && (
                       <Circle className="h-2 w-2 fill-green-500 text-green-500" />
                     )}
@@ -267,7 +267,7 @@ function FlashSaleCard({ sale, index, onMoveUp, onEdit, onDelete }: { sale: Flas
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatDate(sale.start_date)} &rarr; {formatDate(sale.end_date)}</span>
         <div className="flex items-center gap-1.5">
-          <FlashSaleStatusBadge status={sale.status} />
+          <StatusBadge status={sale.status} />
           {sale.is_valid && (
             <Circle className="h-2 w-2 fill-green-500 text-green-500" />
           )}

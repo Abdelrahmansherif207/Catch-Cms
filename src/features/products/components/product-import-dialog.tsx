@@ -33,11 +33,13 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
   const [dragOver, setDragOver] = useState(false);
   const importApi = useProductsImport();
 
+  const prevOpenRef = useRef(false);
   useEffect(() => {
-    if (!open) {
+    if (!open && prevOpenRef.current) {
       setSelectedFile(null);
       importApi.reset();
     }
+    prevOpenRef.current = open;
   }, [open]);
 
   const handleFileSelect = useCallback((file: File) => {

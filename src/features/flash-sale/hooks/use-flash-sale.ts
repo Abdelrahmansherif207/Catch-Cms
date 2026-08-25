@@ -11,7 +11,11 @@ import {
   searchProducts,
   type FetchFlashSalesParams,
 } from '../api/flash-sale.api';
-import type { CreateFlashSaleData, UpdateFlashSaleData } from '../types/flash-sale.types';
+import type {
+  CreateFlashSaleData,
+  FlashSaleListResponse,
+  UpdateFlashSaleData,
+} from '../types/flash-sale.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
 function handleApiError(error: unknown, fallbackMessage: string): ApiErrorResponse {
@@ -93,12 +97,12 @@ export function useReorderFlashSales() {
     mutationFn: (flashSaleIds: number[]) => reorderFlashSales(flashSaleIds),
     onMutate: async (flashSaleIds) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.flashSales.lists() });
-      const queries = queryClient.getQueriesData<any>({ queryKey: queryKeys.flashSales.lists() });
+      const queries = queryClient.getQueriesData<FlashSaleListResponse>({ queryKey: queryKeys.flashSales.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
 
       queries.forEach(([queryKey, data]) => {
         if (!data?.data?.data) return;
-        const itemMap = new Map(data.data.data.map((item: any) => [item.id, item]));
+        const itemMap = new Map(data.data.data.map((item) => [item.id, item] as const));
         const reordered = flashSaleIds
           .map((id) => itemMap.get(id))
           .filter(Boolean);

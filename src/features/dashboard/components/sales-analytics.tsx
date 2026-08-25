@@ -25,7 +25,12 @@ interface SalesAnalyticsProps {
 
 const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
 
-const PieTooltip = ({ active, payload }: any) => {
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name?: string | number; value: number }>;
+}
+
+const PieTooltip = ({ active, payload }: PieTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">

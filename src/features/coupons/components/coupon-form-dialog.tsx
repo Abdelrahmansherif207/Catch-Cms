@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
@@ -55,7 +55,7 @@ export function CouponFormDialog({
   const [mobilePreview, setMobilePreview] = useState<string | null>(null);
 
   const form = useForm<CouponFormValues>({
-    resolver: zodResolver(couponFormSchema) as any,
+    resolver: zodResolver(couponFormSchema) as unknown as Resolver<CouponFormValues>,
     defaultValues: couponFormDefaults,
   });
 
@@ -75,7 +75,7 @@ export function CouponFormDialog({
   useEffect(() => {
     if (isEditing && coupon && couponDetail?.data) {
       const d = couponDetail.data;
-      let parsedName: Record<string, string> = {};
+      let parsedName: Record<string, string>;
       try {
         parsedName = typeof d.name === 'string' ? JSON.parse(d.name) : d.name;
       } catch {
@@ -180,7 +180,7 @@ export function CouponFormDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="nameEn" className="text-sm font-medium">{t('couponsForm.nameEn')} *</label>
@@ -356,7 +356,7 @@ export function CouponFormContent({
   const [mobilePreview, setMobilePreview] = useState<string | null>(null);
 
   const form = useForm<CouponFormValues>({
-    resolver: zodResolver(couponFormSchema) as any,
+    resolver: zodResolver(couponFormSchema) as unknown as Resolver<CouponFormValues>,
     defaultValues: couponFormDefaults,
   });
 
@@ -365,7 +365,7 @@ export function CouponFormContent({
   useEffect(() => {
     if (isEditing && coupon && couponDetail?.data) {
       const d = couponDetail.data;
-      let parsedName: Record<string, string> = {};
+      let parsedName: Record<string, string>;
       try {
         parsedName = typeof d.name === 'string' ? JSON.parse(d.name) : d.name;
       } catch {
@@ -464,7 +464,7 @@ export function CouponFormContent({
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="nameEn" className="text-sm font-medium">{t('couponsForm.nameEn')} *</label>

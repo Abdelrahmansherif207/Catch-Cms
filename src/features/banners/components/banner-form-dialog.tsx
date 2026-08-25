@@ -95,13 +95,13 @@ export function BannerFormDialog({
   useEffect(() => {
     if (isEditing && banner && bannerDetail?.data) {
       const d = bannerDetail.data;
-      let parsedTitle: Record<string, string> = {};
+      let parsedTitle: Record<string, string>;
       try {
         parsedTitle = typeof d.title === 'string' ? JSON.parse(d.title) : d.title;
       } catch {
         parsedTitle = { en: d.title, ar: d.title };
       }
-      let parsedDescription: Record<string, string> = {};
+      let parsedDescription: Record<string, string>;
       try {
         parsedDescription = typeof d.description === 'string' ? JSON.parse(d.description) : d.description;
       } catch {

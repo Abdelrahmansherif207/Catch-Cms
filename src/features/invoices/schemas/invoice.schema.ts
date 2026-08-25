@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import type { CorrectInvoicePayload, CancelInvoicePayload, DebitNotePayload } from '../types/invoice.types';
+import type {
+  CorrectInvoicePayload,
+  CancelInvoicePayload,
+  DebitNotePayload,
+} from '../types/invoice.types';
 
 export const correctInvoiceFormSchema = z.object({
   reason: z.string().min(1, 'invoices.validation.reasonRequired'),
@@ -61,16 +65,21 @@ function toOptionalNumber(value?: string): number | undefined {
 
 export function toCorrectInvoicePayload(values: CorrectInvoiceFormValues): CorrectInvoicePayload {
   const payload: CorrectInvoicePayload = { reason: values.reason };
+  const overrides: CorrectInvoicePayload['overrides'] = {};
   const total = toOptionalNumber(values.total);
   const amountPaid = toOptionalNumber(values.amount_paid);
   const shipping = toOptionalNumber(values.shipping);
 
-  if (total !== undefined) payload.total = total;
-  if (amountPaid !== undefined) payload.amount_paid = amountPaid;
-  if (shipping !== undefined) payload.shipping = shipping;
-  if (values.customer_name?.trim()) payload.customer_name = values.customer_name.trim();
-  if (values.customer_email?.trim()) payload.customer_email = values.customer_email.trim();
-  if (values.customer_phone?.trim()) payload.customer_phone = values.customer_phone.trim();
+  if (total !== undefined) overrides.total = total;
+  if (amountPaid !== undefined) overrides.amount_paid = amountPaid;
+  if (shipping !== undefined) overrides.shipping_price = shipping;
+  if (values.customer_name?.trim() || values.customer_email?.trim() || values.customer_phone?.trim()) {
+    overrides.customer = {
+      ...(values.customer_name?.trim() ? { name: values.customer_name.trim() } : {}),
+      ...(values.customer_email?.trim() ? { email: values.customer_email.trim() } : {}),
+      ...(values.customer_phone?.trim() ? { phone: values.customer_phone.trim() } : {}),
+    };
+  }
 
   const billing = {
     name: values.billing_name?.trim(),
@@ -82,9 +91,9 @@ export function toCorrectInvoicePayload(values: CorrectInvoiceFormValues): Corre
     postal_code: values.billing_postal_code?.trim(),
   };
   if (Object.values(billing).some(Boolean)) {
-    payload.billing_address = Object.fromEntries(
+    overrides.billing_address = Object.fromEntries(
       Object.entries(billing).filter(([, v]) => Boolean(v))
-    ) as CorrectInvoicePayload['billing_address'];
+    ) as Record<string, string>;
   }
 
   const shippingAddr = {
@@ -97,12 +106,16 @@ export function toCorrectInvoicePayload(values: CorrectInvoiceFormValues): Corre
     postal_code: values.shipping_postal_code?.trim(),
   };
   if (Object.values(shippingAddr).some(Boolean)) {
-    payload.shipping_address = Object.fromEntries(
+    overrides.shipping_address = Object.fromEntries(
       Object.entries(shippingAddr).filter(([, v]) => Boolean(v))
-    ) as CorrectInvoicePayload['shipping_address'];
+    ) as Record<string, string>;
   }
 
-  if (values.notes?.trim()) payload.notes = values.notes.trim();
+  if (values.notes?.trim()) overrides.notes = values.notes.trim();
+
+  if (Object.keys(overrides).length > 0) {
+    payload.overrides = overrides;
+  }
 
   return payload;
 }

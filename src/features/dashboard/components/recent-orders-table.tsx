@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { Badge } from '@/shared/ui/badge';
+import { OrderStatusBadge } from '@/features/orders/components/order-status-badge';
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { RecentOrder } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
@@ -19,18 +19,6 @@ interface RecentOrdersTableProps {
   isLoading: boolean;
   error: Error | null;
 }
-
-const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link'> = {
-  pending: 'outline',
-  processing: 'secondary',
-  completed: 'default',
-  cancelled: 'destructive',
-  refunded: 'ghost',
-  failed: 'destructive',
-  delivered: 'default',
-  local_facility: 'secondary',
-  out_for_delivery: 'secondary',
-};
 
 export function RecentOrdersTable({ data, isLoading, error }: RecentOrdersTableProps) {
   const { t, i18n } = useTranslation();
@@ -85,12 +73,7 @@ export function RecentOrdersTable({ data, isLoading, error }: RecentOrdersTableP
                     <div className="text-xs text-muted-foreground">{order.user?.email ?? ''}</div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={STATUS_VARIANTS[order.status] ?? 'outline'}
-                      className="capitalize"
-                    >
-                      {order.status}
-                    </Badge>
+                    <OrderStatusBadge status={order.status} />
                   </TableCell>
                   <TableCell className="text-end font-medium tabular-nums">
                     {formatCurrency(order.total_price)}

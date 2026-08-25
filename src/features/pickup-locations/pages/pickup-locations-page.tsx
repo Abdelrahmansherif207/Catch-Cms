@@ -23,6 +23,7 @@ export function PickupLocationsPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortedBy, setSortedBy] = useState<'asc' | 'desc' | undefined>(undefined);
   const [openForm, setOpenForm] = useState(false);
   const [editingLocation, setEditingLocation] = useState<PickupLocation | null>(null);
 
@@ -32,6 +33,8 @@ export function PickupLocationsPage() {
     search: search || undefined,
     active: statusFilter === '1' ? 'true' : undefined,
     inactive: statusFilter === '0' ? 'true' : undefined,
+    order: sortedBy ? 'display_order' : undefined,
+    sortedBy,
   };
 
   const { data, isLoading, refetch } = usePickupLocations(params);
@@ -123,6 +126,11 @@ export function PickupLocationsPage() {
       <PickupLocationsTable
         data={locations}
         isLoading={isLoading}
+        sortedBy={sortedBy}
+        onToggleSort={() => {
+          setSortedBy((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          setPage(1);
+        }}
         onEdit={handleEdit}
         onRefresh={() => refetch()}
       />

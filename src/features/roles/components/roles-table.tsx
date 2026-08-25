@@ -34,6 +34,13 @@ interface RolesTableProps {
 type SortField = 'id' | 'displayName';
 type SortDir = 'asc' | 'desc';
 
+function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField; sortDir: SortDir }) {
+  if (sortField !== field) return <ArrowUpDown className="ms-1 h-3 w-3 inline opacity-40" />;
+  return sortDir === 'asc'
+    ? <ArrowUp className="ms-1 h-3 w-3 inline" />
+    : <ArrowDown className="ms-1 h-3 w-3 inline" />;
+}
+
 export function RolesTable({
   data,
   isLoading,
@@ -52,7 +59,7 @@ export function RolesTable({
   const sorted = useMemo(() => {
     const list = [...data];
     list.sort((a, b) => {
-      let cmp = 0;
+      let cmp: number;
       if (sortField === 'id') {
         cmp = a.id - b.id;
       } else {
@@ -72,13 +79,6 @@ export function RolesTable({
       setSortField(field);
       setSortDir('asc');
     }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="ms-1 h-3 w-3 inline opacity-40" />;
-    return sortDir === 'asc'
-      ? <ArrowUp className="ms-1 h-3 w-3 inline" />
-      : <ArrowDown className="ms-1 h-3 w-3 inline" />;
   };
 
   if (isLoading) {
@@ -109,7 +109,7 @@ export function RolesTable({
                   onClick={() => toggleSort('id')}
                 >
                   {t('roles.id')}
-                  <SortIcon field="id" />
+                  <SortIcon field="id" sortField={sortField} sortDir={sortDir} />
                 </button>
               </TableHead>
               <TableHead>
@@ -118,7 +118,7 @@ export function RolesTable({
                   onClick={() => toggleSort('displayName')}
                 >
                   {t('roles.displayName')}
-                  <SortIcon field="displayName" />
+                  <SortIcon field="displayName" sortField={sortField} sortDir={sortDir} />
                 </button>
               </TableHead>
               <TableHead>{t('roles.guardName')}</TableHead>

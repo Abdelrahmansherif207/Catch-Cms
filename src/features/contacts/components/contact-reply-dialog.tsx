@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -35,14 +35,16 @@ export function ContactReplyDialog({
   const [subject, setSubject] = useState('RE: ' + (contact?.subject || ''));
   const [message, setMessage] = useState('');
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+  const [prevSnapshot, setPrevSnapshot] = useState<{ open: boolean; contact: Contact | null }>({ open, contact });
 
-  useEffect(() => {
+  if (prevSnapshot.open !== open || prevSnapshot.contact !== contact) {
+    setPrevSnapshot({ open, contact });
     if (open) {
       setSubject('RE: ' + (contact?.subject || ''));
       setMessage('');
       setServerErrors({});
     }
-  }, [open, contact]);
+  }
 
   const handleSubmit = () => {
     if (!contact || !subject.trim() || !message.trim()) return;

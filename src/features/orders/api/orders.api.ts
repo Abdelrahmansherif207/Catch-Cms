@@ -3,8 +3,9 @@ import type {
   OrdersListResponse,
   OrderDetailResponse,
   MyOrdersListResponse,
-  OrderInvoiceResponse,
+  UpdateOrderStatusResponse,
   ApiResponse,
+  OrderStatus,
 } from '../types/order.types';
 
 export interface FetchOrdersParams {
@@ -53,6 +54,17 @@ export async function deleteOrder(id: number): Promise<ApiResponse<null>> {
   return data;
 }
 
+export async function updateOrderStatus(
+  id: number,
+  status: OrderStatus
+): Promise<UpdateOrderStatusResponse> {
+  const { data } = await axiosClient.patch<UpdateOrderStatusResponse>(
+    `/orders/${id}/status`,
+    { status }
+  );
+  return data;
+}
+
 export async function fetchMyOrders(
   page = 1,
   limit = 15
@@ -62,13 +74,6 @@ export async function fetchMyOrders(
   params.append('limit', limit.toString());
   const { data } = await axiosClient.get<MyOrdersListResponse>(
     `/general/orders?${params.toString()}`
-  );
-  return data;
-}
-
-export async function fetchOrderInvoice(uuid: string): Promise<OrderInvoiceResponse> {
-  const { data } = await axiosClient.get<OrderInvoiceResponse>(
-    `/general/orders/invoice/${uuid}`
   );
   return data;
 }

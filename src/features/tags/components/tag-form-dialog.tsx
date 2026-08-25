@@ -65,10 +65,11 @@ export function TagFormDialog({
     if (isEditing && tag && tagDetail) {
       form.setValue('name', tagDetail.name);
       form.setValue('slug', tagDetail.slug || '');
-      setImagePreview(tagDetail.image || null);
-      setIconPreview(tagDetail.icon || null);
     }
   }, [tagDetail, isEditing, tag, form]);
+
+  const resolvedImagePreview = imagePreview ?? (tagDetail?.image || null);
+  const resolvedIconPreview = iconPreview ?? (tagDetail?.icon || null);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -133,7 +134,7 @@ export function TagFormDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <label htmlFor="name" className="text-sm font-medium">{t('tagsForm.name')} *</label>
               <Input id="name" placeholder={t('tagsForm.name')} {...form.register('name')} />
@@ -155,12 +156,12 @@ export function TagFormDialog({
               <div className="space-y-1.5">
                 <label htmlFor="image" className="text-sm font-medium">{t('tagsForm.image')}</label>
                 <Input id="image" type="file" accept=".jpeg,.png,.jpg,.gif,.svg" onChange={(e) => handleFileChange(e, 'image', setImagePreview)} />
-                {imagePreview && <ImagePreview src={imagePreview} alt="Image preview" thumbnailClassName="h-16 rounded border object-cover mt-1" />}
+                {resolvedImagePreview && <ImagePreview src={resolvedImagePreview} alt="Image preview" thumbnailClassName="h-16 rounded border object-cover mt-1" />}
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="icon" className="text-sm font-medium">{t('tagsForm.icon')}</label>
                 <Input id="icon" type="file" accept=".jpeg,.png,.jpg,.gif,.svg" onChange={(e) => handleFileChange(e, 'icon', setIconPreview)} />
-                {iconPreview && <ImagePreview src={iconPreview} alt="Icon preview" thumbnailClassName="h-16 rounded border object-cover mt-1" />}
+                {resolvedIconPreview && <ImagePreview src={resolvedIconPreview} alt="Icon preview" thumbnailClassName="h-16 rounded border object-cover mt-1" />}
               </div>
             </div>
 

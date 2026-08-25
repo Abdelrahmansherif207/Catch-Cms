@@ -14,14 +14,8 @@ import {
 } from '@/shared/ui/table';
 import { useMyOrders } from '../hooks/use-orders';
 import { OrderStatusBadge } from '../components/order-status-badge';
-import { orderRoutes } from '../routes/order.routes';
+import { invoiceRoutes } from '@/features/invoices/routes/invoice.routes';
 import type { MyOrderListItem } from '../types/order.types';
-
-function invoiceUuid(order: MyOrderListItem): string | null {
-  if (order.invoice_uuid) return order.invoice_uuid;
-  if (order.invoice_id === null || order.invoice_id === undefined) return null;
-  return String(order.invoice_id);
-}
 
 export function MyOrdersPage() {
   const { t } = useTranslation();
@@ -79,7 +73,6 @@ export function MyOrdersPage() {
               </TableHeader>
               <TableBody>
                 {orders.map((order) => {
-                  const uuid = invoiceUuid(order);
                   return (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">
@@ -97,9 +90,9 @@ export function MyOrdersPage() {
                         {new Date(order.created_at).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-end">
-                        {order.order_has_invoice && uuid ? (
+                        {order.order_has_invoice && order.invoice_id ? (
                           <Link
-                            to={orderRoutes.myOrderInvoice(uuid)}
+                            to={invoiceRoutes.detail(Number(order.invoice_id))}
                             className={buttonVariants({ variant: 'outline', size: 'sm' })}
                           >
                             <FileText className="me-2 h-4 w-4" />

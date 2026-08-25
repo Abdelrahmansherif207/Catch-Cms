@@ -24,7 +24,7 @@ import {
   type CurrencyFormValues,
 } from '../schemas/currency.schema';
 import { useCreateCurrency, useUpdateCurrency, useCurrency } from '../hooks/use-currencies';
-import type { Currency } from '../types/currency.types';
+import type { Currency, CurrenciesListResponse } from '../types/currency.types';
 
 interface CurrencyFormDialogProps {
   currency?: Currency | null;
@@ -146,8 +146,8 @@ export function CurrencyFormDialog({
   }, [open, currencyDetail]);
 
   const createMutation = useCreateCurrency({
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('currencies.created'));
+    onSuccess: (response: unknown) => {
+      toast.success((response as CurrenciesListResponse)?.message || t('currencies.created'));
       onSuccess();
       onOpenChange(false);
     },
@@ -159,8 +159,8 @@ export function CurrencyFormDialog({
   });
 
   const updateMutation = useUpdateCurrency({
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('currencies.updated'));
+    onSuccess: (response: unknown) => {
+      toast.success((response as CurrenciesListResponse)?.message || t('currencies.updated'));
       onSuccess();
       onOpenChange(false);
     },
@@ -176,9 +176,9 @@ export function CurrencyFormDialog({
   const onSubmit = (data: CurrencyFormValues) => {
     const payload = toApiFormat(data);
     if (isEditing && currency) {
-      updateMutation.mutate({ id: currency.id, data: payload as any });
+      updateMutation.mutate({ id: currency.id, data: payload as Omit<Currency, 'id'> });
     } else {
-      createMutation.mutate(payload as any);
+      createMutation.mutate(payload as Omit<Currency, 'id'>);
     }
   };
 

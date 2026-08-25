@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { STATIC_PAGE_PERMISSIONS } from '../permissions/static-pages.permissions';
 import { useStaticPages } from '../hooks/use-static-pages';
 import { StaticPagesTable } from '../components/static-pages-table';
@@ -13,7 +13,7 @@ import type { StaticPage } from '../types/static-page.types';
 export function StaticPagesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
   const [editingPage, setEditingPage] = useState<StaticPage | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 

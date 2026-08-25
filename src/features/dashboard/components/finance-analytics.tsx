@@ -20,7 +20,13 @@ interface FinanceAnalyticsProps {
   error: Error | null;
 }
 
-const ChartTooltip = ({ active, payload, label }: any) => {
+interface ChartTooltipProps {
+  active?: boolean;
+  label?: string | number;
+  payload?: Array<{ value: number }>;
+}
+
+const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">

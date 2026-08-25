@@ -15,7 +15,9 @@ function parseJsonField(val: string): { en: string; ar: string } {
     if (typeof parsed === 'object' && parsed !== null) {
       return { en: parsed.en || '', ar: parsed.ar || '' };
     }
-  } catch {}
+  } catch {
+    return { en: val, ar: val };
+  }
   return { en: val, ar: val };
 }
 

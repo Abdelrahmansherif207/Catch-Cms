@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { ProductDeleteDialog } from './product-delete-dialog';
 import type { Product } from '../types/product.types';
@@ -210,9 +211,7 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={product.status ? 'default' : 'secondary'} className="whitespace-nowrap">
-                    {product.status ? t('products.active') : t('products.inactive')}
-                  </Badge>
+                  <StatusBadge status={product.status} className="whitespace-nowrap" />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <div className="flex flex-wrap gap-1 max-w-[240px]">
@@ -381,9 +380,7 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
           <span className={product.in_stock ? 'text-green-600 text-xs' : 'text-red-600 text-xs'}>
             {product.available_stock} {t('products.stock').toLowerCase()}
           </span>
-          <Badge variant={product.status ? 'default' : 'secondary'} className="text-xs">
-            {product.status ? t('products.active') : t('products.inactive')}
-          </Badge>
+          <StatusBadge status={product.status} className="text-xs" />
         </div>
       </div>
 

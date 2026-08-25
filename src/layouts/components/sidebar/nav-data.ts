@@ -29,16 +29,15 @@ import {
   Receipt,
   type LucideIcon,
 } from 'lucide-react';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import { SITE_REVIEW_PERMISSIONS } from '@/features/site-reviews/permissions/site-reviews.permissions';
-import { STATIC_PAGE_PERMISSIONS } from '@/features/static-pages/permissions/static-pages.permissions';
-import { INVOICE_PERMISSIONS } from '@/features/invoices/permissions/invoice.permissions';
+import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
+import { usePermissions } from '@/shared/auth/guards';
 
 export interface NavItem {
   title: string;
   url: string;
   icon: LucideIcon;
-  permissions?: string[];
+  /** Any-of grant list — item is hidden unless at least one is held. */
+  permissions?: Permission[];
 }
 
 export interface NavGroup {
@@ -48,9 +47,9 @@ export interface NavGroup {
 
 export function useNavGroups(): NavGroup[] {
   const { t } = useTranslation();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can } = usePermissions();
 
-  const groups = [
+  const groups: NavGroup[] = [
     {
       title: t('sidebar.overview'),
       items: [
@@ -60,54 +59,144 @@ export function useNavGroups(): NavGroup[] {
     {
       title: t('sidebar.commerce'),
       items: [
-        { title: t('sidebar.products'), url: '/products', icon: Package },
-        { title: t('sidebar.orders'), url: '/orders', icon: ShoppingCart },
+        {
+          title: t('sidebar.products'),
+          url: '/products',
+          icon: Package,
+          permissions: [PERMISSIONS.products.view],
+        },
+        {
+          title: t('sidebar.orders'),
+          url: '/orders',
+          icon: ShoppingCart,
+          permissions: [PERMISSIONS.orders.view],
+        },
         {
           title: t('sidebar.invoices'),
           url: '/invoices',
           icon: Receipt,
-          permissions: [INVOICE_PERMISSIONS.view],
+          permissions: [PERMISSIONS.invoices.view],
         },
-        { title: t('sidebar.pickupLocations'), url: '/pickup-locations', icon: MapPin },
-        { title: t('sidebar.promotions'), url: '/promotions', icon: Megaphone },
-        { title: t('sidebar.coupons'), url: '/coupons', icon: Tag },
+        {
+          title: t('sidebar.pickupLocations'),
+          url: '/pickup-locations',
+          icon: MapPin,
+          permissions: [PERMISSIONS.pickupLocations.view],
+        },
+        {
+          title: t('sidebar.promotions'),
+          url: '/promotions',
+          icon: Megaphone,
+          permissions: [PERMISSIONS.promotions.view],
+        },
+        {
+          title: t('sidebar.coupons'),
+          url: '/coupons',
+          icon: Tag,
+          permissions: [PERMISSIONS.coupons.view],
+        },
       ],
     },
     {
       title: t('sidebar.catalog'),
       items: [
-        { title: t('sidebar.categories'), url: '/categories', icon: FolderTree },
-        { title: t('sidebar.brands'), url: '/brands', icon: Tags },
-        { title: t('sidebar.tags'), url: '/tags', icon: Hash },
-        { title: t('sidebar.attributes'), url: '/attributes', icon: List },
-                { title: t('sidebar.reviews'), url: '/reviews', icon: Star },
-        { title: t('sidebar.currencies'), url: '/currencies', icon: Globe },
-        { title: t('sidebar.exchangeRates'), url: '/exchange-rates', icon: Activity },
+        {
+          title: t('sidebar.categories'),
+          url: '/categories',
+          icon: FolderTree,
+          permissions: [PERMISSIONS.categories.view],
+        },
+        {
+          title: t('sidebar.brands'),
+          url: '/brands',
+          icon: Tags,
+          permissions: [PERMISSIONS.brands.view],
+        },
+        {
+          title: t('sidebar.tags'),
+          url: '/tags',
+          icon: Hash,
+          permissions: [PERMISSIONS.tags.view],
+        },
+        {
+          title: t('sidebar.attributes'),
+          url: '/attributes',
+          icon: List,
+          permissions: [PERMISSIONS.attributes.view],
+        },
+        {
+          title: t('sidebar.reviews'),
+          url: '/reviews',
+          icon: Star,
+          permissions: [PERMISSIONS.reviews.approve, PERMISSIONS.reviews.delete],
+        },
+        {
+          title: t('sidebar.currencies'),
+          url: '/currencies',
+          icon: Globe,
+          permissions: [PERMISSIONS.currencies.view],
+        },
+        {
+          title: t('sidebar.exchangeRates'),
+          url: '/exchange-rates',
+          icon: Activity,
+          permissions: [PERMISSIONS.exchangeRates.view],
+        },
       ],
     },
     {
       title: t('sidebar.content'),
       items: [
-        { title: t('sidebar.cms'), url: '/cms', icon: FileText },
+        {
+          title: t('sidebar.cms'),
+          url: '/cms',
+          icon: FileText,
+          permissions: [PERMISSIONS.sections.view],
+        },
         {
           title: t('sidebar.staticPages'),
           url: '/static-pages',
           icon: Newspaper,
-          permissions: [STATIC_PAGE_PERMISSIONS.view],
+          permissions: [PERMISSIONS.staticPages.view],
         },
-        { title: t('sidebar.sliders'), url: '/sliders', icon: Image },
-        { title: t('sidebar.banners'), url: '/banners', icon: Image },
-        { title: t('sidebar.faqs'), url: '/faqs', icon: HelpCircle },
-        { title: t('sidebar.flashSale'), url: '/flash-sale', icon: Megaphone },
-        { title: t('sidebar.contacts'), url: '/contacts', icon: Mail },
+        {
+          title: t('sidebar.sliders'),
+          url: '/sliders',
+          icon: Image,
+          permissions: [PERMISSIONS.sliders.view],
+        },
+        {
+          title: t('sidebar.banners'),
+          url: '/banners',
+          icon: Image,
+          permissions: [PERMISSIONS.banners.view],
+        },
+        {
+          title: t('sidebar.faqs'),
+          url: '/faqs',
+          icon: HelpCircle,
+          permissions: [PERMISSIONS.faqs.view],
+        },
+        {
+          title: t('sidebar.flashSale'),
+          url: '/flash-sale',
+          icon: Megaphone,
+          permissions: [PERMISSIONS.flashSale.view],
+        },
+        {
+          title: t('sidebar.contacts'),
+          url: '/contacts',
+          icon: Mail,
+          permissions: [PERMISSIONS.contacts.view],
+        },
         {
           title: t('sidebar.siteReviews'),
           url: '/site-reviews',
           icon: MessageSquare,
           permissions: [
-            SITE_REVIEW_PERMISSIONS.view,
-            SITE_REVIEW_PERMISSIONS.approve,
-            SITE_REVIEW_PERMISSIONS.reject,
+            PERMISSIONS.siteReviews.view,
+            PERMISSIONS.siteReviews.approve,
+            PERMISSIONS.siteReviews.reject,
           ],
         },
       ],
@@ -115,19 +204,59 @@ export function useNavGroups(): NavGroup[] {
     {
       title: t('sidebar.shipping'),
       items: [
-        { title: t('sidebar.countries'), url: '/shipping/countries', icon: Globe },
-        { title: t('sidebar.governorates'), url: '/shipping/governorates', icon: Building2 },
-        { title: t('sidebar.cities'), url: '/shipping/cities', icon: MapPinned },
+        {
+          title: t('sidebar.countries'),
+          url: '/shipping/countries',
+          icon: Globe,
+          permissions: [PERMISSIONS.shipping.countriesView],
+        },
+        {
+          title: t('sidebar.governorates'),
+          url: '/shipping/governorates',
+          icon: Building2,
+          permissions: [PERMISSIONS.shipping.governoratesView],
+        },
+        {
+          title: t('sidebar.cities'),
+          url: '/shipping/cities',
+          icon: MapPinned,
+          permissions: [PERMISSIONS.shipping.citiesView],
+        },
       ],
     },
     {
       title: t('sidebar.system'),
       items: [
-        { title: t('sidebar.users'), url: '/users', icon: Users },
-        { title: t('sidebar.roles'), url: '/roles', icon: ShieldCheck },
-        { title: t('sidebar.activityLogs'), url: '/activity-logs', icon: History },
-        { title: t('sidebar.notifications'), url: '/notifications', icon: Bell },
-{ title: t('sidebar.settings'), url: '/settings', icon: Settings },
+        {
+          title: t('sidebar.users'),
+          url: '/users',
+          icon: Users,
+          permissions: [PERMISSIONS.users.view],
+        },
+        {
+          title: t('sidebar.roles'),
+          url: '/roles',
+          icon: ShieldCheck,
+          permissions: [PERMISSIONS.roles.view],
+        },
+        {
+          title: t('sidebar.activityLogs'),
+          url: '/activity-logs',
+          icon: History,
+          permissions: [PERMISSIONS.activityLogs.view],
+        },
+        {
+          title: t('sidebar.notifications'),
+          url: '/notifications',
+          icon: Bell,
+          permissions: [PERMISSIONS.notifications.view],
+        },
+        {
+          title: t('sidebar.settings'),
+          url: '/settings',
+          icon: Settings,
+          permissions: [PERMISSIONS.settings.view],
+        },
       ],
     },
   ];
@@ -136,11 +265,8 @@ export function useNavGroups(): NavGroup[] {
     .map((group) => ({
       ...group,
       items: group.items.filter(
-        (item) => !item.permissions || item.permissions.some((p) => hasPermission(p))
+        (item) => !item.permissions || item.permissions.some((p) => can(p))
       ),
     }))
     .filter((group) => group.items.length > 0);
 }
-
-
-

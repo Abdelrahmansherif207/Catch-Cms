@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { UserStatusBadge } from './user-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { UserActivationDialog } from './user-activation-dialog';
 import { UserDeleteDialog } from './user-delete-dialog';
 import { UserForceDeleteDialog } from './user-force-delete-dialog';
@@ -121,7 +121,7 @@ export function UsersTable({
                     <span className="text-sm text-muted-foreground">{user.email}</span>
                   </TableCell>
                   <TableCell>
-                    <UserStatusBadge status={user.is_active} />
+                    <StatusBadge status={user.is_active} />
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <span className="text-sm text-muted-foreground">
@@ -161,7 +161,7 @@ export function UsersTable({
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setActivationTarget(user)}>
                               <Pencil className="me-2 h-4 w-4" />
-                              {Boolean(user.is_active) ? t('users.deactivate') : t('users.activate')}
+                              {user.is_active ? t('users.deactivate') : t('users.activate')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"

@@ -1,4 +1,3 @@
-export const NOTIFICATION_PERMISSIONS = {
-  view: 'view-notifications',
-  manage: 'manage-notifications',
-} as const;
+import { PERMISSIONS } from '@/shared/auth/permissions';
+
+export const NOTIFICATION_PERMISSIONS = PERMISSIONS.notifications;

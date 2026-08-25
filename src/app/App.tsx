@@ -2,6 +2,9 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
+import { PERMISSIONS } from "@/shared/auth/permissions";
+import { PermissionRoute } from "@/shared/auth/guards";
+import { ForbiddenPage } from "@/shared/auth/forbidden-page";
 import { Loader2 } from "lucide-react";
 
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/dashboard-page").then(m => ({ default: m.DashboardPage })));
@@ -36,11 +39,9 @@ const EditProductPage = lazy(() => import("@/features/products/pages/edit-produc
 const OrdersPage = lazy(() => import("@/features/orders/pages/orders-page").then(m => ({ default: m.OrdersPage })));
 const OrderDetailPage = lazy(() => import("@/features/orders/pages/order-detail-page").then(m => ({ default: m.OrderDetailPage })));
 const MyOrdersPage = lazy(() => import("@/features/orders/pages/my-orders-page").then(m => ({ default: m.MyOrdersPage })));
-const OrderInvoiceViewPage = lazy(() => import("@/features/orders/pages/order-invoice-view-page").then(m => ({ default: m.OrderInvoiceViewPage })));
 const InvoicesPage = lazy(() => import("@/features/invoices/pages/invoices-page").then(m => ({ default: m.InvoicesPage })));
 const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-detail-page").then(m => ({ default: m.InvoiceDetailPage })));
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
-const MyInvoiceDetailPage = lazy(() => import("@/features/invoices/pages/my-invoice-detail-page").then(m => ({ default: m.MyInvoiceDetailPage })));
 const InvoiceVerifyPage = lazy(() => import("@/features/invoices/pages/invoice-verify-page").then(m => ({ default: m.InvoiceVerifyPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
@@ -76,59 +77,119 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
+              {/* Self-service — no module permission required */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/products/create" element={<CreateProductPage />} />
-              <Route path="/products/:id/edit" element={<EditProductPage />} />
-              <Route path="/products/:id" element={<ProductDetailPage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/brands" element={<BrandsPage />} />
-              <Route path="/tags" element={<TagsPage />} />
-              <Route path="/sliders" element={<SlidersPage />} />
-              <Route path="/faqs" element={<FaqsPage />} />
-              <Route path="/flash-sale" element={<FlashSalePage />} />
-              <Route path="/coupons" element={<CouponsPage />} />
-              <Route path="/coupons/:id/edit" element={<CouponEditPage />} />
-              <Route path="/contacts" element={<ContactsPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/users/:id" element={<UserDetailPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/orders/:id" element={<OrderDetailPage />} />
-              <Route path="/invoices" element={<InvoicesPage />} />
-              <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
-              <Route path="/promotions" element={<PromotionsPage />} />
-              <Route path="/attributes" element={<AttributesPage />} />
-              <Route path="/attributes/:id" element={<AttributeDetailPage />} />
-              <Route path="/roles" element={<RolesPage />} />
-              <Route path="/roles/:id" element={<RoleDetailPage />} />
-              <Route path="/cms" element={<SectionsPage />} />
-              <Route path="/static-pages" element={<StaticPagesPage />} />
-              <Route path="/static-pages/:slug" element={<StaticPageDetailPage />} />
-              <Route path="/static-pages/:slug/preview" element={<StaticPagePreviewPage />} />
-              <Route path="/activity-logs" element={<ActivityLogsPage />} />
-              <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/site-reviews" element={<SiteReviewsPage />} />
-              <Route path="/banners" element={<BannersPage />} />
-              <Route path="/pickup-locations" element={<PickupLocationsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/shipping/countries" element={<CountriesPage />} />
-              <Route path="/shipping/countries/:countryId/governorates" element={<GovernoratesPage />} />
-              <Route path="/shipping/governorates" element={<GovernoratesPage />} />
-              <Route path="/shipping/governorates/:governorateId/cities" element={<CitiesPage />} />
-                            <Route path="/shipping/cities" element={<CitiesPage />} />
-              <Route path="/currencies" element={<CurrenciesPage />} />
-              <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
+              <Route path="/403" element={<ForbiddenPage />} />
+
+              <Route element={<PermissionRoute permission={PERMISSIONS.categories.view} />}>
+                <Route path="/categories" element={<CategoriesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.settings.view} />}>
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.products.view} />}>
+                <Route path="/products/create" element={<CreateProductPage />} />
+                <Route path="/products/:id/edit" element={<EditProductPage />} />
+                <Route path="/products/:id" element={<ProductDetailPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.brands.view} />}>
+                <Route path="/brands" element={<BrandsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.tags.view} />}>
+                <Route path="/tags" element={<TagsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.sliders.view} />}>
+                <Route path="/sliders" element={<SlidersPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.faqs.view} />}>
+                <Route path="/faqs" element={<FaqsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.flashSale.view} />}>
+                <Route path="/flash-sale" element={<FlashSalePage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.coupons.view} />}>
+                <Route path="/coupons" element={<CouponsPage />} />
+                <Route path="/coupons/:id/edit" element={<CouponEditPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.contacts.view} />}>
+                <Route path="/contacts" element={<ContactsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.users.view} />}>
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/users/:id" element={<UserDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.orders.view} />}>
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/orders/:id" element={<OrderDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
+                <Route path="/invoices" element={<InvoicesPage />} />
+                <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.promotions.view} />}>
+                <Route path="/promotions" element={<PromotionsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.attributes.view} />}>
+                <Route path="/attributes" element={<AttributesPage />} />
+                <Route path="/attributes/:id" element={<AttributeDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.roles.view} />}>
+                <Route path="/roles" element={<RolesPage />} />
+                <Route path="/roles/:id" element={<RoleDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.sections.view} />}>
+                <Route path="/cms" element={<SectionsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.staticPages.view} />}>
+                <Route path="/static-pages" element={<StaticPagesPage />} />
+                <Route path="/static-pages/:slug" element={<StaticPageDetailPage />} />
+                <Route path="/static-pages/:slug/preview" element={<StaticPagePreviewPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.activityLogs.view} />}>
+                <Route path="/activity-logs" element={<ActivityLogsPage />} />
+              </Route>
+              <Route element={<PermissionRoute anyOf={[PERMISSIONS.reviews.approve, PERMISSIONS.reviews.delete]} />}>
+                <Route path="/reviews" element={<ReviewsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.siteReviews.view} />}>
+                <Route path="/site-reviews" element={<SiteReviewsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.banners.view} />}>
+                <Route path="/banners" element={<BannersPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.pickupLocations.view} />}>
+                <Route path="/pickup-locations" element={<PickupLocationsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.notifications.view} />}>
+                <Route path="/notifications" element={<NotificationsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.shipping.countriesView} />}>
+                <Route path="/shipping/countries" element={<CountriesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.shipping.governoratesView} />}>
+                <Route path="/shipping/countries/:countryId/governorates" element={<GovernoratesPage />} />
+                <Route path="/shipping/governorates" element={<GovernoratesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.shipping.citiesView} />}>
+                <Route path="/shipping/governorates/:governorateId/cities" element={<CitiesPage />} />
+                <Route path="/shipping/cities" element={<CitiesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.currencies.view} />}>
+                <Route path="/currencies" element={<CurrenciesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.exchangeRates.view} />}>
+                <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
+              </Route>
             </Route>
           </Route>
 
+          {/* Self-service views — authentication only */}
           <Route element={<ProtectedRoute />}>
             <Route path="/invoices/:uuid/verify" element={<InvoiceVerifyPage />} />
             <Route path="/my-invoices" element={<MyInvoicesPage />} />
-            <Route path="/my-invoices/:uuid" element={<MyInvoiceDetailPage />} />
             <Route path="/my-orders" element={<MyOrdersPage />} />
-            <Route path="/my-orders/invoice/:uuid" element={<OrderInvoiceViewPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -82,3 +82,71 @@ export interface UpdateCategoryData extends CreateCategoryData {
   _method: 'PUT';
 }
 
+export type ExportResponse = Blob;
+
+export interface CategoryImportStartData {
+  import_id: number;
+  status: string;
+}
+
+export interface CategoryImportError {
+  sheet: string;
+  row: number;
+  name_en: string;
+  name_ar: string;
+  parent_name_en: string;
+  error_message: string;
+}
+
+export type CategoryImportStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'completed_with_errors'
+  | 'failed'
+  | 'cancelled'
+  | 'cancelling';
+
+export interface CategoryImportStatusData {
+  id: number;
+  status: CategoryImportStatus;
+  total_rows: number;
+  processed_rows: number;
+  successful_rows: number;
+  failed_rows: number;
+  progress: number;
+  errors: CategoryImportError[];
+  error_count: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type ImportCategoriesResponse = ApiResponse<CategoryImportStartData>;
+export type CategoryImportStatusResponse = ApiResponse<CategoryImportStatusData>;
+export type CancelCategoryImportResponse = ApiResponse<{
+  import_id: number;
+  status: string;
+}>;
+
+export interface CategoryExportStartData {
+  export_id: number;
+  status: string;
+}
+
+export type CategoryExportStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface CategoryExportStatusData {
+  id: number;
+  status: CategoryExportStatus;
+  total_rows: number;
+  processed_rows: number;
+  successful_rows: number;
+  failed_rows: number;
+  errors: CategoryImportError[];
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type StartCategoryExportResponse = ApiResponse<CategoryExportStartData>;
+export type CategoryExportStatusResponse = ApiResponse<CategoryExportStatusData>;
+

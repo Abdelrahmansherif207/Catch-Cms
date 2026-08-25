@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import {
@@ -58,8 +59,8 @@ export function BrandFormDialog({
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const { data: productsData, isLoading: isSearchingProducts } = useProductSearch(productSearch);
 
-  const form = useForm<BrandFormValues>({
-    resolver: zodResolver(brandFormSchema) as any,
+  const form = useForm<z.input<typeof brandFormSchema>, unknown, BrandFormValues>({
+    resolver: zodResolver(brandFormSchema),
     defaultValues: brandFormDefaults,
   });
 
@@ -81,7 +82,7 @@ export function BrandFormDialog({
   useEffect(() => {
     if (isEditing && brand && brandDetail?.data) {
       const d = brandDetail.data;
-      let parsedName: Record<string, string> = {};
+      let parsedName: Record<string, string>;
       try {
         parsedName = typeof d.name === 'string' ? JSON.parse(d.name) : d.name;
       } catch {
@@ -89,7 +90,7 @@ export function BrandFormDialog({
       }
       form.setValue('nameEn', parsedName.en || '');
       form.setValue('nameAr', parsedName.ar || '');
-      let parsedDetails: Record<string, string> = {};
+      let parsedDetails: Record<string, string>;
       try {
         parsedDetails = typeof d.details === 'string' ? JSON.parse(d.details) : d.details || {};
       } catch {
@@ -188,7 +189,7 @@ export function BrandFormDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="nameEn" className="text-sm font-medium">{t('brandsForm.nameEn')} *</label>

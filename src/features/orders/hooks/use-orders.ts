@@ -6,12 +6,13 @@ import {
   fetchOrders,
   fetchOrderById,
   deleteOrder,
+  updateOrderStatus,
   fetchMyOrders,
-  fetchOrderInvoice,
   type FetchOrdersParams,
 } from '../api/orders.api';
 import { orderRoutes } from '../routes/order.routes';
 import type { ApiErrorResponse } from '@/shared/api';
+import type { OrderStatus } from '../types/order.types';
 
 function handleApiError(error: unknown, fallbackMessage: string) {
   const apiError = error as ApiErrorResponse;
@@ -52,19 +53,30 @@ export function useDeleteOrder() {
   });
 }
 
+export function useUpdateOrderStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status }: { id: number; status: OrderStatus }) =>
+      updateOrderStatus(id, status),
+    onSuccess: (response, variables) => {
+      toast.success(response.message || 'Order status updated successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.orders.detail(variables.id),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    },
+    onError: (error: unknown) => {
+      handleApiError(error, 'Failed to update order status');
+    },
+  });
+}
+
 export function useMyOrders(page = 1, limit = 15) {
   return useQuery({
     queryKey: queryKeys.orders.myOrders.list({ page, limit }),
     queryFn: () => fetchMyOrders(page, limit),
     staleTime: 60 * 1000,
-  });
-}
-
-export function useOrderInvoice(uuid: string | undefined) {
-  return useQuery({
-    queryKey: queryKeys.orders.myOrders.invoice(uuid ?? ''),
-    queryFn: () => fetchOrderInvoice(uuid as string),
-    enabled: uuid !== undefined,
-    retry: false,
   });
 }

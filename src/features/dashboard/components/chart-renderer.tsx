@@ -40,7 +40,14 @@ interface MultiSeriesChartProps {
   height?: number;
 }
 
-function ChartTooltipContent({ active, payload, label, formatter }: any) {
+interface ChartTooltipContentProps {
+  active?: boolean;
+  label?: string | number;
+  payload?: Array<{ value: number }>;
+  formatter?: (value: number) => string;
+}
+
+function ChartTooltipContent({ active, payload, label, formatter }: ChartTooltipContentProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">
@@ -235,11 +242,17 @@ export function MultiSeriesChartRenderer({ data, chartType, dataKeys, formatter,
   );
 }
 
-function MultiTooltipContent({ active, payload, formatter }: any) {
+interface MultiTooltipContentProps {
+  active?: boolean;
+  payload?: Array<{ name?: string | number; value: number; color?: string }>;
+  formatter?: (value: number) => string;
+}
+
+function MultiTooltipContent({ active, payload, formatter }: MultiTooltipContentProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">
-      {payload.map((entry: any, i: number) => (
+      {payload.map((entry, i) => (
         <p key={i} className="text-sm font-bold text-foreground" style={{ color: entry.color }}>
           {entry.name}: {formatter ? formatter(entry.value) : entry.value}
         </p>

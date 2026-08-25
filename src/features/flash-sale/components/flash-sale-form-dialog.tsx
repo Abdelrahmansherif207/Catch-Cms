@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import {
@@ -40,6 +41,8 @@ interface FlashSaleFormDialogProps {
   onSuccess: () => void;
 }
 
+type FlashSaleFormInput = z.input<typeof flashSaleFormSchema>;
+
 export function FlashSaleFormDialog({
   flashSale,
   open,
@@ -58,8 +61,8 @@ export function FlashSaleFormDialog({
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const { data: productsData, isLoading: isSearchingProducts } = useProductSearch(productSearch);
 
-  const form = useForm<FlashSaleFormValues>({
-    resolver: zodResolver(flashSaleFormSchema) as any,
+  const form = useForm<FlashSaleFormInput, unknown, FlashSaleFormValues>({
+    resolver: zodResolver(flashSaleFormSchema),
     defaultValues: flashSaleFormDefaults,
   });
 
@@ -82,7 +85,7 @@ export function FlashSaleFormDialog({
   useEffect(() => {
     if (isEditing && flashSale && flashSaleDetail?.data) {
       const d = flashSaleDetail.data;
-      let parsedTitle: Record<string, string> = {};
+      let parsedTitle: Record<string, string>;
       try {
         parsedTitle = typeof d.title === 'string' ? JSON.parse(d.title) : d.title;
       } catch {
@@ -195,7 +198,7 @@ export function FlashSaleFormDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="titleEn" className="text-sm font-medium">{t('flashSaleForm.titleEn')} *</label>

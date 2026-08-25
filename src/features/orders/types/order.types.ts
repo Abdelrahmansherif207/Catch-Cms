@@ -1,4 +1,4 @@
-import type { InvoiceDetail } from '@/features/invoices/types/invoice.types';
+import type { LocalizedName } from '@/shared/lib/localize';
 
 export interface PaginationLinks {
   current_page: number;
@@ -68,15 +68,17 @@ export interface Transaction {
 
 export interface OrderPickupLocation {
   id?: number;
-  store_name?: string;
-  name?: string;
+  store_name?: string | LocalizedName;
+  name?: string | LocalizedName;
   address?: string;
   city?: string;
   phone?: string;
   email?: string;
   latitude?: string | null;
   longitude?: string | null;
-  working_hours?: Array<{ day: string; open: string; close: string }> | null;
+  working_hours?:
+    | Array<{ day: string | LocalizedName; open: string; close: string }>
+    | null;
 }
 
 export interface OrderDetail {
@@ -122,22 +124,14 @@ export interface MyOrderListItem {
   updated_at?: string | null;
 }
 
-export interface OrderInvoiceView {
-  invoice?: InvoiceDetail | null;
-  snapshot?: unknown;
-  verification_url?: string | null;
-  verified?: boolean;
-  tampered?: boolean;
-  message?: string;
-  invoice_number?: string;
-  order_number?: string;
-  status?: string;
-  total?: number | null;
-  currency?: string | null;
-  created_at?: string;
-}
-
 export type OrdersListResponse = ApiResponse<PaginatedResponse<OrderListItem>>;
 export type OrderDetailResponse = ApiResponse<OrderDetail>;
 export type MyOrdersListResponse = ApiResponse<PaginatedResponse<MyOrderListItem>>;
-export type OrderInvoiceResponse = ApiResponse<OrderInvoiceView>;
+export type UpdateOrderStatusResponse = ApiResponse<OrderDetail>;
+
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'delivered'
+  | 'cancelled';

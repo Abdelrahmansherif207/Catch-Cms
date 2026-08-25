@@ -1,5 +1,10 @@
+export interface LocalizedDay {
+  ar: string;
+  en: string;
+}
+
 export interface WorkingHour {
-  day: string;
+  day: LocalizedDay;
   open: string;
   close: string;
 }
@@ -15,6 +20,7 @@ export interface PickupLocation {
   working_hours: WorkingHour[] | null;
   status: boolean;
   display_order: number;
+  is_default: boolean;
   created_at: string;
 }
 
@@ -54,4 +60,5 @@ export interface CreatePickupLocationData {
 }
 
 export interface UpdatePickupLocationData extends Partial<CreatePickupLocationData> {
+  is_default?: boolean;
 }

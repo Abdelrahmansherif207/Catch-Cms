@@ -6,6 +6,12 @@ import type {
   CreateCategoryData,
   UpdateCategoryData,
   ApiResponse,
+  ImportCategoriesResponse,
+  CategoryImportStatusResponse,
+  CancelCategoryImportResponse,
+  StartCategoryExportResponse,
+  CategoryExportStatusResponse,
+  ExportResponse,
 } from '../types/category.types';
 
 export interface FetchCategoriesParams {
@@ -97,6 +103,57 @@ export async function updateCategory(
 
 export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
   const { data } = await axiosClient.delete<ApiResponse<null>>(`/categories/${id}`);
+  return data;
+}
+
+export async function importCategories(file: File): Promise<ImportCategoriesResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await axiosClient.post<ImportCategoriesResponse>('/categories/import', formData);
+  return data;
+}
+
+export async function getCategoryImportStatus(importId: number): Promise<CategoryImportStatusResponse> {
+  const { data } = await axiosClient.get<CategoryImportStatusResponse>('/categories/import/' + importId);
+  return data;
+}
+
+export async function cancelCategoryImport(importId: number): Promise<CancelCategoryImportResponse> {
+  const { data } = await axiosClient.post<CancelCategoryImportResponse>(
+    '/categories/import/' + importId + '/cancel'
+  );
+  return data;
+}
+
+export async function downloadCategoryImportErrors(importId: number): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>(
+    '/categories/import/' + importId + '/download-errors',
+    { responseType: 'blob' }
+  );
+  return data;
+}
+
+export async function downloadCategoryImportSample(): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>('/categories/import/sample', {
+    responseType: 'blob',
+  });
+  return data;
+}
+
+export async function startCategoryExport(): Promise<StartCategoryExportResponse> {
+  const { data } = await axiosClient.get<StartCategoryExportResponse>('/categories/export');
+  return data;
+}
+
+export async function getCategoryExportStatus(exportId: number): Promise<CategoryExportStatusResponse> {
+  const { data } = await axiosClient.get<CategoryExportStatusResponse>('/categories/export/' + exportId);
+  return data;
+}
+
+export async function downloadCategoryExport(exportId: number): Promise<ExportResponse> {
+  const { data } = await axiosClient.get<ExportResponse>('/categories/export/' + exportId + '/download', {
+    responseType: 'blob',
+  });
   return data;
 }
 

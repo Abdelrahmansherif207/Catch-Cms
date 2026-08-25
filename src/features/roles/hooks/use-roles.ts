@@ -83,9 +83,9 @@ export function useDeleteRole() {
       await queryClient.cancelQueries({ queryKey: queryKeys.roles.lists() });
       const queries = queryClient.getQueriesData<RolesListResponse>({ queryKey: queryKeys.roles.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
-      queryClient.setQueriesData({ queryKey: queryKeys.roles.lists() }, (old: any) => {
+      queryClient.setQueriesData<RolesListResponse>({ queryKey: queryKeys.roles.lists() }, (old) => {
         if (!old?.data || !Array.isArray(old.data)) return old;
-        return { ...old, data: old.data.filter((r: { id: number }) => r.id !== id) };
+        return { ...old, data: old.data.filter((r) => r.id !== id) };
       });
       return { previousData };
     },

@@ -27,7 +27,9 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { useOrder } from '../hooks/use-orders';
+import { getLocalizedName } from '@/shared/lib/localize';
 import { OrderStatusBadge } from '../components/order-status-badge';
+import { OrderStatusSelect } from '../components/order-status-select';
 import { OrderDeleteDialog } from '../components/order-delete-dialog';
 import { orderRoutes } from '../routes/order.routes';
 
@@ -73,8 +75,9 @@ function DetailSkeleton() {
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const lang = i18n.language || 'en';
 
   const { data, isLoading } = useOrder(Number(id));
   const order = data?.data;
@@ -124,6 +127,7 @@ export function OrderDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <OrderStatusBadge status={order.status} type="order" />
+          <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
           <OrderStatusBadge status={order.payment_status} type="payment" />
         </div>
       </div>
@@ -273,7 +277,11 @@ export function OrderDetailPage() {
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="font-medium">
-                      {order.pickup_location.store_name ?? order.pickup_location.name ?? '—'}
+                      {getLocalizedName(
+                        order.pickup_location.store_name ??
+                          order.pickup_location.name,
+                        lang
+                      ) || '—'}
                     </span>
                   </div>
                   {order.pickup_location.address && (
@@ -300,9 +308,15 @@ export function OrderDetailPage() {
                   {order.pickup_location.working_hours &&
                     order.pickup_location.working_hours.length > 0 && (
                       <div className="space-y-1 border-t pt-2">
-                        {order.pickup_location.working_hours.map((h) => (
-                          <p key={h.day} className="text-xs text-muted-foreground">
-                            {h.day}: {h.open} – {h.close}
+                        {order.pickup_location.working_hours.map((h, index) => (
+                          <p
+                            key={
+                              getLocalizedName(h.day, 'en') || `day-${index}`
+                            }
+                            className="text-xs text-muted-foreground"
+                          >
+                            {getLocalizedName(h.day, lang)}: {h.open} –{' '}
+                            {h.close}
                           </p>
                         ))}
                       </div>

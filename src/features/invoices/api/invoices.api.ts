@@ -1,14 +1,15 @@
+import { isAxiosError } from 'axios';
 import { axiosClient } from '@/shared/api';
 import type {
   InvoicesListResponse,
   InvoiceDetailResponse,
   InvoiceVerificationResponse,
-  MyInvoicesListResponse,
-  MyInvoiceResponse,
+  RegenerateInvoiceResponse,
   ApiResponse,
   CorrectInvoicePayload,
   CancelInvoicePayload,
   DebitNotePayload,
+  DebitNote,
 } from '../types/invoice.types';
 
 export interface FetchInvoicesParams {
@@ -16,12 +17,14 @@ export interface FetchInvoicesParams {
   limit?: number;
   search?: string;
   status?: string;
-  payment_method?: string;
+  order_id?: number;
+  user_id?: number;
+  invoice_series?: string;
   currency?: string;
-  created_from?: string;
-  created_to?: string;
-  order_by?: string;
-  sort_dir?: 'asc' | 'desc';
+  from?: string;
+  to?: string;
+  sort_by?: 'created_at' | 'total' | 'status' | 'invoice_number';
+  sort_direction?: 'asc' | 'desc';
 }
 
 export async function fetchInvoices({
@@ -29,12 +32,14 @@ export async function fetchInvoices({
   limit = 15,
   search,
   status,
-  payment_method,
+  order_id,
+  user_id,
+  invoice_series,
   currency,
-  created_from,
-  created_to,
-  order_by,
-  sort_dir,
+  from,
+  to,
+  sort_by,
+  sort_direction,
 }: FetchInvoicesParams = {}): Promise<InvoicesListResponse> {
   const params = new URLSearchParams();
   params.append('page', page.toString());
@@ -42,12 +47,14 @@ export async function fetchInvoices({
 
   if (search) params.append('search', search);
   if (status) params.append('status', status);
-  if (payment_method) params.append('payment_method', payment_method);
+  if (order_id != null) params.append('order_id', String(order_id));
+  if (user_id != null) params.append('user_id', String(user_id));
+  if (invoice_series) params.append('invoice_series', invoice_series);
   if (currency) params.append('currency', currency);
-  if (created_from) params.append('created_from', created_from);
-  if (created_to) params.append('created_to', created_to);
-  if (order_by) params.append('order_by', order_by);
-  if (sort_dir) params.append('sort_dir', sort_dir);
+  if (from) params.append('from', from);
+  if (to) params.append('to', to);
+  if (sort_by) params.append('sort_by', sort_by);
+  if (sort_direction) params.append('sort_direction', sort_direction);
 
   const { data } = await axiosClient.get<InvoicesListResponse>(`/invoices?${params.toString()}`);
   return data;
@@ -58,48 +65,62 @@ export async function fetchInvoiceById(id: number): Promise<InvoiceDetailRespons
   return data;
 }
 
-export async function fetchMyInvoices(
-  page = 1,
-  limit = 15
-): Promise<MyInvoicesListResponse> {
-  const params = new URLSearchParams();
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
-  const { data } = await axiosClient.get<MyInvoicesListResponse>(
-    `/general/invoices/my-invoices?${params.toString()}`
-  );
-  return data;
-}
-
-export async function fetchMyInvoiceByUuid(uuid: string): Promise<MyInvoiceResponse> {
-  const { data } = await axiosClient.get<MyInvoiceResponse>(`/general/orders/invoice/${uuid}`);
-  return data;
-}
-
 export async function fetchInvoiceVerification(uuid: string): Promise<InvoiceVerificationResponse> {
-  const { data } = await axiosClient.get<InvoiceVerificationResponse>(
-    `/general/invoices/verify/${uuid}`
-  );
-  return data;
+  try {
+    const { data } = await axiosClient.get<InvoiceVerificationResponse>(
+      `/general/invoices/verify/${uuid}`
+    );
+    return data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      const status = error.response?.status;
+      const body = error.response?.data as InvoiceVerificationResponse | undefined;
+      if (status === 409 && body?.data?.tampered !== undefined) {
+        return body;
+      }
+    }
+    throw error;
+  }
 }
 
-export async function downloadInvoicePdf(uuid: string): Promise<void> {
-  const response = await axiosClient.get(`/invoices/${uuid}/download`, { responseType: 'blob' });
-  const blob = response.data as Blob;
+interface DownloadUrlResponse {
+  url: string;
+  invoice_number: string;
+}
+
+function triggerBlobDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `invoice-${uuid}.pdf`;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
 
-export async function regenerateInvoice(id: number): Promise<ApiResponse<InvoiceDetailResponse>> {
-  const { data } = await axiosClient.post<ApiResponse<InvoiceDetailResponse>>(
-    `/invoices/${id}/regenerate`
+export async function downloadInvoicePdf(
+  uuid: string,
+  fallbackName?: string | null
+): Promise<void> {
+  const { data } = await axiosClient.get<ApiResponse<DownloadUrlResponse>>(
+    `/invoices/${uuid}/download`
   );
+  const payload = data?.data;
+  if (!payload?.url) {
+    throw new Error(data?.message || 'PDF not yet generated');
+  }
+
+  const pdfResponse = await axiosClient.get<Blob>(payload.url, { responseType: 'blob' });
+  const safeName = (payload.invoice_number || fallbackName || `invoice-${uuid}`).replace(
+    /[^\w.-]+/g,
+    '_'
+  );
+  triggerBlobDownload(pdfResponse.data, `${safeName}.pdf`);
+}
+
+export async function regenerateInvoice(id: number): Promise<RegenerateInvoiceResponse> {
+  const { data } = await axiosClient.post<RegenerateInvoiceResponse>(`/invoices/${id}/regenerate`);
   return data;
 }
 
@@ -122,7 +143,10 @@ export async function cancelInvoice(
 export async function issueDebitNote(
   id: number,
   payload: DebitNotePayload
-): Promise<InvoiceDetailResponse> {
-  const { data } = await axiosClient.post<InvoiceDetailResponse>(`/invoices/${id}/debit-note`, payload);
+): Promise<ApiResponse<DebitNote>> {
+  const { data } = await axiosClient.post<ApiResponse<DebitNote>>(
+    `/invoices/${id}/debit-note`,
+    payload
+  );
   return data;
 }

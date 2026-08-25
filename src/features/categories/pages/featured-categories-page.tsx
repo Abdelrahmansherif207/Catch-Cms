@@ -29,7 +29,7 @@ export function FeaturedCategoriesPage() {
   const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1);
   const { data, isLoading, refetch } = useFeaturedCategories(page, 15);
-  const getName = (cat: Record<string, unknown>) => {
+  const getName = (cat: { name: unknown }) => {
     const n = cat.name;
     if (typeof n === 'string') return n;
     if (n && typeof n === 'object') return (n as Record<string, string>)[i18n.language] ?? (n as Record<string, string>).en ?? '';
@@ -87,11 +87,11 @@ export function FeaturedCategoriesPage() {
               data?.data?.data?.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>
-                    <CategoryImageCell image={category.image} alt={getName(category as any)} />
+                    <CategoryImageCell image={category.image} alt={getName(category)} />
                   </TableCell>
                   <TableCell>
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{getName(category as any)}</p>
+                      <p className="font-medium truncate">{getName(category)}</p>
                       <p className="text-xs text-muted-foreground truncate">/{category.slug}</p>
                     </div>
                   </TableCell>
@@ -141,7 +141,7 @@ export function AddFeaturedCategoryDialog({
   onSuccess: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const getName = (cat: Record<string, unknown>) => {
+  const getName = (cat: { name: unknown }) => {
     const n = cat.name;
     if (typeof n === 'string') return n;
     if (n && typeof n === 'object') return (n as Record<string, string>)[i18n.language] ?? (n as Record<string, string>).en ?? '';
@@ -207,7 +207,7 @@ export function AddFeaturedCategoryDialog({
                   }`}
                   onClick={() => setSelectedId(category.id)}
                 >
-                  <CategoryImageCell image={category.image} alt={getName(category as any)} />
+                  <CategoryImageCell image={category.image} alt={getName(category)} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{category.name}</p>
                     <p className="text-xs text-muted-foreground">

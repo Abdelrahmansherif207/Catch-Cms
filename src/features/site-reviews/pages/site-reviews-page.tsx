@@ -10,7 +10,7 @@ import {
 } from '@/shared/ui/select';
 import { Button } from '@/shared/ui/button';
 import { Pagination } from '@/shared/components/pagination';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { SITE_REVIEW_PERMISSIONS } from '../permissions/site-reviews.permissions';
 import {
   useSiteReviews,
@@ -31,7 +31,7 @@ export function SiteReviewsPage() {
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
 
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
   const canApprove = hasPermission(SITE_REVIEW_PERMISSIONS.approve);
   const canReject = hasPermission(SITE_REVIEW_PERMISSIONS.reject);
 

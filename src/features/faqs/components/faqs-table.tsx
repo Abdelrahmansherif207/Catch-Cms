@@ -43,6 +43,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { FaqDeleteDialog } from './faq-delete-dialog';
 import { useReorderFaqs } from '../hooks/use-faqs';
 import { cn } from '@/shared/lib/utils';
+import { StatusBadge } from '@/shared/components/status-badge';
 import type { Faq } from '../types/faq.types';
 
 interface FaqsTableProps {
@@ -136,17 +137,7 @@ function SortableRow({
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge
-          variant="outline"
-          className={cn(
-            'text-xs font-normal',
-            faq.status
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-          )}
-        >
-          {faq.status ? t('faqs.active') : t('faqs.inactive')}
-        </Badge>
+        <StatusBadge status={faq.status} />
       </TableCell>
       <TableCell>
         <DropdownMenu>

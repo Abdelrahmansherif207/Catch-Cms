@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Upload } from 'lucide-react';
@@ -54,7 +54,7 @@ export function UserFormDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema) as any,
+    resolver: zodResolver(userFormSchema) as Resolver<UserFormValues>,
     defaultValues: userFormDefaults,
   });
 
@@ -148,7 +148,7 @@ export function UserFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="flex justify-center">
             <div className="relative">
               <Avatar className="size-20">
