@@ -14,7 +14,7 @@ import { Button } from '@/shared/ui/button';
 import { useOrders } from '../hooks/use-orders';
 import { OrdersTable } from '../components/orders-table';
 
-const ORDER_STATUSES = ['pending', 'completed', 'cancelled', 'delivered'];
+const ORDER_STATUSES = ['pending', 'processing', 'completed', 'cancelled', 'delivered'];
 const PAYMENT_STATUSES = ['payment-success', 'payment-pending', 'payment-failed'];
 const SHIPPING_METHODS = ['SCHEDULED'];
 
@@ -153,27 +153,35 @@ export function OrdersPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>{t('orders.dateFrom')}</span>
-        <Input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => {
-            setDateFrom(e.target.value);
-            setPage(1);
-          }}
-          className="h-9 w-auto"
-        />
-        <span>{t('orders.dateTo')}</span>
-        <Input
-          type="date"
-          value={dateTo}
-          onChange={(e) => {
-            setDateTo(e.target.value);
-            setPage(1);
-          }}
-          className="h-9 w-auto"
-        />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {t('orders.dateFrom')}
+          </span>
+          <Input
+            type="datetime-local"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 w-auto"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {t('orders.dateTo')}
+          </span>
+          <Input
+            type="datetime-local"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 w-auto"
+          />
+        </div>
       </div>
 
       {isError && (
