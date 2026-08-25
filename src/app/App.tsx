@@ -36,11 +36,9 @@ const EditProductPage = lazy(() => import("@/features/products/pages/edit-produc
 const OrdersPage = lazy(() => import("@/features/orders/pages/orders-page").then(m => ({ default: m.OrdersPage })));
 const OrderDetailPage = lazy(() => import("@/features/orders/pages/order-detail-page").then(m => ({ default: m.OrderDetailPage })));
 const MyOrdersPage = lazy(() => import("@/features/orders/pages/my-orders-page").then(m => ({ default: m.MyOrdersPage })));
-const OrderInvoiceViewPage = lazy(() => import("@/features/orders/pages/order-invoice-view-page").then(m => ({ default: m.OrderInvoiceViewPage })));
 const InvoicesPage = lazy(() => import("@/features/invoices/pages/invoices-page").then(m => ({ default: m.InvoicesPage })));
 const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-detail-page").then(m => ({ default: m.InvoiceDetailPage })));
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
-const MyInvoiceDetailPage = lazy(() => import("@/features/invoices/pages/my-invoice-detail-page").then(m => ({ default: m.MyInvoiceDetailPage })));
 const InvoiceVerifyPage = lazy(() => import("@/features/invoices/pages/invoice-verify-page").then(m => ({ default: m.InvoiceVerifyPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
@@ -126,9 +124,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/invoices/:uuid/verify" element={<InvoiceVerifyPage />} />
             <Route path="/my-invoices" element={<MyInvoicesPage />} />
-            <Route path="/my-invoices/:uuid" element={<MyInvoiceDetailPage />} />
             <Route path="/my-orders" element={<MyOrdersPage />} />
-            <Route path="/my-orders/invoice/:uuid" element={<OrderInvoiceViewPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
