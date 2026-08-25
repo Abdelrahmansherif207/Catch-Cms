@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { useCategories, useToggleFeatured } from '../hooks/use-categories';
 import { CategoriesTable } from '../components/categories-table';
 import { CategoryFormDialog } from '../components/category-form-dialog';
@@ -25,7 +25,7 @@ import type { CategoryListItem } from '../types/category.types';
 
 export function CategoriesPage() {
   const { t } = useTranslation();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
   const canImport = hasPermission(CATEGORY_PERMISSIONS.import);
   const canExport = hasPermission(CATEGORY_PERMISSIONS.export);
   const [activeTab, setActiveTab] = useState('all');

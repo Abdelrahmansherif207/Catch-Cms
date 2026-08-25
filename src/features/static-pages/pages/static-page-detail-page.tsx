@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useLanguage } from '@/shared/hooks/use-language';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { STATIC_PAGE_PERMISSIONS } from '../permissions/static-pages.permissions';
 import { useStaticPage } from '../hooks/use-static-pages';
 import { localizedText } from '../lib/static-page-utils';
@@ -19,7 +19,7 @@ export function StaticPageDetailPage() {
   const navigate = useNavigate();
   const { slug = '' } = useParams();
   const { language } = useLanguage();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<StaticPageSection | null>(null);

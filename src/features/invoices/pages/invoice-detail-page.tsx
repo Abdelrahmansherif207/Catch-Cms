@@ -33,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { useInvoice, useRegenerateInvoice } from '../hooks/use-invoices';
 import { InvoiceStatusBadge } from '../components/invoice-status-badge';
 import { InvoicePdfPanel } from '../components/invoice-pdf-panel';
@@ -102,7 +102,7 @@ export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
 
   const [correctOpen, setCorrectOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);

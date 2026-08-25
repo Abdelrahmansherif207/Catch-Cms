@@ -1,5 +1,3 @@
-export const SITE_REVIEW_PERMISSIONS = {
-  view: 'view-site-reviews',
-  approve: 'approve-site-reviews',
-  reject: 'reject-site-reviews',
-} as const;
+import { PERMISSIONS } from '@/shared/auth/permissions';
+
+export const SITE_REVIEW_PERMISSIONS = PERMISSIONS.siteReviews;

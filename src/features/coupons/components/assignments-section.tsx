@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Pagination } from '@/shared/components/pagination';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { AssignmentsTable } from './assignments-table';
 import { AddAssignmentDialog } from './add-assignment-dialog';
 import { EditAssignmentDialog } from './edit-assignment-dialog';
@@ -17,7 +17,7 @@ interface AssignmentsSectionProps {
 
 export function AssignmentsSection({ couponId }: AssignmentsSectionProps) {
 
-  const hasRole = useAuthStore((s) => s.hasRole);
+  const { isSuperAdmin } = usePermissions();
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [addOpen, setAddOpen] = useState(false);
@@ -27,7 +27,7 @@ export function AssignmentsSection({ couponId }: AssignmentsSectionProps) {
   const params: FetchAssignmentsParams = { page, limit: 15 };
   const { data, isLoading, refetch } = useAssignments(couponId, params);
 
-  if (!hasRole('super_admin')) return null;
+  if (!isSuperAdmin) return null;
 
   const assignments = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;

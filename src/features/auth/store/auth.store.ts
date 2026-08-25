@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AuthData, User } from '../types/auth.types';
 import { STORAGE_KEYS } from '@/shared/constants/api';
+import { SUPER_ADMIN_ROLE, type Permission, type RoleType } from '@/shared/auth/permissions';
 
 interface AuthState {
   token: string | null;
@@ -9,8 +10,8 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (data: AuthData) => void;
   clearAuth: () => void;
-  hasPermission: (permission: string) => boolean;
-  hasRole: (role: string) => boolean;
+  hasPermission: (permission: Permission) => boolean;
+  hasRole: (role: RoleType) => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -42,19 +43,20 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      hasPermission: (permission: string) => {
+      /**
+       * Exact-match check against the grants issued at login.
+       * The `permission` parameter is the literal union from
+       * shared/auth/permissions.ts, so invalid strings cannot compile.
+       * super_admin bypasses all checks client-side, mirroring backend policy.
+       */
+      hasPermission: (permission) => {
         const { user } = get();
         if (!user) return false;
-        const normalize = (value: string) =>
-          value
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        const target = normalize(permission);
-        return user.permissions.some((p) => normalize(p) === target);
+        if (user.role?.includes(SUPER_ADMIN_ROLE)) return true;
+        return user.permissions.includes(permission);
       },
 
-      hasRole: (role: string) => {
+      hasRole: (role) => {
         const { user } = get();
         return user?.role.includes(role) ?? false;
       },

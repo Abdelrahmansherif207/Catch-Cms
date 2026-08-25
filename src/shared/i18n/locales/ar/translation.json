@@ -38,7 +38,13 @@
     "updated": "تم التحديث بنجاح",
     "enabled": "Enabled",
     "disabled": "Disabled",
-    "retry": "Retry"
+    "retry": "Retry",
+    "forbidden": {
+      "title": "تم رفض الوصول",
+      "description": "ليس لديك صلاحية لعرض هذه الصفحة.",
+      "descriptionSuperAdmin": "المسؤول الأعلى مصادق عليه ولكن هذه الصلاحية غير موجودة في الكتالوج. تحقق من الـ enum في الخادم.",
+      "goBack": "العودة"
+    }
   },
   "sidebar": {
     "rightsReserved": "جميع الحقوق محفوظة لـ",

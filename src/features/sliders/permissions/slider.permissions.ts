@@ -1,6 +1,9 @@
+import { PERMISSIONS } from '@/shared/auth/permissions';
+
+/** Legacy CAPS key shape preserved. */
 export const SLIDER_PERMISSIONS = {
-  VIEW: 'view-slider',
-  CREATE: 'create-slider',
-  UPDATE: 'update-slider',
-  DELETE: 'delete-slider',
+  VIEW: PERMISSIONS.sliders.view,
+  CREATE: PERMISSIONS.sliders.create,
+  UPDATE: PERMISSIONS.sliders.update,
+  DELETE: PERMISSIONS.sliders.delete,
 } as const;

@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePermissions } from '@/shared/auth/guards';
 import { useInvoices, useInvoiceDownload } from '../hooks/use-invoices';
 import { InvoicesTable } from '../components/invoices-table';
 import {
@@ -24,7 +24,7 @@ const INVOICE_CURRENCIES = ['EGP', 'USD', 'SAR', 'AED', 'EUR'];
 
 export function InvoicesPage() {
   const { t } = useTranslation();
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const { can: hasPermission } = usePermissions();
   const canDownload = hasPermission(INVOICE_PERMISSIONS.download);
   const { download } = useInvoiceDownload();
 
