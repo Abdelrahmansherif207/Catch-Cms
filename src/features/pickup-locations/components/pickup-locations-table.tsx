@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, MoreHorizontal, Pencil, Star, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
   DropdownMenu,
@@ -17,20 +18,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { PickupLocationStatusBadge } from './pickup-location-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { PickupLocationDeleteDialog } from './pickup-location-delete-dialog';
+import { useSetDefaultPickupLocation } from '../hooks/use-pickup-locations';
 import type { PickupLocation } from '../types/pickup-location.types';
 
 interface PickupLocationsTableProps {
   data: PickupLocation[];
   isLoading: boolean;
+  sortedBy?: 'asc' | 'desc';
+  onToggleSort?: () => void;
   onEdit: (location: PickupLocation) => void;
   onRefresh: () => void;
 }
 
-export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: PickupLocationsTableProps) {
+export function PickupLocationsTable({ data, isLoading, sortedBy, onToggleSort, onEdit, onRefresh }: PickupLocationsTableProps) {
   const { t } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<PickupLocation | null>(null);
+  const setDefaultMutation = useSetDefaultPickupLocation();
 
   if (isLoading) {
     return <TableSkeleton />;
@@ -42,7 +47,23 @@ export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: Pic
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">{t('pickupLocations.displayOrder')}</TableHead>
+              <TableHead className="w-16">
+                <button
+                  type="button"
+                  onClick={onToggleSort}
+                  className="inline-flex items-center gap-1 hover:text-foreground"
+                  aria-label={t('pickupLocations.sortByOrder')}
+                >
+                  {t('pickupLocations.displayOrder')}
+                  {sortedBy === 'asc' ? (
+                    <ArrowUp className="h-3 w-3" />
+                  ) : sortedBy === 'desc' ? (
+                    <ArrowDown className="h-3 w-3" />
+                  ) : (
+                    <ArrowUp className="h-3 w-3 opacity-30" />
+                  )}
+                </button>
+              </TableHead>
               <TableHead>{t('pickupLocations.storeName')}</TableHead>
               <TableHead className="hidden md:table-cell">{t('pickupLocations.address')}</TableHead>
               <TableHead className="hidden sm:table-cell">{t('pickupLocations.phone')}</TableHead>
@@ -64,7 +85,15 @@ export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: Pic
                     {location.display_order}
                   </TableCell>
                   <TableCell>
-                    <p className="font-medium">{location.store_name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-medium">{location.store_name}</p>
+                      {location.is_default && (
+                        <Badge variant="outline" className="gap-0.5">
+                          <Star className="h-3 w-3 fill-current" />
+                          {t('pickupLocations.defaultBadge')}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                       {location.email}
                     </p>
@@ -78,7 +107,7 @@ export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: Pic
                     {location.phone}
                   </TableCell>
                   <TableCell>
-                    <PickupLocationStatusBadge status={location.status} />
+                    <StatusBadge status={location.status} />
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -90,6 +119,15 @@ export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: Pic
                           <Pencil className="me-2 h-4 w-4" />
                           {t('common.edit')}
                         </DropdownMenuItem>
+                        {!location.is_default && (
+                          <DropdownMenuItem
+                            disabled={setDefaultMutation.isPending}
+                            onClick={() => setDefaultMutation.mutate(location.id, { onSuccess: onRefresh })}
+                          >
+                            <Star className="me-2 h-4 w-4" />
+                            {t('pickupLocations.makeDefault')}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => setDeleteTarget(location)}
@@ -111,6 +149,7 @@ export function PickupLocationsTable({ data, isLoading, onEdit, onRefresh }: Pic
         <PickupLocationDeleteDialog
           locationId={deleteTarget.id}
           locationName={deleteTarget.store_name}
+          isDefault={deleteTarget.is_default}
           open={!!deleteTarget}
           onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
           onDeleted={onRefresh}

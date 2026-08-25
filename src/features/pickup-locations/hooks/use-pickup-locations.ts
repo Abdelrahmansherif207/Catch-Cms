@@ -71,6 +71,23 @@ export function useUpdatePickupLocation() {
   });
 }
 
+export function useSetDefaultPickupLocation() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (id: number) => updatePickupLocation(id, { is_default: true }),
+    onSuccess: () => {
+      toast.success(t('pickupLocations.defaultUpdated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.pickupLocations.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pickupLocations.details() });
+    },
+    onError: (error) => {
+      handleApiError(error, t('pickupLocations.updateError'));
+    },
+  });
+}
+
 export function useDeletePickupLocation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();

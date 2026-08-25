@@ -14,6 +14,7 @@ import { useDeletePickupLocation } from '../hooks/use-pickup-locations';
 interface PickupLocationDeleteDialogProps {
   locationId: number;
   locationName: string;
+  isDefault?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDeleted?: () => void;
@@ -22,6 +23,7 @@ interface PickupLocationDeleteDialogProps {
 export function PickupLocationDeleteDialog({
   locationId,
   locationName,
+  isDefault = false,
   open,
   onOpenChange,
   onDeleted,
@@ -46,6 +48,11 @@ export function PickupLocationDeleteDialog({
           <AlertDialogDescription>
             {t('pickupLocations.deleteConfirm')} <strong>{locationName}</strong>?
             {t('pickupLocations.deleteWarning')}
+            {isDefault && (
+              <span className="mt-2 block text-destructive">
+                {t('pickupLocations.defaultDeleteWarning')}
+              </span>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
