@@ -38,7 +38,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { BrandImageCell } from './brand-image-cell';
-import { BrandStatusBadge } from './brand-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { BrandDeleteDialog } from './brand-delete-dialog';
 import { useReorderBrands } from '../hooks/use-brands';
 import type { Brand } from '../types/brand.types';
@@ -248,7 +248,7 @@ function SortableTableRow({
         </span>
       </TableCell>
       <TableCell>
-        <BrandStatusBadge status={brand.status} />
+        <StatusBadge status={brand.status} />
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -316,7 +316,7 @@ function BrandCard({ brand, index, onMoveUp, onEdit, onDelete }: { brand: Brand;
       </div>
       <p className="text-xs text-muted-foreground line-clamp-2">{brand.details || '—'}</p>
       <div className="flex items-center justify-end">
-        <BrandStatusBadge status={brand.status} />
+        <StatusBadge status={brand.status} />
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { SliderImageCell } from './slider-image-cell';
-import { SliderStatusBadge } from './slider-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { SliderDeleteDialog } from './slider-delete-dialog';
 import { useChangeSliderStatus, useReorderSliders } from '../hooks/use-sliders';
 import type { Slider } from '../types/slider.types';
@@ -117,7 +117,7 @@ function SortableRow({
         </div>
       </TableCell>
       <TableCell>
-        <SliderStatusBadge status={slider.status} />
+        <StatusBadge status={slider.status} />
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
@@ -359,7 +359,7 @@ function SliderCard({ slider, index, onMoveUp, onEdit, onToggleStatus, onDelete,
           >
             {slider.status ? <Power className="h-4 w-4 text-green-600" /> : <PowerOff className="h-4 w-4 text-muted-foreground" />}
           </Button>
-          <SliderStatusBadge status={slider.status} />
+          <StatusBadge status={slider.status} />
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { CouponImageCell } from './coupon-image-cell';
-import { CouponStatusBadge } from './coupon-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { CouponDeleteDialog } from './coupon-delete-dialog';
 import type { Coupon } from '../types/coupon.types';
 
@@ -151,7 +151,7 @@ export function CouponsTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <CouponStatusBadge status={coupon.status} />
+                    <StatusBadge status={coupon.status} />
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -242,7 +242,7 @@ function CouponCard({ coupon, onEdit, onDelete }: { coupon: Coupon; onEdit: (cou
           <span className="font-medium">{Number(coupon.discount).toFixed(1)}</span>
           <span className="text-xs text-muted-foreground ms-1">{coupon.discount_type}</span>
         </div>
-        <CouponStatusBadge status={coupon.status} />
+        <StatusBadge status={coupon.status} />
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatDate(coupon.start_date)} &rarr; {formatDate(coupon.end_date)}</span>

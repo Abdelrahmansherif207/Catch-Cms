@@ -19,7 +19,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { BannerImageCell } from './banner-image-cell';
-import { BannerStatusBadge } from './banner-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { BannerDeleteDialog } from './banner-delete-dialog';
 import type { Banner } from '../types/banner.types';
 
@@ -120,7 +120,7 @@ export function BannersTable({
                     <p className="text-sm text-muted-foreground truncate max-w-[300px]">{displayDesc}</p>
                   </TableCell>
                   <TableCell>
-                    <BannerStatusBadge status={banner.status} />
+                    <StatusBadge status={banner.status} />
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -205,7 +205,7 @@ function BannerCard({ banner, onEdit, onDelete }: { banner: Banner; onEdit: (ban
         </div>
       </div>
       <div className="flex items-center justify-end">
-        <BannerStatusBadge status={banner.status} />
+        <StatusBadge status={banner.status} />
       </div>
     </div>
   );

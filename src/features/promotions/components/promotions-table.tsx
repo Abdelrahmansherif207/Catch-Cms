@@ -20,7 +20,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { PromotionImageCell } from './promotion-image-cell';
-import { PromotionStatusBadge } from './promotion-status-badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { PromotionDeleteDialog } from './promotion-delete-dialog';
 import type { Promotion } from '../types/promotion.types';
 
@@ -133,7 +133,7 @@ export function PromotionsTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <PromotionStatusBadge status={promotion.status} />
+                  <StatusBadge status={promotion.status} />
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -221,7 +221,7 @@ function PromotionCard({ promotion, onEdit, onDelete }: { promotion: Promotion; 
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{new Date(promotion.start_at).toLocaleDateString()} &rarr; {new Date(promotion.end_at).toLocaleDateString()}</span>
-        <PromotionStatusBadge status={promotion.status} />
+        <StatusBadge status={promotion.status} />
       </div>
     </div>
   );

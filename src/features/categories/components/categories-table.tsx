@@ -18,7 +18,6 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { cn } from '@/shared/lib/utils';
 import { CategoryImageCell } from './category-image-cell';
 import { CategoryLevelBadge } from './category-level-badge';
@@ -171,17 +171,7 @@ export function CategoriesTable({
                     {category.products_count}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-xs font-normal',
-                        category.status
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                      )}
-                    >
-                      {category.status ? t('categories.active') : t('categories.inactive')}
-                    </Badge>
+                    <StatusBadge status={category.status} />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

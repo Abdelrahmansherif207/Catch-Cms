@@ -13,6 +13,7 @@ import {
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { StatusBadge } from '@/shared/components/status-badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,13 +92,7 @@ export function CurrenciesTable({
                 <TableCell>{getLocalizedName(currency.country_name, lang) || '—'}</TableCell>
                 <TableCell>{currency.decimal_places}</TableCell>
                 <TableCell>
-                  {currency.is_active ? (
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      {t('currency.active')}
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary">{t('currency.inactive')}</Badge>
-                  )}
+                  <StatusBadge status={currency.is_active} />
                 </TableCell>
                 {/* Badges: base + catalog */}
                 <TableCell>

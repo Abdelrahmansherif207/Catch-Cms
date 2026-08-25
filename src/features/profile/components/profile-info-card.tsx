@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { BadgeCheck, Mail, UserRound } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Badge } from '@/shared/ui/badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import type { ProfileData } from '../types/profile.types';
 
 interface ProfileInfoCardProps {
@@ -34,9 +35,7 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
             {profile.email}
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={profile.is_active ? 'default' : 'secondary'}>
-              {profile.is_active ? t('profile.active') : t('profile.inactive')}
-            </Badge>
+            <StatusBadge status={profile.is_active} />
             {profile.email_verified_at ? (
               <Badge variant="outline" className="gap-1">
                 <BadgeCheck className="size-3" />
