@@ -16,6 +16,8 @@ export const queryKeys = {
     detail: (id: number | string) => ['categories', 'detail', id] as const,
     featured: (page: number, perPage: number) => ['categories', 'featured', { page, perPage }] as const,
     filter: (q: string) => ['categories', 'filter', q] as const,
+    importStatus: (id: number | string) => ['categories', 'import-status', id] as const,
+    exportStatus: (id: number | string) => ['categories', 'export-status', id] as const,
   },
   brands: {
     all: ['brands'] as const,

@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Download, Plus, Search, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
 import { Pagination } from '@/shared/components/pagination';
@@ -12,20 +12,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useCategories, useToggleFeatured } from '../hooks/use-categories';
 import { CategoriesTable } from '../components/categories-table';
 import { CategoryFormDialog } from '../components/category-form-dialog';
 import { CategoryProductsDialog } from '../components/category-products-dialog';
+import { CategoryImportDialog } from '../components/category-import-dialog';
+import { CategoryExportDialog } from '../components/category-export-dialog';
+import { CATEGORY_PERMISSIONS } from '../permissions/category.permissions';
 import { FeaturedCategoriesPage } from './featured-categories-page';
 import type { CategoryListItem } from '../types/category.types';
 
 export function CategoriesPage() {
   const { t } = useTranslation();
+  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const canImport = hasPermission(CATEGORY_PERMISSIONS.import);
+  const canExport = hasPermission(CATEGORY_PERMISSIONS.export);
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [level, setLevel] = useState<string>('all');
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryListItem | null>(null);
   const [viewTarget, setViewTarget] = useState<CategoryListItem | null>(null);
 
@@ -83,6 +92,18 @@ export function CategoriesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {canImport && (
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              {t('categories.importBtn')}
+            </Button>
+          )}
+          {canExport && (
+            <Button variant="outline" onClick={() => setExportOpen(true)}>
+              <Download className="mr-2 h-4 w-4" />
+              {t('categories.exportBtn')}
+            </Button>
+          )}
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
             {t('categories.addCategory')}
@@ -172,6 +193,9 @@ export function CategoriesPage() {
         onOpenChange={setFormOpen}
         onSuccess={handleFormSuccess}
       />
+
+      <CategoryImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <CategoryExportDialog open={exportOpen} onOpenChange={setExportOpen} />
 
       {viewTarget && (
         <CategoryProductsDialog
