@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,14 @@ export function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(data?.data?.logo || null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(data?.data?.favicon || null);
   const [footerLogoPreview, setFooterLogoPreview] = useState<string | null>(data?.data?.footer_logo || null);
+
+  useEffect(() => {
+    if (data?.data) {
+      setLogoPreview(data.data.logo || null);
+      setFaviconPreview(data.data.favicon || null);
+      setFooterLogoPreview(data.data.footer_logo || null);
+    }
+  }, [data?.data]);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
