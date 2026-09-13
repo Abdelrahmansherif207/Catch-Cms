@@ -1,4 +1,4 @@
-import { axiosClient } from '@/shared/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   BannersListResponse,
   BannerDetailResponse,
@@ -37,6 +37,12 @@ export async function fetchBanners({
 
   const { data } = await axiosClient.get<BannersListResponse>('/banners?' + params.toString());
   return data;
+}
+
+export async function fetchAllBanners(): Promise<Banner[]> {
+  return fetchAllPages((page) =>
+    fetchBanners({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 export async function fetchBannerById(id: number): Promise<BannerDetailResponse> {

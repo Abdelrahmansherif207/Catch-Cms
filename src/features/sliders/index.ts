@@ -1,6 +1,7 @@
 export { SlidersPage } from './pages/sliders-page';
 export {
   useSliders,
+  useAllSliders,
   useSlider,
   useCreateSlider,
   useUpdateSlider,

@@ -1,6 +1,7 @@
 ﻿export { BrandsPage } from './pages/brands-page';
 export {
   useBrands,
+  useAllBrands,
   useBrand,
   useCreateBrand,
   useUpdateBrand,
