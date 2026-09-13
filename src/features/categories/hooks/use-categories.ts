@@ -26,9 +26,15 @@ import type {
   CreateCategoryData,
   PaginatedResponse,
   UpdateCategoryData,
-  CategoryImportStatus,
+  CategoryImportStatusData,
+  CategoryExportStatusData,
 } from '../types/category.types';
 import type { ApiErrorResponse } from '@/shared/api';
+import {
+  useFileOperationSubscription,
+  isTerminalFileOperationState,
+  type FileOperationEventPayload,
+} from '@/shared/lib/file-operations';
 
 type CategoryCacheData = ApiResponse<
   Partial<PaginatedResponse<CategoryListItem>> & Pick<CategoryDetail, 'id' | 'is_featured'>
@@ -165,19 +171,12 @@ export function useDeleteCategory() {
 export type CategoryImportPhase =
   | 'idle'
   | 'uploading'
-  | 'polling'
+  | 'processing'
   | 'completed'
   | 'completed_with_errors'
   | 'failed'
   | 'cancelled'
   | 'timeout';
-
-const TERMINAL_IMPORT_STATUSES: CategoryImportStatus[] = [
-  'completed',
-  'completed_with_errors',
-  'failed',
-  'cancelled',
-];
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob);
@@ -195,15 +194,49 @@ export function useCategoriesImport() {
   const [importId, setImportId] = useState<number | null>(null);
   const [importPhase, setImportPhase] = useState<CategoryImportPhase>('idle');
 
+  // Synchronous same-tick double-fire guard (React state updates async).
+  // NOTE: category endpoints have no backend idempotency — this guard plus
+  // disabled buttons is the duplicate protection.
+  const inFlightRef = useRef(false);
+  const cancelInFlightRef = useRef(false);
+  const toastedTerminalsRef = useRef<Set<number>>(new Set());
+
   const uploadMutation = useMutation({
     mutationFn: (file: File) => importCategories(file),
+    onMutate: () => {
+      setImportPhase('uploading');
+    },
     onSuccess: (response) => {
       if (response.data?.import_id) {
-        setImportId(response.data.import_id);
-        setImportPhase('polling');
+        const id = response.data.import_id;
+        setImportId(id);
+        setImportPhase('processing');
+        // Seed "Queued" instantly — Pusher `queued`/`progress` events take it
+        // from here. No status GET in the happy path.
+        queryClient.setQueryData(queryKeys.categories.importStatus(id), {
+          status: 202,
+          success: true,
+          message: response.message ?? '',
+          data: {
+            id,
+            status: 'pending',
+            total_rows: 0,
+            processed_rows: 0,
+            successful_rows: 0,
+            failed_rows: 0,
+            progress: 0,
+            errors: [],
+            error_count: 0,
+            created_at: new Date().toISOString(),
+            completed_at: null,
+          } satisfies CategoryImportStatusData,
+        });
+      } else {
+        setImportPhase('idle');
       }
     },
     onError: (error: unknown) => {
+      inFlightRef.current = false;
       handleApiError(error, 'Failed to import categories');
       setImportPhase('idle');
     },
@@ -212,26 +245,98 @@ export function useCategoriesImport() {
   const statusQuery = useQuery({
     queryKey: queryKeys.categories.importStatus(importId!),
     queryFn: () => getCategoryImportStatus(importId!),
-    enabled: importPhase === 'polling' && importId !== null,
-    refetchInterval: (query) => {
-      const status = query.state.data?.data?.status;
-      if (status && TERMINAL_IMPORT_STATUSES.includes(status)) return false;
-      return 1000;
-    },
+    // Event-driven only: Pusher writes progress into this cache. The query
+    // never fetches on its own — `refetch()` is called manually for recovery
+    // (reconnect) and after user-initiated cancel.
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   const status = statusQuery.data?.data ?? null;
+
+  const applyPusherEvent = useCallback(
+    (payload: FileOperationEventPayload) => {
+      const key = queryKeys.categories.importStatus(payload.operation_id);
+      queryClient.setQueryData(key, (old: unknown) => {
+        const prev = (old as { data?: Partial<CategoryImportStatusData> } | undefined)?.data;
+        const data: CategoryImportStatusData = {
+          id: payload.operation_id,
+          status: payload.state as CategoryImportStatusData['status'],
+          total_rows: payload.total_rows ?? prev?.total_rows ?? 0,
+          processed_rows: payload.processed_rows ?? 0,
+          successful_rows: payload.success_rows ?? 0,
+          failed_rows: payload.failed_rows ?? 0,
+          progress: payload.progress ?? prev?.progress ?? 0,
+          errors: prev?.errors ?? [],
+          error_count: payload.failed_rows ?? prev?.error_count ?? 0,
+          created_at: prev?.created_at ?? new Date().toISOString(),
+          completed_at: isTerminalFileOperationState(payload.state)
+            ? (prev?.completed_at ?? new Date().toISOString())
+            : null,
+        };
+        const base = (old as Record<string, unknown> | undefined) ?? {};
+        return { status: 200, success: true, message: payload.message ?? '', ...base, data };
+      });
+      if (isTerminalFileOperationState(payload.state)) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+        // Notify even if the dialog was closed mid-job (once per operation).
+        if (!toastedTerminalsRef.current.has(payload.operation_id)) {
+          toastedTerminalsRef.current.add(payload.operation_id);
+          const ok = payload.success_rows ?? 0;
+          const failed = payload.failed_rows ?? 0;
+          const total = payload.total_rows ?? payload.processed_rows ?? ok + failed;
+          if (payload.state === 'completed') {
+            toast.success(`Category import completed: ${ok}/${total} rows`);
+          } else if (payload.state === 'completed_with_errors') {
+            toast.warning(`Category import completed with errors: ${ok} ok, ${failed} failed`);
+          } else if (payload.state === 'failed') {
+            toast.error(payload.message || 'Category import failed');
+          }
+        }
+      }
+    },
+    [queryClient],
+  );
+
+  const { connectionState } = useFileOperationSubscription({
+    kind: 'category-import',
+    operationId: importId,
+    enabled: importId !== null,
+    onEvent: applyPusherEvent,
+    onReconnect: () => {
+      if (importId !== null) statusQuery.refetch();
+    },
+  });
 
   const cancelMutation = useMutation({
     mutationFn: () => cancelCategoryImport(importId!),
     onSuccess: (response) => {
       toast.success(response.message || 'Import cancelled successfully');
+      // One-shot recovery; terminal `cancelled` arrives via Pusher.
       statusQuery.refetch();
     },
     onError: (error: unknown) => {
+      cancelInFlightRef.current = false;
       handleApiError(error, 'Failed to cancel import');
     },
   });
+
+  const upload = useCallback(
+    (file: File) => {
+      if (inFlightRef.current || uploadMutation.isPending) return;
+      inFlightRef.current = true;
+      uploadMutation.mutate(file);
+    },
+    [uploadMutation],
+  );
+  const cancel = useCallback(() => {
+    if (cancelInFlightRef.current || cancelMutation.isPending || importId === null) return;
+    cancelInFlightRef.current = true;
+    cancelMutation.mutate();
+  }, [cancelMutation, importId]);
 
   useEffect(() => {
     if (
@@ -242,16 +347,11 @@ export function useCategoriesImport() {
     }
   }, [status, queryClient]);
 
-  useEffect(() => {
-    if (importPhase !== 'polling') return;
-    const timer = setTimeout(() => {
-      setImportPhase('timeout');
-    }, 180_000);
-    return () => clearTimeout(timer);
-  }, [importPhase]);
+  // Event-driven: Pusher reports progress until the server sends a terminal
+  // state (completed / failed / cancelled). Nothing here fetches on a timer.
 
   const phase: CategoryImportPhase =
-    importPhase === 'polling'
+    importPhase === 'processing'
       ? status?.status === 'completed'
         ? 'completed'
         : status?.status === 'completed_with_errors'
@@ -260,7 +360,7 @@ export function useCategoriesImport() {
             ? 'failed'
             : status?.status === 'cancelled'
               ? 'cancelled'
-              : 'polling'
+              : 'processing'
       : importPhase;
 
   const downloadErrors = useCallback(async () => {
@@ -285,17 +385,21 @@ export function useCategoriesImport() {
   const reset = useCallback(() => {
     setImportId(null);
     setImportPhase('idle');
+    inFlightRef.current = false;
+    cancelInFlightRef.current = false;
+    toastedTerminalsRef.current.clear();
     uploadMutation.reset();
     cancelMutation.reset();
   }, [uploadMutation, cancelMutation]);
 
   return {
-    upload: uploadMutation.mutate,
+    upload,
     isUploading: uploadMutation.isPending,
     phase,
     importId,
     status,
-    cancel: cancelMutation.mutate,
+    connectionState,
+    cancel,
     isCancelling: cancelMutation.isPending,
     downloadErrors,
     downloadSample,
@@ -306,26 +410,54 @@ export function useCategoriesImport() {
 export type CategoryExportPhase =
   | 'idle'
   | 'starting'
-  | 'polling'
+  | 'processing'
   | 'completed'
   | 'failed'
   | 'timeout';
 
 export function useCategoriesExport() {
+  const queryClient = useQueryClient();
   const [exportId, setExportId] = useState<number | null>(null);
   const [exportPhase, setExportPhase] = useState<CategoryExportPhase>('idle');
   const downloadedRef = useRef(false);
+  const inFlightRef = useRef(false);
+  const toastedTerminalsRef = useRef<Set<number>>(new Set());
 
   const startMutation = useMutation({
     mutationFn: () => startCategoryExport(),
+    onMutate: () => {
+      setExportPhase('starting');
+    },
     onSuccess: (response) => {
       if (response.data?.export_id) {
+        const id = response.data.export_id;
         downloadedRef.current = false;
-        setExportId(response.data.export_id);
-        setExportPhase('polling');
+        setExportId(id);
+        setExportPhase('processing');
+        // Seed "Queued" instantly — Pusher `queued`/`progress` events take it
+        // from here. No status GET in the happy path.
+        queryClient.setQueryData(queryKeys.categories.exportStatus(id), {
+          status: 202,
+          success: true,
+          message: response.message ?? '',
+          data: {
+            id,
+            status: 'pending',
+            total_rows: 0,
+            processed_rows: 0,
+            successful_rows: 0,
+            failed_rows: 0,
+            errors: [],
+            created_at: new Date().toISOString(),
+            completed_at: null,
+          } satisfies CategoryExportStatusData,
+        });
+      } else {
+        setExportPhase('idle');
       }
     },
     onError: (error: unknown) => {
+      inFlightRef.current = false;
       handleApiError(error, 'Failed to export categories');
       setExportPhase('idle');
     },
@@ -334,15 +466,62 @@ export function useCategoriesExport() {
   const statusQuery = useQuery({
     queryKey: queryKeys.categories.exportStatus(exportId!),
     queryFn: () => getCategoryExportStatus(exportId!),
-    enabled: exportPhase === 'polling' && exportId !== null,
-    refetchInterval: (query) => {
-      const status = query.state.data?.data?.status;
-      if (status === 'completed' || status === 'failed') return false;
-      return 1000;
-    },
+    // Event-driven only: Pusher writes progress into this cache. The query
+    // never fetches on its own — `refetch()` is manual recovery (reconnect).
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   const status = statusQuery.data?.data ?? null;
+
+  const applyExportEvent = useCallback(
+    (payload: FileOperationEventPayload) => {
+      const key = queryKeys.categories.exportStatus(payload.operation_id);
+      queryClient.setQueryData(key, (old: unknown) => {
+        const prev = (old as { data?: Partial<CategoryExportStatusData> } | undefined)?.data;
+        const data: CategoryExportStatusData = {
+          id: payload.operation_id,
+          status: (payload.state === 'completed_with_errors' ? 'completed' : payload.state) as CategoryExportStatusData['status'],
+          total_rows: payload.total_rows ?? prev?.total_rows ?? 0,
+          processed_rows: payload.processed_rows ?? 0,
+          successful_rows: payload.success_rows ?? 0,
+          failed_rows: payload.failed_rows ?? 0,
+          errors: prev?.errors ?? [],
+          created_at: prev?.created_at ?? new Date().toISOString(),
+          completed_at: isTerminalFileOperationState(payload.state)
+            ? (prev?.completed_at ?? new Date().toISOString())
+            : null,
+        };
+        const base = (old as Record<string, unknown> | undefined) ?? {};
+        return { status: 200, success: true, message: payload.message ?? '', ...base, data };
+      });
+      if (isTerminalFileOperationState(payload.state)) {
+        // Notify even if the dialog was closed mid-job (once per operation).
+        if (!toastedTerminalsRef.current.has(payload.operation_id)) {
+          toastedTerminalsRef.current.add(payload.operation_id);
+          if (payload.state === 'completed' || payload.state === 'completed_with_errors') {
+            toast.success('Category export completed — download starting');
+          } else if (payload.state === 'failed') {
+            toast.error(payload.message || 'Category export failed');
+          }
+        }
+      }
+    },
+    [queryClient],
+  );
+
+  const { connectionState } = useFileOperationSubscription({
+    kind: 'category-export',
+    operationId: exportId,
+    enabled: exportId !== null,
+    onEvent: applyExportEvent,
+    onReconnect: () => {
+      if (exportId !== null) statusQuery.refetch();
+    },
+  });
 
   useEffect(() => {
     if (status?.status === 'completed' && !downloadedRef.current) {
@@ -352,41 +531,59 @@ export function useCategoriesExport() {
           downloadBlob(blob, `categories_export_${new Date().toISOString().split('T')[0]}.xlsx`);
         })
         .catch(() => {
+          downloadedRef.current = false;
           handleApiError(null, 'Failed to download export file');
         });
     }
   }, [status]);
 
-  useEffect(() => {
-    if (exportPhase !== 'polling') return;
-    const timer = setTimeout(() => {
-      setExportPhase('timeout');
-    }, 180_000);
-    return () => clearTimeout(timer);
-  }, [exportPhase]);
+  // Event-driven: Pusher reports progress until the server sends a terminal
+  // state (completed / failed). Nothing here fetches on a timer.
 
   const phase: CategoryExportPhase =
-    exportPhase === 'polling'
+    exportPhase === 'processing'
       ? status?.status === 'completed'
         ? 'completed'
         : status?.status === 'failed'
           ? 'failed'
-          : 'polling'
+          : 'processing'
       : exportPhase;
+
+  // Synchronous same-tick guard: React state flips async, so double clicks
+  // in one tick would otherwise start duplicate exports.
+  const start = useCallback(() => {
+    if (inFlightRef.current || startMutation.isPending) return;
+    inFlightRef.current = true;
+    startMutation.mutate();
+  }, [startMutation]);
+
+  const download = useCallback(async () => {
+    if (!exportId) return;
+    try {
+      const blob = await downloadCategoryExport(exportId);
+      downloadBlob(blob, `categories_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch {
+      toast.error('Failed to download export file');
+    }
+  }, [exportId]);
 
   const reset = useCallback(() => {
     downloadedRef.current = false;
     setExportId(null);
     setExportPhase('idle');
+    inFlightRef.current = false;
+    toastedTerminalsRef.current.clear();
     startMutation.reset();
   }, [startMutation]);
 
   return {
-    start: startMutation.mutate,
+    start,
     isStarting: startMutation.isPending,
     phase,
     exportId,
     status,
+    connectionState,
+    download,
     reset,
   };
 }

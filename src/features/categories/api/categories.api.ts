@@ -1,4 +1,5 @@
 ﻿import { axiosClient } from '@/shared/api';
+import { NO_TIMEOUT } from '@/shared/constants/api';
 import type {
   CategoriesListResponse,
   CategoryDetailResponse,
@@ -109,18 +110,24 @@ export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
 export async function importCategories(file: File): Promise<ImportCategoriesResponse> {
   const formData = new FormData();
   formData.append('file', file);
-  const { data } = await axiosClient.post<ImportCategoriesResponse>('/categories/import', formData);
+  const { data } = await axiosClient.post<ImportCategoriesResponse>('/categories/import', formData, {
+    timeout: NO_TIMEOUT,
+  });
   return data;
 }
 
 export async function getCategoryImportStatus(importId: number): Promise<CategoryImportStatusResponse> {
-  const { data } = await axiosClient.get<CategoryImportStatusResponse>('/categories/import/' + importId);
+  const { data } = await axiosClient.get<CategoryImportStatusResponse>('/categories/import/' + importId, {
+    timeout: NO_TIMEOUT,
+  });
   return data;
 }
 
 export async function cancelCategoryImport(importId: number): Promise<CancelCategoryImportResponse> {
   const { data } = await axiosClient.post<CancelCategoryImportResponse>(
-    '/categories/import/' + importId + '/cancel'
+    '/categories/import/' + importId + '/cancel',
+    undefined,
+    { timeout: NO_TIMEOUT }
   );
   return data;
 }
@@ -128,7 +135,7 @@ export async function cancelCategoryImport(importId: number): Promise<CancelCate
 export async function downloadCategoryImportErrors(importId: number): Promise<Blob> {
   const { data } = await axiosClient.get<Blob>(
     '/categories/import/' + importId + '/download-errors',
-    { responseType: 'blob' }
+    { responseType: 'blob', timeout: NO_TIMEOUT }
   );
   return data;
 }
@@ -136,23 +143,29 @@ export async function downloadCategoryImportErrors(importId: number): Promise<Bl
 export async function downloadCategoryImportSample(): Promise<Blob> {
   const { data } = await axiosClient.get<Blob>('/categories/import/sample', {
     responseType: 'blob',
+    timeout: NO_TIMEOUT,
   });
   return data;
 }
 
 export async function startCategoryExport(): Promise<StartCategoryExportResponse> {
-  const { data } = await axiosClient.get<StartCategoryExportResponse>('/categories/export');
+  const { data } = await axiosClient.get<StartCategoryExportResponse>('/categories/export', {
+    timeout: NO_TIMEOUT,
+  });
   return data;
 }
 
 export async function getCategoryExportStatus(exportId: number): Promise<CategoryExportStatusResponse> {
-  const { data } = await axiosClient.get<CategoryExportStatusResponse>('/categories/export/' + exportId);
+  const { data } = await axiosClient.get<CategoryExportStatusResponse>('/categories/export/' + exportId, {
+    timeout: NO_TIMEOUT,
+  });
   return data;
 }
 
 export async function downloadCategoryExport(exportId: number): Promise<ExportResponse> {
   const { data } = await axiosClient.get<ExportResponse>('/categories/export/' + exportId + '/download', {
     responseType: 'blob',
+    timeout: NO_TIMEOUT,
   });
   return data;
 }
