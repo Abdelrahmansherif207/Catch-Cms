@@ -35,6 +35,7 @@ export interface CategoryListItem {
   name: string;
   slug: string;
   parent_id: number | null;
+  parent?: Pick<Category, 'id' | 'name' | 'slug'> | null;
   level: number;
   image: CategoryImage;
   products_count: number;
