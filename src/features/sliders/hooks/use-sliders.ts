@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchSliders,
+  fetchAllSliders,
   fetchSliderById,
   createSlider,
   updateSlider,
@@ -30,6 +31,15 @@ export function useSliders(params: FetchSlidersParams = {}, enabled?: boolean) {
   return useQuery({
     queryKey: queryKeys.sliders.list(params),
     queryFn: () => fetchSliders(params),
+    staleTime: 3 * 60 * 1000,
+    enabled,
+  });
+}
+
+export function useAllSliders(enabled?: boolean) {
+  return useQuery({
+    queryKey: queryKeys.sliders.allList(),
+    queryFn: () => fetchAllSliders(),
     staleTime: 3 * 60 * 1000,
     enabled,
   });

@@ -1,4 +1,4 @@
-import { axiosClient } from '@/shared/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   FlashSaleListResponse,
   FlashSaleDetailResponse,
@@ -40,6 +40,12 @@ export async function fetchFlashSales({
 
   const { data } = await axiosClient.get<FlashSaleListResponse>('/flash-sale?' + params.toString());
   return data;
+}
+
+export async function fetchAllFlashSales(): Promise<FlashSale[]> {
+  return fetchAllPages((page) =>
+    fetchFlashSales({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 export async function fetchFlashSaleById(id: number): Promise<FlashSaleDetailResponse> {

@@ -1,3 +1,5 @@
+import type { PaginatedData } from './user.types';
+
 export interface Role {
   id: number;
   name?: string;
@@ -27,7 +29,8 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export type RolesListResponse = ApiResponse<Role[]>;
+// GET /roles returns a Laravel paginator envelope: { data: { data: Role[], ... } }
+export type RolesListResponse = ApiResponse<PaginatedData<Role>>;
 export type RoleDetailResponse = ApiResponse<RoleDetail>;
 export type PermissionsListResponse = ApiResponse<Permission[]>;
 

@@ -3,6 +3,7 @@ export { BrandImportDialog } from './components/brand-import-dialog';
 export { BrandExportDialog } from './components/brand-export-dialog';
 export {
   useBrands,
+  useAllBrands,
   useBrand,
   useCreateBrand,
   useUpdateBrand,

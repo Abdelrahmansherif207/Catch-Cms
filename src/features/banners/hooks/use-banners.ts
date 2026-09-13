@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchBanners,
+  fetchAllBanners,
   fetchBannerById,
   createBanner,
   updateBanner,
@@ -24,6 +25,14 @@ export function useBanners(params: FetchBannersParams = {}) {
   return useQuery({
     queryKey: queryKeys.banners.list(params),
     queryFn: () => fetchBanners(params),
+    staleTime: 3 * 60 * 1000,
+  });
+}
+
+export function useAllBanners() {
+  return useQuery({
+    queryKey: queryKeys.banners.allList(),
+    queryFn: () => fetchAllBanners(),
     staleTime: 3 * 60 * 1000,
   });
 }

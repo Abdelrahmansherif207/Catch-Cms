@@ -1,4 +1,4 @@
-﻿import { axiosClient } from '@/shared/api';
+﻿import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   SlidersListResponse,
   SliderDetailResponse,
@@ -37,6 +37,12 @@ export async function fetchSliders({
 
   const { data } = await axiosClient.get<SlidersListResponse>('/sliders?' + params.toString());
   return data;
+}
+
+export async function fetchAllSliders(): Promise<Slider[]> {
+  return fetchAllPages((page) =>
+    fetchSliders({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 
