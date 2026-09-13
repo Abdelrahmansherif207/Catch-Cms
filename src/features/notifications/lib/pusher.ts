@@ -7,6 +7,7 @@ const PUSHER_CLUSTER = import.meta.env.VITE_PUSHER_CLUSTER;
 const IS_DEV = import.meta.env.DEV;
 
 let pusher: Pusher | null = null;
+let pusherToken: string | null = null;
 
 function log(event: string, data?: unknown) {
   if (!IS_DEV) return;
@@ -37,6 +38,7 @@ export function initPusher(): Pusher {
       transport: 'ajax',
     },
   });
+  pusherToken = token;
 
   pusher.connection.bind('connecting', () => log('Connecting...'));
   pusher.connection.bind('connected', () => {
@@ -58,10 +60,48 @@ export function destroyPusher(): void {
     log('Destroying connection...');
     pusher.disconnect();
     pusher = null;
+    pusherToken = null;
     log('Destroyed');
   }
 }
 
 export function getPusher(): Pusher | null {
   return pusher;
+}
+
+/**
+ * Reuse the shared Pusher connection across features (notifications +
+ * file-operations). Unlike `initPusher`, this never disconnects an existing
+ * connection — `pusher.subscribe()` is idempotent so sharing one instance is
+ * safe. Re-initializes only when the auth token changed (re-login).
+ */
+export function ensurePusher(): Pusher | null {
+  if (!PUSHER_APP_KEY) {
+    log('Missing VITE_PUSHER_APP_KEY — Pusher disabled');
+    return null;
+  }
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  if (pusher && pusherToken === token) {
+    return pusher;
+  }
+  if (pusher) {
+    log('Token changed — re-initializing...');
+    pusher.disconnect();
+    pusher = null;
+    pusherToken = null;
+  }
+  return initPusher();
+}
+
+/** Subscribe (idempotent) to the current user's private channel. */
+export function subscribeUserChannel(userId: number | string) {
+  const instance = ensurePusher();
+  if (!instance) return null;
+  return instance.subscribe(`private-users.${userId}`);
+}
+
+/** Get an already-subscribed user channel without (re)subscribing. */
+export function getUserChannel(userId: number | string) {
+  if (!pusher) return null;
+  return pusher.channel(`private-users.${userId}`) ?? null;
 }
