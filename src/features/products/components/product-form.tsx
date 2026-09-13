@@ -22,12 +22,12 @@ import {
   type ProductFormValues,
 } from '../schemas/product.schema';
 import { useCreateProduct, useUpdateProduct } from '../hooks/use-products';
-import { useCategories } from '@/features/categories/hooks/use-categories';
-import { useBrands } from '@/features/brands/hooks/use-brands';
-import { useSliders } from '@/features/sliders/hooks/use-sliders';
-import { useBanners } from '@/features/banners/hooks/use-banners';
-import { useFlashSales } from '@/features/flash-sale/hooks/use-flash-sale';
-import { useAttributes } from '@/features/attributes/hooks/use-attributes';
+import { useAllCategories } from '@/features/categories/hooks/use-categories';
+import { useAllBrands } from '@/features/brands/hooks/use-brands';
+import { useAllSliders } from '@/features/sliders/hooks/use-sliders';
+import { useAllBanners } from '@/features/banners/hooks/use-banners';
+import { useAllFlashSales } from '@/features/flash-sale/hooks/use-flash-sale';
+import { useAllAttributes } from '@/features/attributes/hooks/use-attributes';
 import type { ApiErrorResponse } from '@/shared/api';
 
 interface ProductFormProps {
@@ -43,9 +43,11 @@ interface CheckboxListProps {
   onChange: (ids: number[]) => void;
   searchPlaceholder: string;
   emptyMessage: string;
+  isLoading?: boolean;
 }
 
-function CheckboxList({ items, selectedIds, onChange, searchPlaceholder, emptyMessage }: CheckboxListProps) {
+function CheckboxList({ items, selectedIds, onChange, searchPlaceholder, emptyMessage, isLoading }: CheckboxListProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const filtered = items.filter((item) =>
     item.label.toLowerCase().includes(search.toLowerCase())
@@ -59,7 +61,12 @@ function CheckboxList({ items, selectedIds, onChange, searchPlaceholder, emptyMe
         onChange={(e) => setSearch(e.target.value)}
       />
       <ScrollArea className="h-40 rounded-md border">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <p className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {t('common.loading')}
+          </p>
+        ) : filtered.length === 0 ? (
           <p className="p-2 text-sm text-muted-foreground">{emptyMessage}</p>
         ) : (
           filtered.map((item) => (
@@ -111,12 +118,12 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const isEditMode = !!productId;
 
-  const { data: categoriesData } = useCategories({ perPage: 200 });
-  const { data: brandsData } = useBrands({ perPage: 200 });
-  const { data: slidersData } = useSliders({ perPage: 200 });
-  const { data: bannersData } = useBanners({ perPage: 200 });
-  const { data: flashSalesData } = useFlashSales({ perPage: 200 });
-  const { data: attributesData } = useAttributes({ perPage: 200 });
+  const { data: categoriesData, isLoading: categoriesLoading } = useAllCategories();
+  const { data: brandsData, isLoading: brandsLoading } = useAllBrands();
+  const { data: slidersData, isLoading: slidersLoading } = useAllSliders();
+  const { data: bannersData, isLoading: bannersLoading } = useAllBanners();
+  const { data: flashSalesData, isLoading: flashSalesLoading } = useAllFlashSales();
+  const { data: attributesData, isLoading: attributesLoading } = useAllAttributes();
 
   const form = useForm<ProductFormInput, unknown, ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -137,7 +144,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   const productType = form.watch('productType');
 
   const attributeValueItems = useMemo(() => {
-    const attributes = attributesData?.data?.data || [];
+    const attributes = attributesData ?? [];
     const items: { id: number; label: string }[] = [];
     for (const attr of attributes) {
       if (attr.values) {
@@ -177,23 +184,23 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const categories = (categoriesData?.data?.data || []).map((c) => ({
+  const categories = (categoriesData ?? []).map((c) => ({
     id: c.id,
     label: c.name,
   }));
-  const brands = (brandsData?.data?.data || []).map((b) => ({
+  const brands = (brandsData ?? []).map((b) => ({
     id: b.id,
     label: b.name,
   }));
-  const sliders = (slidersData?.data?.data || []).map((s) => ({
+  const sliders = (slidersData ?? []).map((s) => ({
     id: s.id,
     label: s.title,
   }));
-  const banners = (bannersData?.data?.data || []).map((b) => ({
+  const banners = (bannersData ?? []).map((b) => ({
     id: b.id,
     label: b.title,
   }));
-  const flashSales = flashSalesData?.data?.data || [];
+  const flashSales = flashSalesData ?? [];
 
   const onSubmit = (values: ProductFormValues) => {
     setServerErrors({});
@@ -424,6 +431,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                       onChange={(ids) => form.setValue(`variants.${index}.attributeValueIds`, ids)}
                       searchPlaceholder={t('productsForm.searchAttributes')}
                       emptyMessage={t('productsForm.noAttributes')}
+                      isLoading={attributesLoading}
                     />
                     {errors.variants?.[index]?.attributeValueIds?.message && (
                       <p className="text-xs text-destructive">{t(errors.variants[index].attributeValueIds.message as string)}</p>
@@ -536,6 +544,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               onChange={(ids) => form.setValue('categoryIds', ids)}
               searchPlaceholder={t('productsForm.searchCategories')}
               emptyMessage={t('productsForm.noCategories')}
+              isLoading={categoriesLoading}
             />
             {getError('categoryIds') && <p className="text-xs text-destructive">{getError('categoryIds')}</p>}
           </div>
@@ -547,6 +556,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               onChange={(ids) => form.setValue('brandIds', ids)}
               searchPlaceholder={t('productsForm.searchBrands')}
               emptyMessage={t('productsForm.noBrands')}
+              isLoading={brandsLoading}
             />
             {getError('brandIds') && <p className="text-xs text-destructive">{getError('brandIds')}</p>}
           </div>
@@ -560,6 +570,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               onChange={(ids) => form.setValue('sliderIds', ids)}
               searchPlaceholder={t('productsForm.searchSliders')}
               emptyMessage={t('productsForm.noSliders')}
+              isLoading={slidersLoading}
             />
             {getError('sliderIds') && <p className="text-xs text-destructive">{getError('sliderIds')}</p>}
           </div>
@@ -571,6 +582,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               onChange={(ids) => form.setValue('bannerIds', ids)}
               searchPlaceholder={t('productsForm.searchBanners')}
               emptyMessage={t('productsForm.noBanners')}
+              isLoading={bannersLoading}
             />
             {getError('bannerIds') && <p className="text-xs text-destructive">{getError('bannerIds')}</p>}
           </div>
@@ -712,9 +724,15 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               <Select
                 value={form.watch('flashSaleId')?.toString() || ''}
                 onValueChange={(value) => form.setValue('flashSaleId', Number(value))}
+                disabled={flashSalesLoading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('productsForm.selectFlashSale')} />
+                  <SelectValue placeholder={t('productsForm.selectFlashSale')}>
+                    {flashSalesLoading
+                      ? t('common.loading')
+                      : (flashSales.find((fs) => fs.id === form.watch('flashSaleId'))?.title ??
+                        undefined)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {flashSales.map((fs) => (

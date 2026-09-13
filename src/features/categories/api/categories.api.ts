@@ -1,4 +1,4 @@
-﻿import { axiosClient } from '@/shared/api';
+﻿import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   CategoriesListResponse,
   CategoryDetailResponse,
@@ -45,6 +45,12 @@ export async function fetchCategories({
 
   const { data } = await axiosClient.get<CategoriesListResponse>(`/categories?${params.toString()}`);
   return data;
+}
+
+export async function fetchAllCategories(): Promise<CategoryListItem[]> {
+  return fetchAllPages((page) =>
+    fetchCategories({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 export async function fetchCategoryById(id: number): Promise<CategoryDetailResponse> {

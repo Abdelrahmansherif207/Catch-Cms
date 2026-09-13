@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchAttributes,
+  fetchAllAttributes,
   fetchAttributeById,
   createAttribute,
   updateAttribute,
@@ -23,6 +24,14 @@ export function useAttributes(params: FetchAttributesParams = {}) {
   return useQuery({
     queryKey: queryKeys.attributes.list(params),
     queryFn: () => fetchAttributes(params),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAllAttributes() {
+  return useQuery({
+    queryKey: queryKeys.attributes.allList(),
+    queryFn: () => fetchAllAttributes(),
     staleTime: 5 * 60 * 1000,
   });
 }

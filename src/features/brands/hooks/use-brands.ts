@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchBrands,
+  fetchAllBrands,
   fetchBrandById,
   createBrand,
   updateBrand,
@@ -25,6 +26,14 @@ export function useBrands(params: FetchBrandsParams = {}) {
   return useQuery({
     queryKey: queryKeys.brands.list(params),
     queryFn: () => fetchBrands(params),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAllBrands() {
+  return useQuery({
+    queryKey: queryKeys.brands.allList(),
+    queryFn: () => fetchAllBrands(),
     staleTime: 5 * 60 * 1000,
   });
 }
