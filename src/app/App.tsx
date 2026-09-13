@@ -126,6 +126,15 @@ export default function App() {
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />
+              </Route>
+              <Route
+                element={
+                  <PermissionRoute
+                    anyOf={[PERMISSIONS.invoices.view, PERMISSIONS.invoices.viewDetail]}
+                  />
+                }
+              >
+                <Route path="/invoices/uuid/:uuid" element={<InvoiceDetailPage />} />
                 <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.promotions.view} />}>

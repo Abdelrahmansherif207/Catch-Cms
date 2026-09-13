@@ -8,11 +8,11 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { Badge } from '@/shared/ui/badge';
 import { useLanguage } from '@/shared/hooks/use-language';
 import { useStaticPagePreview } from '../hooks/use-static-pages';
-import { resolveLocaleContent, sectionTitle } from '../lib/static-page-utils';
+import { sectionTitle } from '../lib/static-page-utils';
 import type { StaticPageSection } from '../types/static-page.types';
 import type { ApiErrorResponse } from '@/shared/api';
 import { SectionErrorBoundary } from '../components/preview/section-error-boundary';
-import { PreviewContent } from '../components/preview/preview-content';
+import { SectionPreview, SectionTypeBadge } from '../components/preview/preview-content';
 
 export function StaticPagePreviewPage() {
   const { t } = useTranslation();
@@ -101,7 +101,6 @@ export function StaticPagePreviewPage() {
 function PreviewSection({ section }: { section: StaticPageSection }) {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const content = resolveLocaleContent(section.content, language);
 
   return (
     <SectionErrorBoundary
@@ -112,12 +111,11 @@ function PreviewSection({ section }: { section: StaticPageSection }) {
       }
     >
       <section className="rounded-lg border bg-card p-5">
-        <h2 className="mb-3 text-lg font-semibold">{sectionTitle(section, language)}</h2>
-        {content ? (
-          <PreviewContent value={content} />
-        ) : (
-          <p className="text-sm text-muted-foreground">{t('staticPages.previewPage.noContent')}</p>
-        )}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold">{sectionTitle(section, language)}</h2>
+          <SectionTypeBadge type={section.type} />
+        </div>
+        <SectionPreview section={section} lang={language} />
       </section>
     </SectionErrorBoundary>
   );

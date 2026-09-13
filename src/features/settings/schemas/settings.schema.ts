@@ -34,11 +34,29 @@ export const settingsSchema = z.object({
   minimumOrderAmount: z.string(),
   fastShippingPagePublish: z.boolean(),
   currencySelectionEnabled: z.boolean(),
+  // Preserved backend fast-shipping config. The toggle controls the `enabled`
+  // flag, but fee/duration/hours must be sent back on every save — the API
+  // replaces the whole `options.fast_shipping` object on partial updates.
+  fastShippingFee: z.string().optional(),
+  fastShippingDurationMinutes: z.string().optional(),
+  fastShippingStartHour: z.string().optional(),
+  fastShippingEndHour: z.string().optional(),
 });
 
 export type SettingsFormValues = z.infer<typeof settingsSchema>;
 
+/**
+ * Backend flag normalization. The API returns mixed shapes:
+ * boolean true/false, int 1/0, or string "1"/"0" (nested options are stored
+ * as strings after a FormData save). Plain Boolean("0") === true, so every
+ * toggle must go through this helper.
+ */
+export function toBooleanFlag(value: unknown): boolean {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
 export function toApiFormat(values: SettingsFormValues) {
+  const fastShippingEnabled = values.fastShippingPagePublish ? 1 : 0;
   return {
     'site_name[en]': values.siteNameEn,
     'site_name[ar]': values.siteNameAr,
@@ -59,7 +77,18 @@ export function toApiFormat(values: SettingsFormValues) {
     snapchat: values.snapchat || undefined,
     phone: values.phone || '',
     minimum_order_amount: values.minimumOrderAmount,
-    fast_shipping_page_publish: values.fastShippingPagePublish ? 1 : 0,
+    // Keep the page flag and the operational nested flag in sync so the UI
+    // toggle can never show Active while the backend reports disabled.
+    fast_shipping_page_publish: fastShippingEnabled,
     currency_selection_enabled: values.currencySelectionEnabled ? 1 : 0,
+    'options[fast_shipping][enabled]': fastShippingEnabled,
+    ...(values.fastShippingDurationMinutes !== undefined && values.fastShippingDurationMinutes !== ''
+      ? { 'options[fast_shipping][duration_minutes]': values.fastShippingDurationMinutes }
+      : {}),
+    ...(values.fastShippingFee !== undefined && values.fastShippingFee !== ''
+      ? { 'options[fast_shipping][fee]': values.fastShippingFee }
+      : {}),
+    ...(values.fastShippingStartHour ? { 'options[fast_shipping][start_hour]': values.fastShippingStartHour } : {}),
+    ...(values.fastShippingEndHour ? { 'options[fast_shipping][end_hour]': values.fastShippingEndHour } : {}),
   };
 }

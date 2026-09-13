@@ -27,11 +27,13 @@ export { INVOICE_PERMISSIONS } from './permissions/invoice.permissions';
 export {
   useInvoices,
   useInvoice,
+  useInvoiceByUuid,
   useRegenerateInvoice,
   useCorrectInvoice,
   useCancelInvoice,
   useIssueDebitNote,
   useInvoiceDownload,
+  useInvoicePdfPreview,
   useVerifyInvoice,
 } from './hooks/use-invoices';
 
@@ -46,6 +48,8 @@ export {
   isPdfTerminal,
   isCancelable,
   canBeCorrected,
+  canIssueDebitNote,
+  canRegeneratePdf,
   formatMoney,
   formatDate,
   humanizeStatus,
@@ -56,6 +60,8 @@ export {
   getBillingAddress,
   getShippingAddress,
   getPaymentView,
+  getPaginationMeta,
+  getQrValue,
   canDownloadPdf,
 } from './lib/invoice-utils';
 

@@ -6,13 +6,39 @@ import type {
 } from '../types/invoice.types';
 
 export const correctInvoiceFormSchema = z.object({
-  reason: z.string().min(1, 'invoices.validation.reasonRequired'),
-  total: z.string().optional(),
-  amount_paid: z.string().optional(),
-  shipping: z.string().optional(),
-  customer_name: z.string().optional(),
-  customer_email: z.string().email('invoices.validation.emailInvalid').or(z.literal('')).optional(),
-  customer_phone: z.string().optional(),
+  // Contract CorrectInvoiceRequest: reason required|string|max:500;
+  // overrides.total|amount_paid|shipping_price nullable|numeric|min:0;
+  // customer.name max:255, email email|max:255, phone max:50.
+  reason: z
+    .string()
+    .min(1, 'invoices.validation.reasonRequired')
+    .max(500, 'invoices.validation.reasonMax'),
+  total: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.trim() === '' || Number(v) >= 0, {
+      message: 'invoices.validation.amountMin',
+    }),
+  amount_paid: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.trim() === '' || Number(v) >= 0, {
+      message: 'invoices.validation.amountMin',
+    }),
+  shipping: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.trim() === '' || Number(v) >= 0, {
+      message: 'invoices.validation.amountMin',
+    }),
+  customer_name: z.string().max(255, 'invoices.validation.reasonMax').optional(),
+  customer_email: z
+    .string()
+    .max(255, 'invoices.validation.reasonMax')
+    .email('invoices.validation.emailInvalid')
+    .or(z.literal(''))
+    .optional(),
+  customer_phone: z.string().max(50, 'invoices.validation.reasonMax').optional(),
   billing_name: z.string().optional(),
   billing_line1: z.string().optional(),
   billing_line2: z.string().optional(),
@@ -140,6 +166,7 @@ export function toCancelInvoicePayload(values: CancelInvoiceFormValues): CancelI
 }
 
 export const debitNoteFormSchema = z.object({
+  // Contract DebitNoteRequest: amount required|numeric|min:0.01, reason required|string|max:500.
   amount: z.string().min(1, 'invoices.validation.amountRequired').refine(
     (v) => {
       const num = Number(v);
@@ -147,7 +174,10 @@ export const debitNoteFormSchema = z.object({
     },
     { message: 'invoices.validation.amountMin' }
   ),
-  reason: z.string().min(1, 'invoices.validation.reasonRequired'),
+  reason: z
+    .string()
+    .min(1, 'invoices.validation.reasonRequired')
+    .max(500, 'invoices.validation.reasonMax'),
 });
 
 export type DebitNoteFormValues = z.infer<typeof debitNoteFormSchema>;

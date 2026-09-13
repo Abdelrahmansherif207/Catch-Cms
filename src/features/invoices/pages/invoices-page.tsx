@@ -17,10 +17,12 @@ import { InvoicesTable } from '../components/invoices-table';
 import {
   INVOICE_STATUSES,
   canDownloadPdf,
+  getPaginationMeta,
 } from '../lib/invoice-utils';
 import { INVOICE_PERMISSIONS } from '../permissions/invoice.permissions';
 
 const INVOICE_CURRENCIES = ['EGP', 'USD', 'SAR', 'AED', 'EUR'];
+const INVOICE_SERIES = ['INV', 'CN', 'DN'];
 
 export function InvoicesPage() {
   const { t } = useTranslation();
@@ -33,16 +35,25 @@ export function InvoicesPage() {
   const [perPage, setPerPage] = useState(15);
   const [status, setStatus] = useState('all');
   const [currency, setCurrency] = useState('all');
+  const [invoiceSeries, setInvoiceSeries] = useState('all');
+  const [orderId, setOrderId] = useState('');
+  const [userId, setUserId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [orderBy, setOrderBy] = useState<'created_at' | 'total' | 'status' | 'invoice_number'>('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const parsedOrderId = orderId.trim() === '' ? undefined : Number(orderId);
+  const parsedUserId = userId.trim() === '' ? undefined : Number(userId);
 
   const { data, isLoading } = useInvoices({
     page,
     limit: perPage,
     search: search || undefined,
     status: status === 'all' ? undefined : status,
+    order_id: parsedOrderId != null && Number.isFinite(parsedOrderId) ? parsedOrderId : undefined,
+    user_id: parsedUserId != null && Number.isFinite(parsedUserId) ? parsedUserId : undefined,
+    invoice_series: invoiceSeries === 'all' ? undefined : invoiceSeries,
     currency: currency === 'all' ? undefined : currency,
     from: dateFrom || undefined,
     to: dateTo || undefined,
@@ -50,10 +61,15 @@ export function InvoicesPage() {
     sort_direction: sortDir,
   });
 
+  const pagination = getPaginationMeta(data?.data);
+
   const hasActiveFilters =
     search ||
     status !== 'all' ||
     currency !== 'all' ||
+    invoiceSeries !== 'all' ||
+    orderId.trim() !== '' ||
+    userId.trim() !== '' ||
     dateFrom ||
     dateTo;
 
@@ -61,6 +77,9 @@ export function InvoicesPage() {
     setSearch('');
     setStatus('all');
     setCurrency('all');
+    setInvoiceSeries('all');
+    setOrderId('');
+    setUserId('');
     setDateFrom('');
     setDateTo('');
     setPage(1);
@@ -139,6 +158,49 @@ export function InvoicesPage() {
               </SelectContent>
             </Select>
 
+            <Select
+              value={invoiceSeries}
+              onValueChange={(value) => {
+                setInvoiceSeries(value ?? 'all');
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-[130px]">
+                <SelectValue placeholder={t('invoices.allSeries', { defaultValue: 'All series' })} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('invoices.allSeries', { defaultValue: 'All series' })}</SelectItem>
+                {INVOICE_SERIES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Input
+              type="number"
+              min={1}
+              placeholder={t('invoices.orderId', { defaultValue: 'Order ID' })}
+              value={orderId}
+              onChange={(e) => {
+                setOrderId(e.target.value);
+                setPage(1);
+              }}
+              className="h-9 w-full md:w-[130px]"
+            />
+            <Input
+              type="number"
+              min={1}
+              placeholder={t('invoices.userId', { defaultValue: 'User ID' })}
+              value={userId}
+              onChange={(e) => {
+                setUserId(e.target.value);
+                setPage(1);
+              }}
+              className="h-9 w-full md:w-[130px]"
+            />
+
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={handleClearFilters}>
                 {t('common.clear')}
@@ -210,11 +272,11 @@ export function InvoicesPage() {
 
       <Pagination
         page={page}
-        lastPage={data?.data?.links?.last_page ?? 1}
-        total={data?.data?.links?.total ?? 0}
-        from={data?.data?.links?.from ?? 0}
-        to={data?.data?.links?.to ?? 0}
-        perPage={data?.data?.links?.per_page ?? perPage}
+        lastPage={pagination.lastPage}
+        total={pagination.total}
+        from={pagination.from}
+        to={pagination.to}
+        perPage={pagination.perPage}
         onPageChange={setPage}
         className="py-2"
       />

@@ -45,20 +45,34 @@ export const invoiceStatusStyles: Record<InvoiceStatus, string> = {
   archived: 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600',
 };
 
-export function isPdfPending(status: InvoiceStatus): boolean {
+export function isPdfPending(status: InvoiceStatus | string): boolean {
   return status === 'generating' || status === 'generated' || status === 'pdf_generating';
 }
 
-export function isPdfTerminal(status: InvoiceStatus): boolean {
+export function isPdfTerminal(status: InvoiceStatus | string): boolean {
   return status === 'ready' || status === 'failed';
 }
 
-export function isCancelable(status: InvoiceStatus): boolean {
-  return !['cancelled', 'corrected', 'archived', 'verified'].includes(status);
+/** Contract regenerate allowlist: failed | ready | generated */
+export function canRegeneratePdf(status: InvoiceStatus | string): boolean {
+  return status === 'failed' || status === 'ready' || status === 'generated';
 }
 
-export function canBeCorrected(status: InvoiceStatus): boolean {
-  return !['cancelled', 'archived'].includes(status);
+/** Contract correct allowlist: generated | ready | verified | downloaded | printed */
+export function canBeCorrected(status: InvoiceStatus | string): boolean {
+  return ['generated', 'ready', 'verified', 'downloaded', 'printed'].includes(status);
+}
+
+/** Contract cancel allowlist: generated | ready | failed | corrected | verified | downloaded | printed */
+export function isCancelable(status: InvoiceStatus | string): boolean {
+  return ['generated', 'ready', 'failed', 'corrected', 'verified', 'downloaded', 'printed'].includes(
+    status
+  );
+}
+
+/** Contract debit-note allowlist: generated | ready | verified | downloaded | printed */
+export function canIssueDebitNote(status: InvoiceStatus | string): boolean {
+  return ['generated', 'ready', 'verified', 'downloaded', 'printed'].includes(status);
 }
 
 export function formatMoney(value: number | string | null | undefined, currency?: string | null): string {
@@ -198,9 +212,47 @@ export function getPaymentView(invoice: InvoiceLike): InvoicePaymentView {
 }
 
 export function canDownloadPdf(invoice: InvoiceLike): boolean {
+  // Contract requires pdf_path on the backend; frontend proxies:
+  // ready/verified/downloaded/printed imply a generated PDF, plus explicit
+  // download_url / pdf_generated_at signals.
   return (
-    invoice.status === 'ready' ||
+    ['ready', 'verified', 'downloaded', 'printed'].includes(invoice.status) ||
     Boolean(invoice.download_url) ||
     Boolean(invoice.pdf_generated_at)
   );
+}
+
+/**
+ * Read Laravel flat paginator regardless of legacy `{links}` shape.
+ * Contract: data.{current_page,from,to,last_page,per_page,total,...}
+ */
+export function getPaginationMeta(paginator: unknown): {
+  lastPage: number;
+  total: number;
+  from: number;
+  to: number;
+  perPage: number;
+} {
+  const p = (paginator ?? {}) as Record<string, unknown>;
+  const links = (p.links ?? {}) as Record<string, unknown>;
+  const num = (v: unknown, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  return {
+    lastPage: num(p.last_page ?? links.last_page, 1),
+    total: num(p.total ?? links.total, 0),
+    from: num(p.from ?? links.from, 0),
+    to: num(p.to ?? links.to, 0),
+    perPage: num(p.per_page ?? links.per_page, 15),
+  };
+}
+
+export function getQrValue(
+  invoice: Pick<InvoiceLike, 'qr_content' | 'verification_url'> & {
+    verification_hash?: string | null;
+  }
+): string {
+  const qr = invoice.qr_content;
+  if (qr && typeof qr === 'object') return JSON.stringify(qr);
+  if (typeof qr === 'string' && qr) return qr;
+  return invoice.verification_url ?? '';
 }

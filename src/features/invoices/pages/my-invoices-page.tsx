@@ -14,7 +14,7 @@ import {
 } from '@/shared/ui/table';
 import { useInvoices, useInvoiceDownload } from '../hooks/use-invoices';
 import { InvoiceStatusBadge } from '../components/invoice-status-badge';
-import { formatMoney, formatDate, canDownloadPdf } from '../lib/invoice-utils';
+import { formatMoney, formatDate, canDownloadPdf, getPaginationMeta } from '../lib/invoice-utils';
 import { invoiceRoutes } from '../routes/invoice.routes';
 import type { InvoiceListItem } from '../types/invoice.types';
 
@@ -26,7 +26,13 @@ export function MyInvoicesPage() {
 
   const { data, isLoading } = useInvoices({ page, limit: 15 });
   const invoices = data?.data?.data ?? [];
-  const links = data?.data?.links;
+  const pagination = getPaginationMeta(data?.data);
+  const links = {
+    last_page: pagination.lastPage,
+    total: pagination.total,
+    from: pagination.from,
+    to: pagination.to,
+  };
 
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-8">

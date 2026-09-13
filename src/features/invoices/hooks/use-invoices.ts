@@ -7,8 +7,11 @@ import type { ApiErrorResponse } from '@/shared/api';
 import {
   fetchInvoices,
   fetchInvoiceById,
+  fetchInvoiceByUuid,
   fetchInvoiceVerification,
   downloadInvoicePdf,
+  fetchInvoicePdfBlobUrl,
+  revokeBlobUrl,
   regenerateInvoice,
   correctInvoice,
   cancelInvoice,
@@ -36,7 +39,20 @@ export function useInvoice(id: number | undefined, options?: { pollPdf?: boolean
   return useQuery({
     queryKey: queryKeys.invoices.detail(id ?? ''),
     queryFn: () => fetchInvoiceById(id as number),
-    enabled: id !== undefined,
+    enabled: id !== undefined && Number.isFinite(id),
+    refetchInterval: (query) => {
+      if (!options?.pollPdf) return false;
+      const detail = (query.state.data as InvoiceDetailResponse | undefined)?.data;
+      return detail && isPdfPending(detail.status) ? 3000 : false;
+    },
+  });
+}
+
+export function useInvoiceByUuid(uuid: string | undefined, options?: { pollPdf?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.invoices.detailUuid(uuid ?? ''),
+    queryFn: () => fetchInvoiceByUuid(uuid as string),
+    enabled: uuid !== undefined && uuid.trim() !== '',
     refetchInterval: (query) => {
       if (!options?.pollPdf) return false;
       const detail = (query.state.data as InvoiceDetailResponse | undefined)?.data;
@@ -128,12 +144,57 @@ export function useInvoiceDownload() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.details() });
     } catch (error) {
-      handleApiError(error, 'Failed to download invoice');
+      const apiError = error as ApiErrorResponse;
+      // Contract: 404 with "PDF not yet generated" means async job still running.
+      // 404 bare "Not found" can also be the privacy owner-check — don't leak.
+      // 429 = throttle 30/min on download/view.
+      if (apiError?.status === 429) {
+        toast.error('Too many download attempts. Please wait a minute and retry.');
+      } else {
+        handleApiError(error, 'Failed to download invoice');
+      }
     } finally {
       setIsDownloading(false);
     }
   };
   return { download, isDownloading };
+}
+
+export function useInvoicePdfPreview() {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  const openPreview = async (uuid: string) => {
+    setIsLoadingPreview(true);
+    try {
+      // Revoke previous blob URL to avoid leaks when switching invoices.
+      setPreviewUrl((prev) => {
+        if (prev) revokeBlobUrl(prev);
+        return prev;
+      });
+      const url = await fetchInvoicePdfBlobUrl(uuid);
+      setPreviewUrl(url);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      const apiError = error as ApiErrorResponse;
+      if (apiError?.status === 429) {
+        toast.error('Too many preview attempts. Please wait a minute and retry.');
+      } else {
+        handleApiError(error, 'Failed to load invoice preview');
+      }
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewUrl((prev) => {
+      if (prev) revokeBlobUrl(prev);
+      return null;
+    });
+  };
+
+  return { previewUrl, isLoadingPreview, openPreview, closePreview };
 }
 
 export function useVerifyInvoice(uuid: string | undefined) {
