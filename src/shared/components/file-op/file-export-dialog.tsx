@@ -26,7 +26,7 @@ export interface FileExportStatus {
 }
 
 export interface FileExportApi {
-  start: (filters?: unknown) => void;
+  start: () => void;
   isStarting: boolean;
   phase: string;
   exportId: number | null;
