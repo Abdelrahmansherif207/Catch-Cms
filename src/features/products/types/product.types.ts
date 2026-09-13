@@ -146,10 +146,18 @@ export interface ImportStartData {
 
 export interface ImportStatusData {
   id: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  total_rows: number;
+  status:
+    | 'pending'
+    | 'processing'
+    | 'cancelling'
+    | 'completed'
+    | 'completed_with_errors'
+    | 'failed'
+    | 'cancelled';
+  total_rows: number | null;
   processed_rows: number;
   success_rows: number;
+  successful_rows: number;
   failed_rows: number;
   progress: number;
   errors: string[];
@@ -157,11 +165,14 @@ export interface ImportStatusData {
 
 export type ImportProductsResponse = ApiResponse<ImportStartData>;
 export type ImportStatusResponse = ApiResponse<ImportStatusData>;
+export type CancelProductImportResponse = ApiResponse<{
+  import_id: number;
+  status: string;
+}>;
 
 export interface DeleteAllProductsData {
   deleted_count: number;
 }
-
 export type DeleteAllProductsResponse = ApiResponse<DeleteAllProductsData>;
 
 export interface BulkDeleteResponseData {
@@ -169,6 +180,42 @@ export interface BulkDeleteResponseData {
 }
 
 export type BulkDeleteProductsResponse = ApiResponse<BulkDeleteResponseData>;
+
+export interface ProductExportFilters {
+  status?: boolean;
+  product_type?: 'simple' | 'variable';
+  item_type?: 'PHYSICAL' | 'DIGITAL';
+  category_id?: number;
+  brand_id?: number;
+}
+
+export interface ProductExportStartData {
+  export_id: number;
+  status: string;
+}
+
+export type ProductExportStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed';
+
+export interface ProductExportStatusData {
+  id: number;
+  status: ProductExportStatus;
+  total_rows: number | null;
+  processed_rows: number;
+  successful_rows: number;
+  failed_rows: number;
+  progress: number;
+  errors: string[];
+  error_count: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type StartProductExportResponse = ApiResponse<ProductExportStartData>;
+export type ProductExportStatusResponse = ApiResponse<ProductExportStatusData>;
 
 export interface FetchProductsParams {
   page?: number;

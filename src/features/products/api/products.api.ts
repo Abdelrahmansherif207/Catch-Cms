@@ -1,4 +1,5 @@
 import { axiosClient } from '@/shared/api';
+import { NO_TIMEOUT } from '@/shared/constants/api';
 import type {
   ProductsListResponse,
   ProductDetailResponse,
@@ -8,7 +9,11 @@ import type {
   Product,
   ImportProductsResponse,
   ImportStatusResponse,
+  CancelProductImportResponse,
   ExportProductsResponse,
+  ProductExportFilters,
+  StartProductExportResponse,
+  ProductExportStatusResponse,
   DeleteAllProductsResponse,
   BulkDeleteProductsResponse,
 } from '../types/product.types';
@@ -262,21 +267,75 @@ export async function createProduct(payload: CreateProductData): Promise<ApiResp
   return data;
 }
 
-export async function importProducts(file: File): Promise<ImportProductsResponse> {
+export async function importProducts(file: File, idempotencyKey?: string): Promise<ImportProductsResponse> {
   const formData = new FormData();
   formData.append('file', file);
-  const { data } = await axiosClient.post<ImportProductsResponse>('/products/import', formData);
+  const { data } = await axiosClient.post<ImportProductsResponse>('/products/import', formData, {
+    timeout: NO_TIMEOUT,
+    ...(idempotencyKey
+      ? { headers: { 'Idempotency-Key': idempotencyKey, 'X-Idempotency-Key': idempotencyKey } }
+      : {}),
+  });
   return data;
 }
 
 export async function getImportStatus(importId: number): Promise<ImportStatusResponse> {
-  const { data } = await axiosClient.get<ImportStatusResponse>('/products/import/' + importId);
+  const { data } = await axiosClient.get<ImportStatusResponse>('/products/import/' + importId, {
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function cancelProductImport(importId: number): Promise<CancelProductImportResponse> {
+  const { data } = await axiosClient.post<CancelProductImportResponse>(
+    '/products/import/' + importId + '/cancel',
+    undefined,
+    { timeout: NO_TIMEOUT },
+  );
   return data;
 }
 
 export async function downloadImportErrors(importId: number): Promise<Blob> {
   const { data } = await axiosClient.get<Blob>('/products/import/' + importId + '/download-errors', {
     responseType: 'blob',
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function downloadProductImportSample(): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>('/products/import/sample', {
+    responseType: 'blob',
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function startProductExport(
+  filters: ProductExportFilters = {},
+  idempotencyKey?: string,
+): Promise<StartProductExportResponse> {
+  const { data } = await axiosClient.post<StartProductExportResponse>('/products/export', filters, {
+    timeout: NO_TIMEOUT,
+    ...(idempotencyKey
+      ? { headers: { 'Idempotency-Key': idempotencyKey, 'X-Idempotency-Key': idempotencyKey } }
+      : {}),
+  });
+  return data;
+}
+
+export async function getProductExportStatus(exportId: number): Promise<ProductExportStatusResponse> {
+  const { data } = await axiosClient.get<ProductExportStatusResponse>(
+    '/products/export/' + exportId,
+    { timeout: NO_TIMEOUT },
+  );
+  return data;
+}
+
+export async function downloadProductExport(exportId: number): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>('/products/export/' + exportId + '/download', {
+    responseType: 'blob',
+    timeout: NO_TIMEOUT,
   });
   return data;
 }
@@ -284,6 +343,7 @@ export async function downloadImportErrors(importId: number): Promise<Blob> {
 export async function exportProducts(): Promise<ExportProductsResponse> {
   const { data } = await axiosClient.get<ExportProductsResponse>('/products/export', {
     responseType: 'blob',
+    timeout: NO_TIMEOUT,
   });
   return data;
 }
