@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  FileVideo,
+  ImageIcon,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -41,7 +43,9 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { Badge } from '@/shared/ui/badge';
 import { sectionTitle } from '../../lib/static-page-utils';
+import { StaticPageStatusBadge } from '../static-page-status-badge';
 import { useReorderStaticPageSections } from '../../hooks/use-static-pages';
 import { SectionDeleteDialog } from './section-delete-dialog';
 import type { Language } from '@/shared/constants/api';
@@ -80,6 +84,7 @@ export function SectionsTable({
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (!canEdit) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -117,13 +122,16 @@ export function SectionsTable({
   return (
     <>
       <div className="rounded-lg border">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={canEdit ? sensors : undefined} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10" />
                 <TableHead className="w-10">#</TableHead>
                 <TableHead>{t('staticPages.title')}</TableHead>
+                <TableHead>{t('staticPages.sectionType', 'Type')}</TableHead>
+                <TableHead>{t('staticPages.media', 'Media')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
                 <TableHead>{t('staticPages.contentKeys')}</TableHead>
                 <TableHead />
               </TableRow>
@@ -195,7 +203,7 @@ function SortableRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: section.id });
+  } = useSortable({ id: section.id, disabled: !canEdit });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -211,21 +219,38 @@ function SortableRow({
     <TableRow
       ref={setNodeRef}
       style={style}
-      className={isDragging ? 'z-10 bg-muted' : ''}
+      className={`${isDragging ? 'z-10 bg-muted' : ''} ${section.is_active === false ? 'opacity-60' : ''}`}
     >
       <TableCell className="p-1 w-10">
-        <button
-          type="button"
-          className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
+        {canEdit ? (
+          <button
+            type="button"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </button>
+        ) : (
+          <span className="text-muted-foreground/40">
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
+        )}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground w-10">{section.order}</TableCell>
       <TableCell>
         <p className="font-medium truncate">{sectionTitle(section, lang)}</p>
+      </TableCell>
+      <TableCell>
+        <Badge variant="outline" className="font-mono text-[11px]">
+          {section.type ?? 'text'}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <SectionMediaThumb section={section} />
+      </TableCell>
+      <TableCell>
+        <StaticPageStatusBadge isActive={section.is_active !== false} />
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">{contentKeys || '—'}</TableCell>
       <TableCell>
@@ -253,6 +278,36 @@ function SortableRow({
   );
 }
 
+function SectionMediaThumb({ section }: { section: StaticPageSection }) {
+  const media = section.media;
+  if (!media) {
+    if (section.type === 'video') return <FileVideo className="h-5 w-5 text-muted-foreground/50" />;
+    if (section.type === 'image' || section.type === 'screenshot') {
+      return <ImageIcon className="h-5 w-5 text-muted-foreground/50" />;
+    }
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+  if (section.type === 'video') {
+    return (
+      <video
+        src={media.url}
+        className="h-10 w-16 rounded object-cover"
+        muted
+        playsInline
+        preload="metadata"
+      />
+    );
+  }
+  return (
+    <img
+      src={media.thumb_url ?? media.url}
+      alt=""
+      className="h-10 w-16 rounded object-cover"
+      loading="lazy"
+    />
+  );
+}
+
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
@@ -263,6 +318,9 @@ function TableSkeleton() {
             <TableHead className="w-10" />
             <TableHead className="w-10">#</TableHead>
             <TableHead>{t('staticPages.title')}</TableHead>
+            <TableHead>{t('staticPages.sectionType', 'Type')}</TableHead>
+            <TableHead>{t('staticPages.media', 'Media')}</TableHead>
+            <TableHead>{t('common.status')}</TableHead>
             <TableHead>{t('staticPages.content')}</TableHead>
             <TableHead />
           </TableRow>
@@ -278,6 +336,15 @@ function TableSkeleton() {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-40" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-10 w-16 rounded" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16 rounded-full" />
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-24" />

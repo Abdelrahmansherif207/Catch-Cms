@@ -1,6 +1,8 @@
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { JsonObject, JsonValue } from '../../types/static-page.types';
+import { Badge } from '@/shared/ui/badge';
+import type { Language } from '@/shared/constants/api';
+import type { JsonObject, JsonValue, StaticPageSection } from '../../types/static-page.types';
 
 // Generic renderer for the free-form per-locale content object.
 // Renders any JSON shape: primitives, nested objects, and arrays.
@@ -27,6 +29,105 @@ export function PreviewContent({ value }: { value: JsonObject }) {
         </div>
       ))}
     </div>
+  );
+}
+
+// ─── Typed section preview (contract: text|image|video|screenshot) ──
+
+function contentString(content: JsonObject | null, key: string): string | null {
+  if (!content) return null;
+  const value = content[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function configPoster(config: StaticPageSection['config']): string | undefined {
+  if (!config || typeof config !== 'object') return undefined;
+  const poster = (config as Record<string, unknown>).poster;
+  return typeof poster === 'string' && poster.length > 0 ? poster : undefined;
+}
+
+export function SectionPreview({ section, lang }: { section: StaticPageSection; lang: Language }) {
+  const { t } = useTranslation();
+  const content = (section.content?.[lang] ?? section.content?.en ?? null) as JsonObject | null;
+  const type = section.type ?? 'text';
+  const media = section.media;
+
+  if (type === 'image' || type === 'screenshot') {
+    const alt = contentString(content, 'alt') ?? '';
+    const caption = contentString(content, 'caption');
+    return (
+      <div className="space-y-2">
+        {media ? (
+          <figure className="space-y-2">
+            <img
+              src={media.url}
+              alt={alt}
+              className="max-h-96 w-full rounded-md object-contain bg-muted/30"
+              loading="lazy"
+            />
+            {caption && <figcaption className="text-sm text-muted-foreground">{caption}</figcaption>}
+          </figure>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('staticPages.previewPage.noMedia', 'No media uploaded.')}</p>
+        )}
+        {content && Object.keys(content).filter((k) => k !== 'alt' && k !== 'caption').length > 0 && (
+          <PreviewContent
+            value={Object.fromEntries(Object.entries(content).filter(([k]) => k !== 'alt' && k !== 'caption'))}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'video') {
+    const caption = contentString(content, 'caption');
+    return (
+      <div className="space-y-2">
+        {media ? (
+          <figure className="space-y-2">
+            <video
+              src={media.url}
+              poster={configPoster(section.config)}
+              controls
+              playsInline
+              preload="metadata"
+              className="max-h-96 w-full rounded-md bg-black"
+            />
+            {caption && <figcaption className="text-sm text-muted-foreground">{caption}</figcaption>}
+          </figure>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('staticPages.previewPage.noMedia', 'No media uploaded.')}</p>
+        )}
+        {content && Object.keys(content).filter((k) => k !== 'caption').length > 0 && (
+          <PreviewContent
+            value={Object.fromEntries(Object.entries(content).filter(([k]) => k !== 'caption'))}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // type=text — render `body` prominently, then any extra keys generically.
+  if (!content || Object.keys(content).length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">{t('staticPages.previewPage.noContent')}</p>
+    );
+  }
+  const body = contentString(content, 'body');
+  const rest = Object.fromEntries(Object.entries(content).filter(([k]) => k !== 'body'));
+  return (
+    <div className="space-y-3">
+      {body && <p className="whitespace-pre-line text-sm leading-6 text-foreground/90">{body}</p>}
+      {Object.keys(rest).length > 0 && <PreviewContent value={rest} />}
+    </div>
+  );
+}
+
+export function SectionTypeBadge({ type }: { type: StaticPageSection['type'] }) {
+  return (
+    <Badge variant="outline" className="font-mono text-[11px]">
+      {type ?? 'text'}
+    </Badge>
   );
 }
 

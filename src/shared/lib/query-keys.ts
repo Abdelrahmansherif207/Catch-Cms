@@ -7,6 +7,7 @@ export const queryKeys = {
     detail: (id: number | string) => ['products', 'detail', id] as const,
     search: (q: string) => ['products', 'search', q] as const,
     importStatus: (id: number | string) => ['products', 'import-status', id] as const,
+    exportStatus: (id: number | string) => ['products', 'export-status', id] as const,
   },
   categories: {
     all: ['categories'] as const,
@@ -28,6 +29,8 @@ export const queryKeys = {
     details: () => ['brands', 'detail'] as const,
     detail: (id: number | string) => ['brands', 'detail', id] as const,
     productSearch: (q: string) => ['brands', 'product-search', q] as const,
+    importStatus: (id: number | string) => ['brands', 'import-status', id] as const,
+    exportStatus: (id: number | string) => ['brands', 'export-status', id] as const,
   },
   tags: {
     all: ['tags'] as const,
@@ -82,6 +85,7 @@ export const queryKeys = {
     list: <P extends object>(params: P) => ['invoices', 'list', params] as const,
     details: () => ['invoices', 'detail'] as const,
     detail: (id: number | string) => ['invoices', 'detail', id] as const,
+    detailUuid: (uuid: string) => ['invoices', 'detail-uuid', uuid] as const,
     verify: (uuid: string) => ['invoices', 'verify', uuid] as const,
   },
   users: {

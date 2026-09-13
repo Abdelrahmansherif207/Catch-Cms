@@ -98,3 +98,70 @@ export interface ProductsResponse {
     };
   };
 }
+
+export type ExportResponse = Blob;
+
+export interface BrandImportStartData {
+  import_id: number;
+  status: string;
+}
+
+export interface BrandImportError {
+  sheet: string;
+  row: number;
+  name_en: string;
+  name_ar: string;
+  error_message: string;
+}
+
+export type BrandImportStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'completed_with_errors'
+  | 'failed'
+  | 'cancelled'
+  | 'cancelling';
+
+export interface BrandImportStatusData {
+  id: number;
+  status: BrandImportStatus;
+  total_rows: number;
+  processed_rows: number;
+  successful_rows: number;
+  failed_rows: number;
+  progress: number;
+  errors: BrandImportError[];
+  error_count: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type ImportBrandsResponse = ApiResponse<BrandImportStartData>;
+export type BrandImportStatusResponse = ApiResponse<BrandImportStatusData>;
+export type CancelBrandImportResponse = ApiResponse<{
+  import_id: number;
+  status: string;
+}>;
+
+export interface BrandExportStartData {
+  export_id: number;
+  status: string;
+}
+
+export type BrandExportStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface BrandExportStatusData {
+  id: number;
+  status: BrandExportStatus;
+  total_rows: number;
+  processed_rows: number;
+  successful_rows: number;
+  failed_rows: number;
+  errors: BrandImportError[];
+  created_at: string;
+  completed_at: string | null;
+}
+
+export type StartBrandExportResponse = ApiResponse<BrandExportStartData>;
+export type BrandExportStatusResponse = ApiResponse<BrandExportStatusData>;

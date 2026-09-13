@@ -34,7 +34,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { usePermissions } from '@/shared/auth/guards';
-import { useInvoice, useRegenerateInvoice } from '../hooks/use-invoices';
+import { useInvoice, useInvoiceByUuid, useRegenerateInvoice } from '../hooks/use-invoices';
 import { InvoiceStatusBadge } from '../components/invoice-status-badge';
 import { InvoicePdfPanel } from '../components/invoice-pdf-panel';
 import { InvoiceAddressView } from '../components/invoice-address';
@@ -45,6 +45,9 @@ import {
   formatMoney,
   formatDate,
   canBeCorrected,
+  canIssueDebitNote,
+  canRegeneratePdf,
+  getQrValue,
   isCancelable,
   getInvoiceCustomerName,
   getInvoiceOrderNumber,
@@ -99,7 +102,8 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
 }
 
 export function InvoiceDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  // Supports both /invoices/:id (numeric, whereNumber) and /invoices/uuid/:uuid.
+  const { id, uuid } = useParams<{ id: string; uuid: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { can: hasPermission } = usePermissions();
@@ -108,7 +112,13 @@ export function InvoiceDetailPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [debitOpen, setDebitOpen] = useState(false);
 
-  const { data, isLoading } = useInvoice(id ? Number(id) : undefined, { pollPdf: true });
+  const numericId = id != null && id !== '' && uuid == null ? Number(id) : undefined;
+  const byId = useInvoice(
+    numericId != null && Number.isFinite(numericId) ? numericId : undefined,
+    { pollPdf: true }
+  );
+  const byUuid = useInvoiceByUuid(uuid ?? undefined, { pollPdf: uuid != null });
+  const { data, isLoading } = uuid != null ? byUuid : byId;
   const invoice = data?.data;
   const regenerateMutation = useRegenerateInvoice();
 
@@ -133,11 +143,10 @@ export function InvoiceDetailPage() {
     );
   }
 
-  const showRegenerate =
-    canRegenerate && ['failed', 'ready', 'generated'].includes(invoice.status);
+  const showRegenerate = canRegenerate && canRegeneratePdf(invoice.status);
   const showCorrect = canCorrect && canBeCorrected(invoice.status);
   const showCancel = canCancel && isCancelable(invoice.status);
-  const showDebit = canDebit;
+  const showDebit = canDebit && canIssueDebitNote(invoice.status);
 
   const customerName = getInvoiceCustomerName(invoice);
   const customerEmail = invoice.customer_email ?? invoice.customer?.email;
@@ -157,9 +166,7 @@ export function InvoiceDetailPage() {
   const creditNotes = invoice.credit_notes ?? [];
   const corrections = invoice.corrections ?? invoice.correction_chain ?? [];
 
-  const qrPayload = invoice.qr_content
-    ? JSON.stringify(invoice.qr_content)
-    : invoice.verification_url;
+  const qrPayload = getQrValue(invoice);
   const verificationUrl = invoice.verification_url;
 
   const copyHash = (hash?: string | null) => {
@@ -509,16 +516,12 @@ export function InvoiceDetailPage() {
                   {t('invoices.viewOrder')}
                 </Link>
               )}
-              {invoice.view_url && (
-                <a
-                  href={invoice.view_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={buttonVariants({ variant: 'link', size: 'sm', className: 'h-auto p-0' })}
-                >
-                  {t('invoices.openCustomerView')}
-                </a>
-              )}
+              <Link
+                to={invoiceRoutes.detailUuid(invoice.uuid)}
+                className={buttonVariants({ variant: 'link', size: 'sm', className: 'h-auto p-0' })}
+              >
+                {t('invoices.openByUuid', { defaultValue: 'Open by UUID' })}
+              </Link>
               {snapshotOrder && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <Badge variant="outline">{humanizeStatus(snapshotOrder.status)}</Badge>

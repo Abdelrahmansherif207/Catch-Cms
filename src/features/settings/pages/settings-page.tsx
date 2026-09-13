@@ -10,7 +10,7 @@ import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Switch } from '@/shared/ui/switch';
 import { useSettings, useUpdateSettings } from '../hooks/use-settings';
-import { settingsSchema, toApiFormat, type SettingsFormValues } from '../schemas/settings.schema';
+import { settingsSchema, toApiFormat, toBooleanFlag, type SettingsFormValues } from '../schemas/settings.schema';
 import type { UpdateSettingsPayload } from '../types/settings.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -54,14 +54,54 @@ export function SettingsPage() {
       tiktok: data?.data?.tiktok || '',
       snapchat: data?.data?.snapchat || '',
       phone: data?.data?.phone || '',
-      minimumOrderAmount: String(data?.data?.minimumOrderAmount ?? '0'),
-      fastShippingPagePublish: Boolean(data?.data?.fast_shipping_page_publish),
-      currencySelectionEnabled: Boolean(data?.data?.currency_selection_enabled),
+      // GET returns camelCase minimumOrderAmount; accept snake_case too.
+      minimumOrderAmount: String(
+        data?.data?.minimumOrderAmount ?? (data?.data as unknown as Record<string, unknown>)?.minimum_order_amount ?? '0',
+      ),
+      fastShippingPagePublish: toBooleanFlag(data?.data?.fast_shipping_page_publish)
+        && (data?.data?.options?.fast_shipping
+          ? toBooleanFlag(data.data.options.fast_shipping.enabled)
+          : true),
+      currencySelectionEnabled: toBooleanFlag(data?.data?.currency_selection_enabled),
+      fastShippingFee: data?.data?.options?.fast_shipping?.fee !== undefined && data?.data?.options?.fast_shipping?.fee !== null
+        ? String(data.data.options.fast_shipping.fee)
+        : '',
+      fastShippingDurationMinutes: data?.data?.options?.fast_shipping?.duration_minutes !== undefined && data?.data?.options?.fast_shipping?.duration_minutes !== null
+        ? String(data.data.options.fast_shipping.duration_minutes)
+        : '',
+      fastShippingStartHour: data?.data?.options?.fast_shipping?.start_hour || '',
+      fastShippingEndHour: data?.data?.options?.fast_shipping?.end_hour || '',
     },
   });
 
   const fastShippingPagePublish = useWatch({ control: form.control, name: 'fastShippingPagePublish' });
   const currencySelectionEnabled = useWatch({ control: form.control, name: 'currencySelectionEnabled' });
+
+  // The toggle reflects the effective state: ON only when both the page flag
+  // and the backend operational flag (options.fast_shipping.enabled) are on.
+  // It saves immediately without waiting for the form Save button.
+
+  const handleFastShippingToggle = (checked: boolean) => {
+    const next = !!checked;
+    const prev = form.getValues('fastShippingPagePublish');
+    form.setValue('fastShippingPagePublish', next, { shouldDirty: true, shouldValidate: true });
+    setServerErrors({});
+    const current = form.getValues();
+    const apiData = toApiFormat({ ...current, fastShippingPagePublish: next });
+
+    updateMutation.mutate(
+      { ...apiData, logo: current.logo, footer_logo: current.footerLogo, favicon: current.favicon } as UpdateSettingsPayload,
+      {
+        onError: (error: unknown) => {
+          form.setValue('fastShippingPagePublish', prev, { shouldDirty: true });
+          const apiError = error as ApiErrorResponse;
+          if (apiError?.status === 422 && apiError.errors) {
+            setServerErrors(apiError.errors);
+          }
+        },
+      },
+    );
+  };
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -291,8 +331,39 @@ export function SettingsPage() {
             </div>
             <Switch
               checked={fastShippingPagePublish}
-              onCheckedChange={(checked) => form.setValue('fastShippingPagePublish', !!checked)}
+              disabled={isPending}
+              onCheckedChange={handleFastShippingToggle}
             />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('settings.fastShippingFee')}</label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                {...form.register('fastShippingFee')}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('settings.fastShippingDuration')}</label>
+              <Input
+                type="number"
+                min={0}
+                step="1"
+                {...form.register('fastShippingDurationMinutes')}
+                placeholder="50"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('settings.fastShippingStartHour')}</label>
+              <Input type="time" {...form.register('fastShippingStartHour')} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('settings.fastShippingEndHour')}</label>
+              <Input type="time" {...form.register('fastShippingEndHour')} />
+            </div>
           </div>
         </div>
 
@@ -306,7 +377,9 @@ export function SettingsPage() {
             </div>
             <Switch
               checked={currencySelectionEnabled}
-              onCheckedChange={(checked) => form.setValue('currencySelectionEnabled', !!checked)}
+              onCheckedChange={(checked) =>
+                form.setValue('currencySelectionEnabled', !!checked, { shouldDirty: true, shouldValidate: true })
+              }
             />
           </div>
 

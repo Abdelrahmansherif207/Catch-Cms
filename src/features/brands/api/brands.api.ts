@@ -1,4 +1,5 @@
-﻿import { axiosClient, fetchAllPages } from '@/shared/api';
+import { NO_TIMEOUT } from '@/shared/constants/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   BrandsListResponse,
   BrandDetailResponse,
@@ -7,6 +8,12 @@ import type {
   ApiResponse,
   Brand,
   ProductsResponse,
+  ImportBrandsResponse,
+  BrandImportStatusResponse,
+  CancelBrandImportResponse,
+  StartBrandExportResponse,
+  BrandExportStatusResponse,
+  ExportResponse,
 } from '../types/brand.types';
 
 export interface FetchBrandsParams {
@@ -114,5 +121,74 @@ export async function searchProducts(search: string): Promise<ProductsResponse> 
   if (search) params.append('search', search);
   params.append('per_page', '20');
   const { data } = await axiosClient.get<ProductsResponse>('/products?' + params.toString());
+  return data;
+}
+
+export async function importBrands(file: File, idempotencyKey?: string): Promise<ImportBrandsResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await axiosClient.post<ImportBrandsResponse>('/brands/import', formData, {
+    timeout: NO_TIMEOUT,
+    ...(idempotencyKey
+      ? { headers: { 'Idempotency-Key': idempotencyKey, 'X-Idempotency-Key': idempotencyKey } }
+      : {}),
+  });
+  return data;
+}
+
+export async function getBrandImportStatus(importId: number): Promise<BrandImportStatusResponse> {
+  const { data } = await axiosClient.get<BrandImportStatusResponse>('/brands/import/' + importId, {
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function cancelBrandImport(importId: number): Promise<CancelBrandImportResponse> {
+  const { data } = await axiosClient.post<CancelBrandImportResponse>(
+    '/brands/import/' + importId + '/cancel',
+    undefined,
+    { timeout: NO_TIMEOUT }
+  );
+  return data;
+}
+
+export async function downloadBrandImportErrors(importId: number): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>(
+    '/brands/import/' + importId + '/download-errors',
+    { responseType: 'blob', timeout: NO_TIMEOUT }
+  );
+  return data;
+}
+
+export async function downloadBrandImportSample(): Promise<Blob> {
+  const { data } = await axiosClient.get<Blob>('/brands/import/sample', {
+    responseType: 'blob',
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function startBrandExport(idempotencyKey?: string): Promise<StartBrandExportResponse> {
+  const { data } = await axiosClient.get<StartBrandExportResponse>('/brands/export', {
+    timeout: NO_TIMEOUT,
+    ...(idempotencyKey
+      ? { headers: { 'Idempotency-Key': idempotencyKey, 'X-Idempotency-Key': idempotencyKey } }
+      : {}),
+  });
+  return data;
+}
+
+export async function getBrandExportStatus(exportId: number): Promise<BrandExportStatusResponse> {
+  const { data } = await axiosClient.get<BrandExportStatusResponse>('/brands/export/' + exportId, {
+    timeout: NO_TIMEOUT,
+  });
+  return data;
+}
+
+export async function downloadBrandExport(exportId: number): Promise<ExportResponse> {
+  const { data } = await axiosClient.get<ExportResponse>('/brands/export/' + exportId + '/download', {
+    responseType: 'blob',
+    timeout: NO_TIMEOUT,
+  });
   return data;
 }

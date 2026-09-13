@@ -65,10 +65,17 @@ export async function fetchInvoiceById(id: number): Promise<InvoiceDetailRespons
   return data;
 }
 
+export async function fetchInvoiceByUuid(uuid: string): Promise<InvoiceDetailResponse> {
+  const { data } = await axiosClient.get<InvoiceDetailResponse>(`/invoices/uuid/${uuid}`);
+  return data;
+}
+
 export async function fetchInvoiceVerification(uuid: string): Promise<InvoiceVerificationResponse> {
   try {
+    // Dashboard admin verify per contract: GET /api/v1/invoices/verify/{uuid}
+    // (auth:sanctum + throttle:5,1, no permission required).
     const { data } = await axiosClient.get<InvoiceVerificationResponse>(
-      `/general/invoices/verify/${uuid}`
+      `/invoices/verify/${uuid}`
     );
     return data;
   } catch (error) {
@@ -83,11 +90,6 @@ export async function fetchInvoiceVerification(uuid: string): Promise<InvoiceVer
   }
 }
 
-interface DownloadUrlResponse {
-  url: string;
-  invoice_number: string;
-}
-
 function triggerBlobDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -99,24 +101,92 @@ function triggerBlobDownload(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+function filenameFromDisposition(disposition: string | undefined, fallback: string): string {
+  if (disposition) {
+    // RFC 5987 (filename*=UTF-8'') first, then plain filename="..."
+    const star = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+    if (star?.[1]) {
+      try {
+        return decodeURIComponent(star[1].trim().replace(/^"|"$/g, ''));
+      } catch {
+        /* fall through */
+      }
+    }
+    const plain = disposition.match(/filename\s*=\s*"?([^";]+)"?/i);
+    if (plain?.[1]) return plain[1].trim();
+  }
+  return fallback;
+}
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^\w.-]+/g, '_') || 'invoice.pdf';
+}
+
+/**
+ * Contract: GET /invoices/{uuid}/download streams binary PDF bytes
+ * (`Content-Type: application/pdf`, `Content-Disposition: attachment`).
+ * Single request with responseType blob — no intermediate JSON {url} step.
+ * 404 = unknown uuid / privacy owner-check / pdf not generated / file missing.
+ */
+async function throwParsedBlobError(error: unknown): Promise<never> {
+  // When responseType is blob, even JSON error envelopes arrive as Blob.
+  // Parse them so toasts show "PDF not yet generated" / "Not found" / throttles.
+  const { isAxiosError } = await import('axios');
+  if (isAxiosError(error) && error.response?.data instanceof Blob) {
+    try {
+      const text = await (error.response.data as Blob).text();
+      const parsed = JSON.parse(text) as { message?: string; errors?: Record<string, string[]> };
+      const status = error.response.status;
+      throw {
+        status,
+        message: parsed?.message || (status === 404 ? 'PDF not yet generated' : 'Request failed'),
+        success: false,
+        errors: parsed?.errors,
+      };
+    } catch (parseError) {
+      if ((parseError as { status?: number })?.status != null) throw parseError;
+    }
+  }
+  throw error;
+}
+
 export async function downloadInvoicePdf(
   uuid: string,
   fallbackName?: string | null
 ): Promise<void> {
-  const { data } = await axiosClient.get<ApiResponse<DownloadUrlResponse>>(
-    `/invoices/${uuid}/download`
-  );
-  const payload = data?.data;
-  if (!payload?.url) {
-    throw new Error(data?.message || 'PDF not yet generated');
+  try {
+    const response = await axiosClient.get<Blob>(`/invoices/${uuid}/download`, {
+      responseType: 'blob',
+    });
+    const disposition = response.headers?.['content-disposition'] as string | undefined;
+    const fallback = `${fallbackName || `invoice-${uuid}`}.pdf`;
+    triggerBlobDownload(
+      response.data,
+      sanitizeFilename(filenameFromDisposition(disposition, fallback))
+    );
+  } catch (error) {
+    return throwParsedBlobError(error);
   }
+}
 
-  const pdfResponse = await axiosClient.get<Blob>(payload.url, { responseType: 'blob' });
-  const safeName = (payload.invoice_number || fallbackName || `invoice-${uuid}`).replace(
-    /[^\w.-]+/g,
-    '_'
-  );
-  triggerBlobDownload(pdfResponse.data, `${safeName}.pdf`);
+/**
+ * Contract: GET /invoices/{uuid}/view streams binary PDF bytes inline
+ * (`Content-Disposition: inline`). Same auth chain as download, but does
+ * NOT record download bookkeeping. Returns a blob URL for <iframe>/new-tab.
+ */
+export async function fetchInvoicePdfBlobUrl(uuid: string): Promise<string> {
+  try {
+    const response = await axiosClient.get<Blob>(`/invoices/${uuid}/view`, {
+      responseType: 'blob',
+    });
+    return URL.createObjectURL(response.data);
+  } catch (error) {
+    return throwParsedBlobError(error);
+  }
+}
+
+export function revokeBlobUrl(url: string) {
+  URL.revokeObjectURL(url);
 }
 
 export async function regenerateInvoice(id: number): Promise<RegenerateInvoiceResponse> {

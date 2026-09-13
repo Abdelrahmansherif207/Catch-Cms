@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Download, Plus, Search, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -11,13 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import { usePermissions } from '@/shared/auth/guards';
 import { useBrands } from '../hooks/use-brands';
 import { BrandsTable } from '../components/brands-table';
 import { BrandFormDialog } from '../components/brand-form-dialog';
+import { BrandImportDialog } from '../components/brand-import-dialog';
+import { BrandExportDialog } from '../components/brand-export-dialog';
+import { BRAND_PERMISSIONS } from '../permissions/brand.permissions';
 import type { Brand } from '../types/brand.types';
 
 export function BrandsPage() {
   const { t } = useTranslation();
+  const { can: hasPermission } = usePermissions();
+  const canImport = hasPermission(BRAND_PERMISSIONS.import);
+  const canExport = hasPermission(BRAND_PERMISSIONS.export);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
@@ -25,6 +32,8 @@ export function BrandsPage() {
   const [order, setOrder] = useState('id');
   const [sortedBy, setSortedBy] = useState('asc');
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
   const params = {
@@ -73,10 +82,24 @@ export function BrandsPage() {
           <h1 className="text-xl font-semibold">{t('brands.title')}</h1>
           <p className="text-sm text-muted-foreground">{t('brands.subtitle')}</p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('brands.addBrand')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {canImport && (
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              {t('brands.importBtn')}
+            </Button>
+          )}
+          {canExport && (
+            <Button variant="outline" onClick={() => setExportOpen(true)}>
+              <Download className="mr-2 h-4 w-4" />
+              {t('brands.exportBtn')}
+            </Button>
+          )}
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('brands.addBrand')}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -165,6 +188,9 @@ export function BrandsPage() {
         onOpenChange={setFormOpen}
         onSuccess={handleFormSuccess}
       />
+
+      <BrandImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <BrandExportDialog open={exportOpen} onOpenChange={setExportOpen} />
     </div>
   );
 }

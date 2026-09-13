@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Download, Eye, FileText, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
-import { useInvoiceDownload, useRegenerateInvoice } from '../hooks/use-invoices';
-import { isPdfPending, isPdfTerminal, formatDate } from '../lib/invoice-utils';
+import { useInvoiceDownload, useInvoicePdfPreview, useRegenerateInvoice } from '../hooks/use-invoices';
+import { isPdfPending, canDownloadPdf, canRegeneratePdf, formatDate } from '../lib/invoice-utils';
 import type { InvoiceDetail } from '../types/invoice.types';
 
 interface InvoicePdfPanelProps {
@@ -14,8 +14,10 @@ interface InvoicePdfPanelProps {
 export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: InvoicePdfPanelProps) {
   const { t } = useTranslation();
   const { download, isDownloading } = useInvoiceDownload();
+  const { openPreview, isLoadingPreview } = useInvoicePdfPreview();
   const regenerateMutation = useRegenerateInvoice();
   const status = invoice.status;
+  const showRegenerateAction = canRegenerate && canRegeneratePdf(status);
 
   if (isPdfPending(status)) {
     return (
@@ -36,7 +38,7 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
             <AlertTriangle className="h-4 w-4" />
             <span>{t('invoices.pdf.failed')}</span>
           </div>
-          {canRegenerate && (
+          {showRegenerateAction && (
             <Button
               size="sm"
               variant="outline"
@@ -68,7 +70,10 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
     );
   }
 
-  if (status === 'ready' || isPdfTerminal(status)) {
+  // Contract: PDF exists once generated — ready/verified/downloaded/printed
+  // (plus explicit download_url / pdf_generated_at). `failed` is handled above,
+  // pending statuses earlier; everything else with a PDF shows the ready panel.
+  if (canDownloadPdf(invoice)) {
     return (
       <div className="flex flex-col gap-1 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/50">
         <div className="flex items-center justify-between gap-3">
@@ -78,25 +83,41 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
           </div>
           <div className="flex items-center gap-1.5">
             {canDownload && (
-              <Button
-                size="sm"
-                disabled={isDownloading}
-                onClick={() =>
-                  download({
-                    uuid: invoice.uuid,
-                    invoice_number: invoice.invoice_number,
-                  })
-                }
-              >
-                {isDownloading ? (
-                  <Loader2 className="me-1 h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="me-1 h-4 w-4" />
-                )}
-                {t('invoices.pdf.download')}
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isLoadingPreview || isDownloading}
+                  title={t('invoices.pdf.preview', { defaultValue: 'Preview' })}
+                  onClick={() => openPreview(invoice.uuid)}
+                >
+                  {isLoadingPreview ? (
+                    <Loader2 className="me-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Eye className="me-1 h-4 w-4" />
+                  )}
+                  {t('invoices.pdf.preview', { defaultValue: 'Preview' })}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={isDownloading}
+                  onClick={() =>
+                    download({
+                      uuid: invoice.uuid,
+                      invoice_number: invoice.invoice_number,
+                    })
+                  }
+                >
+                  {isDownloading ? (
+                    <Loader2 className="me-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="me-1 h-4 w-4" />
+                  )}
+                  {t('invoices.pdf.download')}
+                </Button>
+              </>
             )}
-            {canRegenerate && (
+            {showRegenerateAction && (
               <Button
                 size="sm"
                 variant="outline"

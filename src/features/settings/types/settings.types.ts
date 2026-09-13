@@ -3,11 +3,20 @@ export interface LocalizedString {
   en: string;
 }
 
+export interface FastShippingOptions {
+  enabled: boolean | number | string;
+  duration_minutes: number | string;
+  fee: number | string;
+  start_hour: string;
+  end_hour: string;
+}
+
 export interface SettingsOptions {
   currency: string;
   base_currency_code: string;
   catalog_currency_code: string;
   currency_selection_enabled: boolean;
+  fast_shipping?: FastShippingOptions | null;
 }
 
 export interface Settings {
@@ -28,9 +37,11 @@ export interface Settings {
   tiktok: string | null;
   snapchat: string | null;
   phone: string;
-  fast_shipping_page_publish: number;
+  // Top-level page visibility flag. Backend returns 1/0 (int) — see
+  // options.fast_shipping.enabled for the operational flag.
+  fast_shipping_page_publish: number | boolean | string;
   minimumOrderAmount: string;
-  currency_selection_enabled: boolean;
+  currency_selection_enabled: boolean | number | string;
   options: SettingsOptions | null;
 }
 
@@ -63,6 +74,13 @@ export interface UpdateSettingsPayload {
   phone: string;
   fast_shipping_page_publish?: number;
   currency_selection_enabled?: number;
+  // Nested operational flag. Must be sent together with the sibling keys —
+  // the backend replaces the whole fast_shipping object on partial updates.
+  'options[fast_shipping][enabled]'?: number;
+  'options[fast_shipping][duration_minutes]'?: string | number;
+  'options[fast_shipping][fee]'?: string | number;
+  'options[fast_shipping][start_hour]'?: string;
+  'options[fast_shipping][end_hour]'?: string;
   logo?: File;
   footer_logo?: File;
   favicon?: File;

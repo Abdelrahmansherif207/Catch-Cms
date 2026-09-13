@@ -1,18 +1,28 @@
-export interface PaginationLinks {
+/**
+ * AdminInvoiceCollection paginator envelope per contract.
+ * Backend returns Laravel paginator flattened inside `data`:
+ * `{ data: [...], current_page, from, to, last_page, path, per_page,
+ *    total, next_page_url, prev_page_url, ... }` — there is NO `links` object.
+ * Keep legacy `links` optional for backwards-compat while migrating readers.
+ */
+export interface PaginationMeta {
   current_page: number;
-  from: number;
-  to: number;
+  from: number | null;
+  to: number | null;
   last_page: number;
   path: string;
   per_page: number;
   total: number;
   next_page_url: string | null;
   prev_page_url: string | null;
+  first_page_url?: string | null;
+  last_page_url?: string | null;
 }
 
-export interface PaginatedResponse<T> {
+export interface PaginatedResponse<T> extends PaginationMeta {
   data: T[];
-  links: PaginationLinks;
+  /** @deprecated — contract has no `links` object; read flat fields instead. */
+  links?: PaginationMeta | null;
 }
 
 export interface ApiResponse<T> {
@@ -192,6 +202,8 @@ export interface InvoiceListItem {
   invoice_number: string;
   order_id?: number | null;
   order_number?: string | null;
+  user_id?: number | null;
+  invoice_series?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   status: InvoiceStatus;
@@ -227,7 +239,7 @@ export interface InvoiceListItem {
   pdf_ready?: boolean;
   verification_url?: string | null;
   view_url?: string | null;
-  qr_content?: InvoiceQrContent | null;
+  qr_content?: InvoiceQrContent | string | null;
   download_url?: string | null;
 }
 
@@ -259,12 +271,14 @@ export interface InvoiceDetail extends InvoiceListItem {
 }
 
 export interface InvoiceVerificationInvoice {
+  id?: number | null;
   uuid: string;
   invoice_number: string;
   status: InvoiceStatus | string;
   total?: number | null;
   currency?: string | null;
   verify_count?: number | null;
+  verification_url?: string | null;
   view_url?: string | null;
 }
 

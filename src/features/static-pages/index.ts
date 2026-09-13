@@ -4,6 +4,8 @@
 export type {
   StaticPage,
   StaticPageSection,
+  StaticSectionMedia,
+  StaticSectionType,
   JsonValue,
   JsonObject,
   LocaleMap,
@@ -29,3 +31,4 @@ export { resolveLocaleContent, sectionTitle } from './lib/static-page-utils';
 export { FieldsEditor } from './components/content-editor/fields-editor';
 export { LocalizedContentEditor } from './components/content-editor/localized-content-editor';
 export { SectionErrorBoundary } from './components/preview/section-error-boundary';
+export { PreviewContent, SectionPreview, SectionTypeBadge } from './components/preview/preview-content';

@@ -25,7 +25,7 @@ export function InvoiceVerifyPage() {
   const [input, setInput] = useState(routeUuid ?? '');
   const [activeUuid, setActiveUuid] = useState(routeUuid ?? '');
 
-  const { data, isLoading, isError, refetch } = useVerifyInvoice(activeUuid || undefined);
+  const { data, isLoading, isError, error, refetch } = useVerifyInvoice(activeUuid || undefined);
 
   const handleVerify = () => {
     const extracted = extractUuid(input);
@@ -34,13 +34,23 @@ export function InvoiceVerifyPage() {
   };
 
   const result = data?.data;
-  const isNotFound = isError;
+  const errorStatus = (error as { status?: number } | null)?.status;
+  // Contract: 404 unknown uuid, 409 tampered (returned as data via api layer),
+  // 429 throttle 5/min, 401 unauthenticated. Don't conflate them as "not found".
+  const isNotFound = isError && errorStatus === 404;
+  const isRateLimited = isError && errorStatus === 429;
+  const isForbidden = isError && (errorStatus === 401 || errorStatus === 403);
+  const isGenericError = isError && !isNotFound && !isRateLimited && !isForbidden;
   const isTampered = !isLoading && !isError && Boolean(result?.tampered);
   const invoice = result?.invoice;
   const order = result?.order;
   const isAuthentic =
     !isLoading && !isError && !isTampered && Boolean(result?.authentic && invoice);
-  const qrValue = result?.qr_content || invoice?.view_url || '';
+  const qrValue =
+    (typeof result?.qr_content === 'string' && result.qr_content) ||
+    invoice?.verification_url ||
+    invoice?.view_url ||
+    '';
 
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-10 print:bg-white print:p-0">
@@ -96,6 +106,41 @@ export function InvoiceVerifyPage() {
               <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-destructive" />
               <h2 className="text-lg font-semibold">{t('invoices.verify.notFound')}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t('invoices.verify.notFoundHint')}</p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
+
+          {isRateLimited && (
+            <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-8 text-center dark:border-yellow-800 dark:bg-yellow-950/50">
+              <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-yellow-600" />
+              <h2 className="text-lg font-semibold">
+                {t('invoices.verify.rateLimited', { defaultValue: 'Too many attempts' })}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t('invoices.verify.rateLimitedHint', {
+                  defaultValue: 'Verify is throttled to 5 requests per minute. Please wait and retry.',
+                })}
+              </p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
+
+          {(isForbidden || isGenericError) && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+              <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-destructive" />
+              <h2 className="text-lg font-semibold">
+                {isForbidden
+                  ? t('invoices.verify.unauthorized', { defaultValue: 'Not authorized' })
+                  : t('invoices.verify.error', { defaultValue: 'Verification failed' })}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {(error as { message?: string } | null)?.message ??
+                  t('invoices.verify.notFoundHint')}
+              </p>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                 {t('common.retry')}
               </Button>

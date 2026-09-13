@@ -17,12 +17,29 @@ export type LocalizedText = string | Record<string, string>;
 
 // ─── Static Page ──────────────────────────────────────────────────
 
+export type StaticSectionType = 'text' | 'image' | 'video' | 'screenshot';
+
+export interface StaticSectionMedia {
+  id: number;
+  url: string;
+  thumb_url: string | null;
+  collection_name: 'static-section-image' | 'static-section-video' | string;
+  name?: string;
+  file_name?: string;
+  mime_type: string;
+  size: number;
+}
+
 export interface StaticPageSection {
   id: number;
   static_page_id: number;
+  type: StaticSectionType;
   title: LocalizedText;
   content: LocaleMap<JsonObject>;
+  config: JsonObject | null;
   order: number;
+  is_active: boolean;
+  media: StaticSectionMedia | null;
 }
 
 export interface StaticPage {
@@ -56,15 +73,27 @@ export type DeleteResponse = {
 
 export interface StaticPageUpdatePayload {
   title?: LocaleMap<string>;
-  is_active?: boolean;
+  is_active?: 0 | 1;
 }
 
 export interface CreateSectionPayload {
+  type: StaticSectionType;
   title: Record<Language, string>;
-  content: LocaleMap<JsonObject>;
+  content?: LocaleMap<JsonObject>;
+  config?: JsonObject | null;
+  is_active?: 0 | 1;
+  /** Raw file — serialized to multipart `media` by the API layer. */
+  media?: File;
 }
 
 export interface UpdateSectionPayload {
+  type?: StaticSectionType;
   title?: LocaleMap<string>;
   content?: LocaleMap<JsonObject>;
+  config?: JsonObject | null;
+  is_active?: 0 | 1;
+  /** Raw file — serialized to multipart `media` by the API layer. */
+  media?: File;
+  /** Truthy clears both media collections. Omission keeps existing media. */
+  remove_media?: boolean;
 }
