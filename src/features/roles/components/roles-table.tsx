@@ -57,7 +57,7 @@ export function RolesTable({
   const lang = i18n.language || 'en';
 
   const sorted = useMemo(() => {
-    const list = [...data];
+    const list = Array.isArray(data) ? [...data] : [];
     list.sort((a, b) => {
       let cmp: number;
       if (sortField === 'id') {

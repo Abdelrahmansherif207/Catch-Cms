@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { PERMISSIONS } from "@/shared/auth/permissions";
 import { PermissionRoute } from "@/shared/auth/guards";
 import { ForbiddenPage } from "@/shared/auth/forbidden-page";
+import { RouteErrorBoundary } from "@/shared/components/route-error-boundary";
 import { Loader2 } from "lucide-react";
 
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/dashboard-page").then(m => ({ default: m.DashboardPage })));
@@ -136,8 +137,8 @@ export default function App() {
                 <Route path="/attributes/:id" element={<AttributeDetailPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.roles.view} />}>
-                <Route path="/roles" element={<RolesPage />} />
-                <Route path="/roles/:id" element={<RoleDetailPage />} />
+                <Route path="/roles" element={<RouteErrorBoundary><RolesPage /></RouteErrorBoundary>} />
+                <Route path="/roles/:id" element={<RouteErrorBoundary><RoleDetailPage /></RouteErrorBoundary>} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.sections.view} />}>
                 <Route path="/cms" element={<SectionsPage />} />
