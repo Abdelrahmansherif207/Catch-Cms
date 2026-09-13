@@ -84,8 +84,11 @@ export function useDeleteRole() {
       const queries = queryClient.getQueriesData<RolesListResponse>({ queryKey: queryKeys.roles.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
       queryClient.setQueriesData<RolesListResponse>({ queryKey: queryKeys.roles.lists() }, (old) => {
-        if (!old?.data || !Array.isArray(old.data)) return old;
-        return { ...old, data: old.data.filter((r) => r.id !== id) };
+        // GET /roles returns a Laravel paginator: { data: { data: Role[], ... } }
+        if (!old?.data || Array.isArray(old.data)) return old;
+        const items = old.data.data;
+        if (!Array.isArray(items)) return old;
+        return { ...old, data: { ...old.data, data: items.filter((r) => r.id !== id) } };
       });
       return { previousData };
     },
