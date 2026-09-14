@@ -1,15 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/shared/ui/badge';
 import { cn } from '@/shared/lib/utils';
+import { isActiveStatus } from '@/shared/lib/status';
 
 interface StatusBadgeProps {
-  status: boolean | number | undefined;
+  status: boolean | number | string | undefined;
   className?: string;
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const { t } = useTranslation();
-  const isActive = Boolean(status);
+  // NB: plain Boolean("0") === true, so normalize explicitly.
+  const isActive = isActiveStatus(status);
 
   return (
     <Badge

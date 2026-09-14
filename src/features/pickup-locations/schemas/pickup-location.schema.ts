@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isActiveStatus, toStatusPayload } from '@/shared/lib/status';
 
 export const WEEKDAYS = [
   { en: 'Saturday', ar: 'السبت' },
@@ -71,7 +72,7 @@ export const pickupLocationFormSchema = z.object({
   email: z.string().email('validation.emailInvalid').optional().or(z.literal('')),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
-  status: z.string().default('1'),
+  status: z.enum(['0', '1']).default('1'),
   displayOrder: z.number().int().min(0).default(0),
   workingHours: z
     .array(workingHourSchema)
@@ -132,7 +133,7 @@ export function toApiFormat(values: PickupLocationFormValues) {
     email: values.email || undefined,
     latitude: values.latitude || undefined,
     longitude: values.longitude || undefined,
-    status: values.status,
+    status: toStatusPayload(isActiveStatus(values.status)),
     display_order: values.displayOrder,
     working_hours: values.workingHours.map((h) => ({
       day: h.day,

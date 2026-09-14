@@ -18,7 +18,7 @@ export interface PickupLocation {
   latitude: string | null;
   longitude: string | null;
   working_hours: WorkingHour[] | null;
-  status: boolean;
+  status: boolean | number | string;
   display_order: number;
   is_default: boolean;
   created_at: string;
@@ -55,7 +55,7 @@ export interface CreatePickupLocationData {
   latitude?: string;
   longitude?: string;
   working_hours?: WorkingHour[];
-  status: string;
+  status: 0 | 1;
   display_order: number;
 }
 
