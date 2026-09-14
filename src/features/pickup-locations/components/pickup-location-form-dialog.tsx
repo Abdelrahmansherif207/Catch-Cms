@@ -32,6 +32,7 @@ import {
   type WorkingHourFormValue,
 } from '../schemas/pickup-location.schema';
 import { PickupLocationMapPicker } from './pickup-location-map-picker';
+import { isActiveStatus } from '@/shared/lib/status';
 import { useCreatePickupLocation, useUpdatePickupLocation } from '../hooks/use-pickup-locations';
 import type { PickupLocation } from '../types/pickup-location.types';
 
@@ -80,7 +81,7 @@ export function PickupLocationFormDialog({
           email: location.email || '',
           latitude: location.latitude || '',
           longitude: location.longitude || '',
-          status: location.status ? '1' : '0',
+          status: isActiveStatus(location.status) ? '1' : '0',
           displayOrder: location.display_order ?? 0,
           workingHours: weekFromApiHours(location.working_hours),
         });
@@ -241,10 +242,16 @@ export function PickupLocationFormDialog({
               <label className="text-sm font-medium">{t('pickupLocations.status')}</label>
               <Select
                 value={form.watch('status')}
-                onValueChange={(v) => v && form.setValue('status', v)}
+                onValueChange={(v) => {
+                  if (v === '1' || v === '0') form.setValue('status', v);
+                }}
               >
                 <SelectTrigger className="h-9 w-[130px]">
-                  <SelectValue />
+                  <SelectValue placeholder={t('pickupLocations.status')}>
+                    {form.watch('status') === '1'
+                      ? t('pickupLocations.active')
+                      : t('pickupLocations.inactive')}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">{t('pickupLocations.active')}</SelectItem>

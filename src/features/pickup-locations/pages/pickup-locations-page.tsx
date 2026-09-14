@@ -102,7 +102,13 @@ export function PickupLocationsPage() {
         </div>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? 'all'); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
+            <SelectValue placeholder={t('common.status')}>
+              {statusFilter === '1'
+                ? t('pickupLocations.active')
+                : statusFilter === '0'
+                  ? t('pickupLocations.inactive')
+                  : t('pickupLocations.allStatuses')}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('pickupLocations.allStatuses')}</SelectItem>
