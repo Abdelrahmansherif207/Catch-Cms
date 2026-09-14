@@ -22,6 +22,17 @@ export const couponFormSchema = z.object({
       message: 'validation.discountMin',
     });
   }
+  if (data.startDate && data.endDate) {
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end < start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endDate'],
+        message: 'validation.endDateAfterStartDate',
+      });
+    }
+  }
 });
 
 export type CouponFormValues = z.infer<typeof couponFormSchema>;

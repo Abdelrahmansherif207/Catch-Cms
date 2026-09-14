@@ -290,6 +290,8 @@
     "titleArRequired": "العنوان بالعربية مطلوب",
     "startDateRequired": "تاريخ البداية مطلوب",
     "endDateRequired": "تاريخ النهاية مطلوب",
+    "endDateAfterStartDate": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية أو مساويًا له",
+    "invalidColor": "صيغة اللون غير صالحة (مثال: #ff0000)",
     "typeRequired": "النوع مطلوب",
     "discountMin": "يجب أن يكون الخصم 0 أو أكثر",
     "faqTitleEnRequired": "العنوان بالإنجليزية مطلوب (3 أحرف على الأقل)",
