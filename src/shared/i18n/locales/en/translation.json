@@ -340,6 +340,8 @@
     "titleArRequired": "ط·آ·ط¢آ§ط·آ¸أ¢â‚¬â€چط·آ·ط¢آ¹ط·آ¸أ¢â‚¬آ ط·آ¸ط«â€ ط·آ·ط¢آ§ط·آ¸أ¢â‚¬آ  ط·آ·ط¢آ¨ط·آ·ط¢آ§ط·آ¸أ¢â‚¬â€چط·آ·ط¢آ¹ط·آ·ط¢آ±ط·آ·ط¢آ¨ط·آ¸ط¸آ¹ط·آ·ط¢آ© ط·آ¸أ¢â‚¬آ¦ط·آ·ط¢آ·ط·آ¸أ¢â‚¬â€چط·آ¸ط«â€ ط·آ·ط¢آ¨",
     "startDateRequired": "Start date is required",
     "endDateRequired": "End date is required",
+    "endDateAfterStartDate": "End date must be after or equal to start date",
+    "invalidColor": "Invalid color format (e.g. #ff0000)",
     "typeRequired": "Type is required",
     "discountMin": "Discount must be 0 or more",
     "faqTitleEnRequired": "English title is required (min 3 characters)",
