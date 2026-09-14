@@ -25,8 +25,8 @@ export function CouponsPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [order, setOrder] = useState('created_at');
-  const [sortedBy, setSortedBy] = useState('desc');
+  const [order, setOrder] = useState('');
+  const [sortedBy, setSortedBy] = useState('');
   const [openForm, setOpenForm] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
@@ -36,8 +36,10 @@ export function CouponsPage() {
     search: search || undefined,
     active: activeFilter === 'active' ? true : undefined,
     inactive: activeFilter === 'inactive' ? true : undefined,
+    // No ordering on initial load — pagination only (?page=1&limit=15).
+    // order/sortedBy are sent only after the user explicitly picks them.
     order: order || undefined,
-    sortedBy: sortedBy || undefined,
+    sortedBy: order && sortedBy ? sortedBy : undefined,
   };
 
   const { data, isLoading, refetch } = useCoupons(params);
@@ -60,6 +62,7 @@ export function CouponsPage() {
   const handleFormSuccess = useCallback(() => {
     setOpenForm(false);
     setEditingCoupon(null);
+    setPage(1);
     refetch();
   }, [refetch]);
 
@@ -112,22 +115,24 @@ export function CouponsPage() {
             <SelectItem value="inactive">{t('coupons.inactive')}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={order} onValueChange={(v) => { if (v) setOrder(v); setPage(1); }}>
+        <Select value={order} onValueChange={(v) => { setOrder(v ?? ''); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[150px]">
             <SelectValue placeholder={t('coupons.sortBy')} />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="">{t('coupons.sortByDefault')}</SelectItem>
             <SelectItem value="created_at">{t('coupons.sortCreatedAt')}</SelectItem>
             <SelectItem value="discount">{t('coupons.sortDiscount')}</SelectItem>
             <SelectItem value="start_date">{t('coupons.sortStartDate')}</SelectItem>
             <SelectItem value="end_date">{t('coupons.sortEndDate')}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={sortedBy} onValueChange={(v) => { if (v) setSortedBy(v); setPage(1); }}>
+        <Select value={sortedBy} onValueChange={(v) => { setSortedBy(v ?? ''); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[120px]">
             <SelectValue placeholder={t('coupons.sortedBy')} />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="">{t('coupons.sortByDefault')}</SelectItem>
             <SelectItem value="asc">{t('coupons.asc')}</SelectItem>
             <SelectItem value="desc">{t('coupons.desc')}</SelectItem>
           </SelectContent>

@@ -649,6 +649,7 @@
     "active": "نشط",
     "inactive": "غير نشط",
     "sortBy": "ترتيب حسب",
+    "sortByDefault": "افتراضي",
     "sortCreatedAt": "تاريخ الإنشاء",
     "sortDiscount": "قيمة الخصم",
     "sortStartDate": "تاريخ البداية",
