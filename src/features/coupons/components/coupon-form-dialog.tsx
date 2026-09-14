@@ -24,6 +24,7 @@ import { ImagePreview } from '@/shared/components/image-preview';
 import {
   couponFormSchema,
   couponFormDefaults,
+  normalizeHexColor,
   toCreateApiFormat,
   toUpdateApiFormat,
   type CouponFormValues,
@@ -98,12 +99,12 @@ export function CouponFormDialog({
       if (d.limiter !== null && d.limiter !== undefined) {
         form.setValue('limiter', d.limiter);
       }
-      if (d.borderColor) {
-        form.setValue('borderColor', d.borderColor);
-      }
-      if (d.borderless) {
-        form.setValue('borderless', '1');
-      }
+      form.setValue('borderColor', normalizeHexColor(d.borderColor));
+      const isBorderless =
+        d.borderless === true ||
+        (d.borderless as unknown) === 1 ||
+        (d.borderless as unknown) === '1';
+      form.setValue('borderless', isBorderless ? '1' : '0');
       setDesktopPreview(d.image?.desktop || null);
       setMobilePreview(d.image?.mobile || null);
     }
@@ -280,16 +281,31 @@ export function CouponFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="borderColor" className="text-sm font-medium">{t('couponsForm.borderColor')}</label>
-              <Input id="borderColor" type="text" placeholder="#ff0000" {...form.register('borderColor')} />
+              <div className="flex items-center gap-2">
+                <Input
+                  id="borderColorPicker"
+                  type="color"
+                  aria-label={t('couponsForm.borderColor')}
+                  value={/^#([0-9a-fA-F]{6})$/.test(form.watch('borderColor') || '') ? (form.watch('borderColor') as string) : '#000000'}
+                  onChange={(e) => form.setValue('borderColor', e.target.value, { shouldDirty: true, shouldValidate: true })}
+                  className="h-8 w-10 shrink-0 cursor-pointer p-1"
+                />
+                <Input id="borderColor" type="text" placeholder="#ff0000" {...form.register('borderColor')} />
+              </div>
+              {getError('borderColor') && (
+                <p className="text-xs text-destructive">{getError('borderColor')}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t('couponsForm.borderless')}</label>
               <Select
-                value={form.watch('borderless') || '0'}
-                onValueChange={(value) => { if (value) form.setValue('borderless', value); }}
+                value={form.watch('borderless') ?? '0'}
+                onValueChange={(value) => { if (value === '0' || value === '1') form.setValue('borderless', value); }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t('couponsForm.borderless')}>
+                    {form.watch('borderless') === '1' ? t('common.yes') : t('common.no')}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">{t('common.no')}</SelectItem>
@@ -388,12 +404,12 @@ export function CouponFormContent({
       if (d.limiter !== null && d.limiter !== undefined) {
         form.setValue('limiter', d.limiter);
       }
-      if (d.borderColor) {
-        form.setValue('borderColor', d.borderColor);
-      }
-      if (d.borderless) {
-        form.setValue('borderless', '1');
-      }
+      form.setValue('borderColor', normalizeHexColor(d.borderColor));
+      const isBorderless =
+        d.borderless === true ||
+        (d.borderless as unknown) === 1 ||
+        (d.borderless as unknown) === '1';
+      form.setValue('borderless', isBorderless ? '1' : '0');
       setDesktopPreview(d.image?.desktop || null);
       setMobilePreview(d.image?.mobile || null);
     }
@@ -563,17 +579,32 @@ export function CouponFormContent({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="borderColor" className="text-sm font-medium">{t('couponsForm.borderColor')}</label>
-          <Input id="borderColor" type="text" placeholder="#ff0000" {...form.register('borderColor')} />
+          <label htmlFor="borderColorEdit" className="text-sm font-medium">{t('couponsForm.borderColor')}</label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="borderColorPickerEdit"
+              type="color"
+              aria-label={t('couponsForm.borderColor')}
+              value={/^#([0-9a-fA-F]{6})$/.test(form.watch('borderColor') || '') ? (form.watch('borderColor') as string) : '#000000'}
+              onChange={(e) => form.setValue('borderColor', e.target.value, { shouldDirty: true, shouldValidate: true })}
+              className="h-8 w-10 shrink-0 cursor-pointer p-1"
+            />
+            <Input id="borderColorEdit" type="text" placeholder="#ff0000" {...form.register('borderColor')} />
+          </div>
+          {getError('borderColor') && (
+            <p className="text-xs text-destructive">{getError('borderColor')}</p>
+          )}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">{t('couponsForm.borderless')}</label>
           <Select
-            value={form.watch('borderless') || '0'}
-            onValueChange={(value) => { if (value) form.setValue('borderless', value); }}
+            value={form.watch('borderless') ?? '0'}
+            onValueChange={(value) => { if (value === '0' || value === '1') form.setValue('borderless', value); }}
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder={t('couponsForm.borderless')}>
+                {form.watch('borderless') === '1' ? t('common.yes') : t('common.no')}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">{t('common.no')}</SelectItem>
