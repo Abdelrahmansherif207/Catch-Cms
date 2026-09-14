@@ -66,7 +66,7 @@ export async function createCoupon(payload: CreateCouponData): Promise<ApiRespon
   if (payload.max_discount_amount) formData.append('max_discount_amount', payload.max_discount_amount);
   if (payload.limiter) formData.append('limiter', payload.limiter);
   if (payload.border_color) formData.append('border_color', payload.border_color);
-  if (payload.borderless) formData.append('borderless', payload.borderless);
+  if (payload.borderless !== undefined) formData.append('borderless', payload.borderless);
 
   const { data } = await axiosClient.post<ApiResponse<Coupon>>('/coupons', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -93,7 +93,7 @@ export async function updateCoupon(
   if (payload.max_discount_amount) formData.append('max_discount_amount', payload.max_discount_amount);
   if (payload.limiter) formData.append('limiter', payload.limiter);
   if (payload.border_color) formData.append('border_color', payload.border_color);
-  if (payload.borderless) formData.append('borderless', payload.borderless);
+  if (payload.borderless !== undefined) formData.append('borderless', payload.borderless);
 
   const { data } = await axiosClient.post<ApiResponse<Coupon>>('/coupons/' + id, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

@@ -10,8 +10,12 @@ export const couponFormSchema = z.object({
   endDate: z.string().min(1, 'validation.endDateRequired'),
   limiter: z.coerce.number().int().min(0).optional(),
   status: z.string().default('1'),
-  borderColor: z.string().optional(),
-  borderless: z.string().optional(),
+  borderColor: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/, 'validation.invalidColor')
+    .optional()
+    .or(z.literal('')),
+  borderless: z.enum(['0', '1']).optional().default('0'),
   imageDesktop: z.instanceof(File).optional(),
   imageMobile: z.instanceof(File).optional(),
 }).superRefine((data, ctx) => {
@@ -37,6 +41,18 @@ export const couponFormSchema = z.object({
 
 export type CouponFormValues = z.infer<typeof couponFormSchema>;
 
+export function normalizeHexColor(value: string | null | undefined): string {
+  if (!value) return '';
+  let v = value.trim();
+  if (!v) return '';
+  if (!v.startsWith('#')) v = '#' + v;
+  if (/^#([0-9a-fA-F]{3})$/.test(v)) {
+    v = '#' + v.slice(1).split('').map((c) => c + c).join('');
+  }
+  if (!/^#([0-9a-fA-F]{6})$/.test(v)) return '';
+  return v.toLowerCase();
+}
+
 export const couponFormDefaults: CouponFormValues = {
   nameEn: '',
   nameAr: '',
@@ -48,7 +64,7 @@ export const couponFormDefaults: CouponFormValues = {
   limiter: undefined,
   status: '1',
   borderColor: '',
-  borderless: undefined,
+  borderless: '0' as const,
   imageDesktop: undefined,
   imageMobile: undefined,
 };
@@ -67,7 +83,7 @@ export function toCreateApiFormat(values: CouponFormValues) {
     ...(values.discountType === 'percentage' && values.maxDiscountAmount !== undefined ? { max_discount_amount: values.maxDiscountAmount.toString() } : {}),
     ...(values.limiter !== undefined ? { limiter: values.limiter.toString() } : {}),
     ...(values.borderColor ? { border_color: values.borderColor } : {}),
-    ...(values.borderless ? { borderless: values.borderless } : {}),
+    ...(values.borderless !== undefined ? { borderless: values.borderless } : {}),
   };
 }
 
@@ -86,6 +102,6 @@ export function toUpdateApiFormat(values: CouponFormValues) {
     ...(values.discountType === 'percentage' && values.maxDiscountAmount !== undefined ? { max_discount_amount: values.maxDiscountAmount.toString() } : {}),
     ...(values.limiter !== undefined ? { limiter: values.limiter.toString() } : {}),
     ...(values.borderColor ? { border_color: values.borderColor } : {}),
-    ...(values.borderless ? { borderless: values.borderless } : {}),
+    ...(values.borderless !== undefined ? { borderless: values.borderless } : {}),
   };
 }
