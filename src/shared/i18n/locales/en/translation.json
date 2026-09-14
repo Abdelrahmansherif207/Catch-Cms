@@ -377,7 +377,9 @@
     "imageFormat": "Only JPEG, PNG, GIF, and SVG images are allowed",
     "imageMaxSize": "Image must be 2MB or less",
     "invalidNumber": "Please enter a valid non-negative number",
-    "invalidTime": "Please enter a valid time (HH:MM)"
+    "invalidTime": "Please enter a valid time (HH:MM)",
+    "closeAfterOpen": "Close time must be after open time",
+    "atLeastOneWorkingDay": "Select at least one working day"
   },
   "auth": {
     "welcomeBack": "Welcome back",

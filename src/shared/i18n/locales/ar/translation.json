@@ -327,7 +327,9 @@
     "imageFormat": "Only JPEG, PNG, GIF, and SVG images are allowed",
     "imageMaxSize": "Image must be 2MB or less",
     "invalidNumber": "يرجى إدخال رقم صحيح غير سالب",
-    "invalidTime": "يرجى إدخال وقت صحيح (HH:MM)"
+    "invalidTime": "يرجى إدخال وقت صحيح (HH:MM)",
+    "closeAfterOpen": "يجب أن يكون وقت الإغلاق بعد وقت الفتح",
+    "atLeastOneWorkingDay": "اختر يوم عمل واحد على الأقل"
   },
   "auth": {
     "welcomeBack": "مرحباً بعودتك",
