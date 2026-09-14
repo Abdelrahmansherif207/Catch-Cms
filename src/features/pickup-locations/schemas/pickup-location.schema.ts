@@ -12,6 +12,13 @@ export const WEEKDAYS = [
 
 export const CLOSED = 'CLOSED';
 
+export const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export function toMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
 export const localizedDaySchema = z.object({
   en: z.string().min(1, 'validation.required'),
   ar: z.string().min(1, 'validation.required'),
@@ -37,9 +44,22 @@ const workingHourSchema = z
     if (val.enabled) {
       if (!val.open) {
         ctx.addIssue({ code: 'custom', path: ['open'], message: 'validation.required' });
+      } else if (!TIME_REGEX.test(val.open)) {
+        ctx.addIssue({ code: 'custom', path: ['open'], message: 'validation.invalidTime' });
       }
       if (!val.close) {
         ctx.addIssue({ code: 'custom', path: ['close'], message: 'validation.required' });
+      } else if (!TIME_REGEX.test(val.close)) {
+        ctx.addIssue({ code: 'custom', path: ['close'], message: 'validation.invalidTime' });
+      }
+      if (
+        val.open &&
+        val.close &&
+        TIME_REGEX.test(val.open) &&
+        TIME_REGEX.test(val.close) &&
+        toMinutes(val.close) <= toMinutes(val.open)
+      ) {
+        ctx.addIssue({ code: 'custom', path: ['close'], message: 'validation.closeAfterOpen' });
       }
     }
   });
@@ -53,7 +73,14 @@ export const pickupLocationFormSchema = z.object({
   longitude: z.string().optional(),
   status: z.string().default('1'),
   displayOrder: z.number().int().min(0).default(0),
-  workingHours: z.array(workingHourSchema).length(WEEKDAYS.length),
+  workingHours: z
+    .array(workingHourSchema)
+    .length(WEEKDAYS.length)
+    .superRefine((hours, ctx) => {
+      if (!hours.some((h) => h.enabled)) {
+        ctx.addIssue({ code: 'custom', message: 'validation.atLeastOneWorkingDay' });
+      }
+    }),
 });
 
 export type PickupLocationFormValues = z.infer<typeof pickupLocationFormSchema>;

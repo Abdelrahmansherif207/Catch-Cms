@@ -158,6 +158,15 @@ export function PickupLocationFormDialog({
     return clientErr || serverErr;
   };
 
+  const getWorkingHoursError = (): string | undefined => {
+    const err = errors.workingHours as
+      | { message?: string; root?: { message?: string } }
+      | undefined;
+    const clientErr = err?.root?.message ?? err?.message;
+    const serverErr = serverErrors['working_hours']?.[0];
+    return clientErr || serverErr;
+  };
+
   const renderError = (message?: string) =>
     message ? <p className="text-xs text-destructive">{t(message)}</p> : null;
 
@@ -308,6 +317,7 @@ export function PickupLocationFormDialog({
                 </div>
               ))}
             </div>
+            {renderError(getWorkingHoursError())}
           </div>
 
           <DialogFooter>
