@@ -310,6 +310,7 @@
     "applyToRequired": "حقل التطبيق على مطلوب",
     "startAtRequired": "تاريخ البداية مطلوب",
     "endAtRequired": "تاريخ النهاية مطلوب",
+    "endAtAfterStartAt": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية أو مساويًا له",
     "maxDiscountAmountRequired": "الحد الأقصى للخصم مطلوب للخصم النسبي",
     "productIdsRequired": "يجب اختيار منتج واحد على الأقل للمنتجات المحددة",
     "attributeNameEnRequired": "الاسم بالإنجليزية مطلوب (حرفين على الأقل)",
