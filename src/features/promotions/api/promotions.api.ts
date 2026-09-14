@@ -69,8 +69,8 @@ export async function createPromotion(payload: CreatePromotionData): Promise<Api
   formData.append('status', payload.status);
 
   if (payload.minimum_order_amount) formData.append('minimum_order_amount', payload.minimum_order_amount);
-  if (payload.image_desktop) formData.append('image_desktop', payload.image_desktop);
-  if (payload.image_mobile) formData.append('image_mobile', payload.image_mobile);
+  if (payload['image-desktop']) formData.append('image-desktop', payload['image-desktop']);
+  if (payload['image-mobile']) formData.append('image-mobile', payload['image-mobile']);
   if (payload.max_discount_amount) formData.append('max_discount_amount', payload.max_discount_amount);
   if (payload.required_quantity) formData.append('required_quantity', payload.required_quantity);
   if (payload.product_ids && payload.product_ids.length > 0) {
@@ -110,8 +110,8 @@ export async function updatePromotion(
   formData.append('status', payload.status);
 
   if (payload.minimum_order_amount) formData.append('minimum_order_amount', payload.minimum_order_amount);
-  if (payload.image_desktop) formData.append('image_desktop', payload.image_desktop);
-  if (payload.image_mobile) formData.append('image_mobile', payload.image_mobile);
+  if (payload['image-desktop']) formData.append('image-desktop', payload['image-desktop']);
+  if (payload['image-mobile']) formData.append('image-mobile', payload['image-mobile']);
   if (payload.max_discount_amount) formData.append('max_discount_amount', payload.max_discount_amount);
   if (payload.required_quantity) formData.append('required_quantity', payload.required_quantity);
   if (payload.product_ids && payload.product_ids.length > 0) {

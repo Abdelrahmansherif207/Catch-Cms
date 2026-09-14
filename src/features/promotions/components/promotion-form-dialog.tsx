@@ -654,6 +654,9 @@ export function PromotionFormDialog({
                     thumbnailClassName="h-16 rounded border object-cover mt-1"
                   />
                 )}
+                {serverErrors['image-desktop']?.[0] && (
+                  <p className="text-xs text-destructive">{serverErrors['image-desktop'][0]}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="imageMobile" className="text-sm font-medium">
@@ -673,6 +676,9 @@ export function PromotionFormDialog({
                     alt="Mobile preview"
                     thumbnailClassName="h-16 rounded border object-cover mt-1"
                   />
+                )}
+                {serverErrors['image-mobile']?.[0] && (
+                  <p className="text-xs text-destructive">{serverErrors['image-mobile'][0]}</p>
                 )}
               </div>
             </div>
@@ -699,6 +705,9 @@ export function PromotionFormDialog({
                     thumbnailClassName="h-16 rounded border object-cover mt-1"
                   />
                 )}
+                {serverErrors['image-desktop']?.[0] && (
+                  <p className="text-xs text-destructive">{serverErrors['image-desktop'][0]}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="imageMobile" className="text-sm font-medium">
@@ -718,6 +727,9 @@ export function PromotionFormDialog({
                     alt="Mobile preview"
                     thumbnailClassName="h-16 rounded border object-cover mt-1"
                   />
+                )}
+                {serverErrors['image-mobile']?.[0] && (
+                  <p className="text-xs text-destructive">{serverErrors['image-mobile'][0]}</p>
                 )}
               </div>
             </div>

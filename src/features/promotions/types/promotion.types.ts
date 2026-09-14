@@ -62,8 +62,8 @@ export interface PromotionDetailResponse {
 export interface CreatePromotionData {
   'name[en]': string;
   'name[ar]': string;
-  image_desktop?: File;
-  image_mobile?: File;
+  'image-desktop'?: File;
+  'image-mobile'?: File;
   type: string;
   type_amount: string;
   discount: string;
