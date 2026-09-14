@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Plus, RefreshCw, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -26,6 +26,13 @@ export function PickupLocationsPage() {
   const [sortedBy, setSortedBy] = useState<'asc' | 'desc' | undefined>(undefined);
   const [openForm, setOpenForm] = useState(false);
   const [editingLocation, setEditingLocation] = useState<PickupLocation | null>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
 
   const params = {
     page,
@@ -61,10 +68,27 @@ export function PickupLocationsPage() {
     refetch();
   }, [refetch]);
 
-  const handleSearch = () => {
-    setSearch(searchInput);
+  const handleSearch = useCallback(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    setSearch(searchInput.trim());
     setPage(1);
-  };
+  }, [searchInput]);
+
+  const handleSearchInput = useCallback((value: string) => {
+    setSearchInput(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setSearch(value.trim());
+      setPage(1);
+    }, 300);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    setSearchInput('');
+    setSearch('');
+    setPage(1);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -84,6 +108,7 @@ export function PickupLocationsPage() {
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 w-full md:max-w-xs">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
@@ -95,10 +120,22 @@ export function PickupLocationsPage() {
           <Input
             placeholder={t('pickupLocations.searchPlaceholder')}
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            className="h-8 ps-9"
+            className="h-8 ps-9 pe-8"
           />
+          {searchInput && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={handleClearSearch}
+              aria-label={t('common.clear')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? 'all'); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[130px]">
