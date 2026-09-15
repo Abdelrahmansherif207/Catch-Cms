@@ -18,6 +18,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ImagePreview } from '@/shared/components/image-preview';
+import { SafeHtml } from '@/shared/components/safe-html';
 import { useProduct } from '../hooks/use-products';
 import { ProductDeleteDialog } from '../components/product-delete-dialog';
 import { productRoutes } from '../routes/product.routes';
@@ -207,7 +208,11 @@ export function ProductDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <section className="rounded-lg border p-5">
             <h2 className="text-lg font-semibold mb-3">{t('products.description')}</h2>
-            <p className="text-muted-foreground leading-relaxed">{productDescription}</p>
+            <SafeHtml
+              html={productDescription}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
+              className="text-muted-foreground leading-relaxed [&_p]:mb-2 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_a]:text-primary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:px-2 [&_td]:py-1 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:list-decimal [&_ol]:ps-5"
+            />
           </section>
 
           {detail.categories && detail.categories.length > 0 && (

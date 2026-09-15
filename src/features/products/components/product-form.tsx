@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, X, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Textarea } from '@/shared/ui/textarea';
 import { ScrollArea } from '@/shared/ui/scroll-area';
+import { RichTextEditor } from '@/shared/components/rich-text-editor';
 import {
   Select,
   SelectContent,
@@ -321,12 +321,20 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             )}
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-1.5">
             <label htmlFor="descriptionEn" className="text-sm font-medium">
               {t('productsForm.descriptionEn')}
             </label>
-            <Textarea id="descriptionEn" placeholder={t('productsForm.descriptionEn')} rows={2} {...form.register('descriptionEn')} />
+            <RichTextEditor
+              id="descriptionEn"
+              value={form.watch('descriptionEn') ?? ''}
+              onChange={(content) =>
+                form.setValue('descriptionEn', content, { shouldDirty: true, shouldValidate: true })
+              }
+              onBlur={() => form.trigger('descriptionEn')}
+              placeholder={t('productsForm.descriptionEn')}
+            />
             {(getError('descriptionEn') || getError('description[en]')) && (
               <p className="text-xs text-destructive">{getError('descriptionEn') || getError('description[en]')}</p>
             )}
@@ -335,7 +343,16 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             <label htmlFor="descriptionAr" className="text-sm font-medium">
               {t('productsForm.descriptionAr')}
             </label>
-            <Textarea id="descriptionAr" placeholder={t('productsForm.descriptionAr')} dir="rtl" rows={2} {...form.register('descriptionAr')} />
+            <RichTextEditor
+              id="descriptionAr"
+              dir="rtl"
+              value={form.watch('descriptionAr') ?? ''}
+              onChange={(content) =>
+                form.setValue('descriptionAr', content, { shouldDirty: true, shouldValidate: true })
+              }
+              onBlur={() => form.trigger('descriptionAr')}
+              placeholder={t('productsForm.descriptionAr')}
+            />
             {(getError('descriptionAr') || getError('description[ar]')) && (
               <p className="text-xs text-destructive">{getError('descriptionAr') || getError('description[ar]')}</p>
             )}

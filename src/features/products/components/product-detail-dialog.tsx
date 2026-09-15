@@ -9,7 +9,9 @@ import {
 } from '@/shared/ui/dialog';
 import { Badge } from '@/shared/ui/badge';
 import { ImagePreview } from '@/shared/components/image-preview';
+import { SafeHtml } from '@/shared/components/safe-html';
 import { useProduct } from '../hooks/use-products';
+import { useLanguage } from '@/shared/hooks/use-language';
 import type { Product } from '../types/product.types';
 
 interface ProductDetailDialogProps {
@@ -18,12 +20,29 @@ interface ProductDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function getLocalizedHtml(value: string, language: string): string {
+  if (typeof value !== 'string') {
+    const obj = value as unknown as Record<string, string>;
+    return obj?.[language] || obj?.en || '';
+  }
+  try {
+    const parsed = JSON.parse(value);
+    if (typeof parsed === 'object' && parsed !== null) {
+      return parsed[language] || parsed.en || value;
+    }
+    return value;
+  } catch {
+    return value;
+  }
+}
+
 export function ProductDetailDialog({
   product,
   open,
   onOpenChange,
 }: ProductDetailDialogProps) {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const { data: detailData, isLoading } = useProduct(open ? product.id : 0);
   const detail = detailData?.data;
 
@@ -118,7 +137,11 @@ export function ProductDetailDialog({
 
             <div>
               <p className="text-sm text-muted-foreground mb-1">{t('products.description')}</p>
-              <p className="text-sm">{detail.description}</p>
+              <SafeHtml
+                html={detail ? getLocalizedHtml(detail.description, language) : ''}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+                className="text-sm leading-relaxed [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_a]:text-primary [&_a]:underline [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:list-decimal [&_ol]:ps-5"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
