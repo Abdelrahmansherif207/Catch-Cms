@@ -1,6 +1,7 @@
 export { CategoriesPage } from "./pages/categories-page";
 export {
   useCategories,
+  useAllCategories,
   useCategory,
   useCreateCategory,
   useUpdateCategory,

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchCategories,
+  fetchAllCategories,
   fetchCategoryById,
   toggleFeatured,
   createCategory,
@@ -51,6 +52,15 @@ export function useCategories(params: FetchCategoriesParams = {}, enabled?: bool
   return useQuery({
     queryKey: queryKeys.categories.list(params),
     queryFn: () => fetchCategories(params),
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  });
+}
+
+export function useAllCategories(enabled?: boolean) {
+  return useQuery({
+    queryKey: queryKeys.categories.allList(),
+    queryFn: () => fetchAllCategories(),
     staleTime: 5 * 60 * 1000,
     enabled,
   });

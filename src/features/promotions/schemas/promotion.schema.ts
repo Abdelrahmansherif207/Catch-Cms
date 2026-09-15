@@ -48,6 +48,13 @@ export const promotionFormSchema = z
         message: 'validation.productIdsRequired',
       });
     }
+    if (data.startAt && data.endAt && data.endAt < data.startAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endAt'],
+        message: 'validation.endAtAfterStartAt',
+      });
+    }
   });
 
 export type PromotionFormValues = z.infer<typeof promotionFormSchema>;
@@ -90,8 +97,8 @@ export function toApiFormat(values: PromotionFormValues, isUpdate = false) {
   if (values.type === 'quantity') {
     apiData.required_quantity = values.requiredQuantity || '1';
   }
-  if (!isUpdate || values.imageDesktop) apiData.image_desktop = values.imageDesktop;
-  if (!isUpdate || values.imageMobile) apiData.image_mobile = values.imageMobile;
+  if (!isUpdate || values.imageDesktop) apiData['image-desktop'] = values.imageDesktop;
+  if (!isUpdate || values.imageMobile) apiData['image-mobile'] = values.imageMobile;
   if (values.maxDiscountAmount) apiData.max_discount_amount = values.maxDiscountAmount;
   if (values.productIds && values.productIds.length > 0) {
     apiData.product_ids = values.productIds;

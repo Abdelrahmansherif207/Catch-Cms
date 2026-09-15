@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchFlashSales,
+  fetchAllFlashSales,
   fetchFlashSaleById,
   createFlashSale,
   updateFlashSale,
@@ -29,6 +30,15 @@ export function useFlashSales(params: FetchFlashSalesParams = {}, enabled?: bool
   return useQuery({
     queryKey: queryKeys.flashSales.list(params),
     queryFn: () => fetchFlashSales(params),
+    staleTime: 3 * 60 * 1000,
+    enabled,
+  });
+}
+
+export function useAllFlashSales(enabled?: boolean) {
+  return useQuery({
+    queryKey: queryKeys.flashSales.allList(),
+    queryFn: () => fetchAllFlashSales(),
     staleTime: 3 * 60 * 1000,
     enabled,
   });

@@ -1,5 +1,5 @@
-﻿import { axiosClient } from '@/shared/api';
 import { NO_TIMEOUT } from '@/shared/constants/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   BrandsListResponse,
   BrandDetailResponse,
@@ -47,6 +47,12 @@ export async function fetchBrands({
 
   const { data } = await axiosClient.get<BrandsListResponse>('/brands?' + params.toString());
   return data;
+}
+
+export async function fetchAllBrands(): Promise<Brand[]> {
+  return fetchAllPages((page) =>
+    fetchBrands({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 export async function fetchBrandById(id: number): Promise<BrandDetailResponse> {

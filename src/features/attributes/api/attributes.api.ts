@@ -1,4 +1,4 @@
-import { axiosClient } from '@/shared/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   AttributeListResponse,
   AttributeDetailResponse,
@@ -31,6 +31,12 @@ export async function fetchAttributes({
 
   const { data } = await axiosClient.get<AttributeListResponse>('/attributes?' + params.toString());
   return data;
+}
+
+export async function fetchAllAttributes(): Promise<Attribute[]> {
+  return fetchAllPages((page) =>
+    fetchAttributes({ page, perPage: 200 }).then((res) => res.data),
+  );
 }
 
 export async function fetchAttributeById(id: number): Promise<AttributeDetailResponse> {

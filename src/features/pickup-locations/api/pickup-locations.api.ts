@@ -30,7 +30,8 @@ export async function fetchPickupLocations({
   const params = new URLSearchParams();
   params.append('page', page.toString());
   params.append('per_page', perPage.toString());
-  if (search) params.append('search', search);
+  const trimmedSearch = search?.trim();
+  if (trimmedSearch) params.append('search', trimmedSearch);
   if (active) params.append('active', active);
   if (inactive) params.append('inactive', inactive);
   if (order) params.append('order', order);

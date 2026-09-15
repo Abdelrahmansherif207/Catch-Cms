@@ -32,6 +32,7 @@ export function CategoriesPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [level, setLevel] = useState<string>('all');
+  const [parentId, setParentId] = useState<string>('all');
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -43,7 +44,10 @@ export function CategoriesPage() {
     perPage: 15,
     search: search || undefined,
     level: level === 'all' ? undefined : Number(level),
+    parentId: parentId === 'all' ? undefined : Number(parentId),
   });
+
+  const { data: rootsData } = useCategories({ level: 1, perPage: 100 });
 
   const handleEdit = (category: CategoryListItem) => {
     setEditingCategory(category);
@@ -75,10 +79,11 @@ export function CategoriesPage() {
   const handleClearFilters = () => {
     setSearch('');
     setLevel('all');
+    setParentId('all');
     setPage(1);
   };
 
-  const hasActiveFilters = search || level !== 'all';
+  const hasActiveFilters = search || level !== 'all' || parentId !== 'all';
 
   return (
     <div className="space-y-6">
@@ -141,13 +146,47 @@ export function CategoriesPage() {
                 }}
               >
                 <SelectTrigger className="w-full md:w-[140px]">
-                  <SelectValue placeholder={t('categories.allLevels')} />
+                  <SelectValue placeholder={t('categories.allLevels')}>
+                    {level === 'all'
+                      ? t('categories.allLevels')
+                      : level === '1'
+                        ? t('categories.root')
+                        : level === '2'
+                          ? t('categories.sub')
+                          : t('categories.subSub')}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('categories.allLevels')}</SelectItem>
                   <SelectItem value="1">{t('categories.root')} </SelectItem>
                   <SelectItem value="2">{t('categories.sub')} </SelectItem>
                   <SelectItem value="3">{t('categories.subSub')} </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={parentId}
+                onValueChange={(value) => {
+                  setParentId(value ?? 'all');
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full md:w-[160px]">
+                  <SelectValue placeholder={t('categories.allParents')}>
+                    {parentId === 'all'
+                      ? t('categories.allParents')
+                      : (rootsData?.data?.data ?? []).find(
+                          (root) => String(root.id) === parentId
+                        )?.name ?? parentId}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('categories.allParents')}</SelectItem>
+                  {(rootsData?.data?.data ?? []).map((root) => (
+                    <SelectItem key={root.id} value={String(root.id)}>
+                      {root.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -166,9 +205,6 @@ export function CategoriesPage() {
             onViewProducts={handleViewProducts}
             onToggleFeatured={handleToggleFeatured}
             onRefresh={refetch}
-            parentMap={new Map(
-              (data?.data?.data ?? []).map((c) => [c.id, c.name])
-            )}
           />
 
           <Pagination

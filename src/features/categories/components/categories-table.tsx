@@ -1,7 +1,5 @@
-﻿import { useState, useMemo } from 'react';
+﻿import { useState } from 'react';
 import {
-  ChevronRight,
-  ChevronDown,
   MoreHorizontal,
   Pencil,
   Star,
@@ -39,7 +37,6 @@ interface CategoriesTableProps {
   onViewProducts?: (category: CategoryListItem) => void;
   onToggleFeatured?: (category: CategoryListItem) => void;
   onRefresh: () => void;
-  parentMap?: Map<number, string>;
 }
 
 export function CategoriesTable({
@@ -49,50 +46,9 @@ export function CategoriesTable({
   onViewProducts,
   onToggleFeatured,
   onRefresh,
-  parentMap,
 }: CategoriesTableProps) {
   const { t } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<CategoryListItem | null>(null);
-  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-
-  const childrenMap = useMemo(() => {
-    const map = new Map<number | null, CategoryListItem[]>();
-    for (const cat of data) {
-      const pid = cat.parent_id;
-      if (!map.has(pid)) map.set(pid, []);
-      map.get(pid)!.push(cat);
-    }
-    return map;
-  }, [data]);
-
-  const rootNodes = childrenMap.get(null) || [];
-
-  const hasChildren = (id: number) => (childrenMap.get(id)?.length ?? 0) > 0;
-
-  const toggleExpand = (id: number) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const flattenTree = () => {
-    const result: { category: CategoryListItem; depth: number }[] = [];
-    const walk = (nodes: CategoryListItem[], depth: number) => {
-      for (const node of nodes) {
-        result.push({ category: node, depth });
-        if (expandedIds.has(node.id) && hasChildren(node.id)) {
-          walk(childrenMap.get(node.id) || [], depth + 1);
-        }
-      }
-    };
-    walk(rootNodes, 0);
-    return result;
-  };
-
-  const flatRows = flattenTree();
 
   if (isLoading) {
     return <TableSkeleton />;
@@ -104,7 +60,6 @@ export function CategoriesTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8" />
               <TableHead>{t('categories.image')}</TableHead>
               <TableHead>{t('categories.name')}</TableHead>
               <TableHead>{t('categories.level')}</TableHead>
@@ -115,34 +70,15 @@ export function CategoriesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {flatRows.length === 0 ? (
+            {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   {t('common.noData')}
                 </TableCell>
               </TableRow>
             ) : (
-              flatRows.map(({ category, depth }) => (
+              data.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell className="p-0">
-                    <div className="flex items-center" style={{ paddingLeft: `${depth * 20}px` }}>
-                      {hasChildren(category.id) ? (
-                        <button
-                          type="button"
-                          className="p-1 text-muted-foreground hover:text-foreground"
-                          onClick={() => toggleExpand(category.id)}
-                        >
-                          {expandedIds.has(category.id) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </button>
-                      ) : (
-                        <span className="inline-block w-6" />
-                      )}
-                    </div>
-                  </TableCell>
                   <TableCell>
                     <CategoryImageCell
                       image={category.image}
@@ -162,9 +98,8 @@ export function CategoriesTable({
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
-                      {category.parent_id
-                        ? parentMap?.get(category.parent_id) ?? `ID: ${category.parent_id}`
-                        : '\u2014'}
+                      {category.parent?.name
+                        ?? (category.parent_id ? `ID: ${category.parent_id}` : '\u2014')}
                     </span>
                   </TableCell>
                   <TableCell className="text-end">
@@ -229,7 +164,7 @@ export function CategoriesTable({
         <CategoryDeleteDialog
           categoryId={deleteTarget.id}
           categoryName={deleteTarget.name}
-          hasChildren={hasChildren(deleteTarget.id)}
+          hasChildren={false}
           open={!!deleteTarget}
           onOpenChange={(open) => {
             if (!open) setDeleteTarget(null);

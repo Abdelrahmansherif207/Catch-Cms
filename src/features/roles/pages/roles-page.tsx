@@ -19,7 +19,10 @@ export function RolesPage() {
     search: search || undefined,
   });
 
-  const roles = data?.data ?? [];
+  // GET /roles returns a Laravel paginator: { data: { data: Role[], ... } }.
+  // Accept a plain array too so a backend shape change can't white-screen the page.
+  const rawRoles = data?.data;
+  const roles = Array.isArray(rawRoles) ? rawRoles : (rawRoles?.data ?? []);
 
   const handleEdit = (role: Role) => {
     setEditingRole(role);

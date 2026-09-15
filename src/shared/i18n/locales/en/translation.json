@@ -251,6 +251,7 @@
     "selectCategory": "Select a category to feature on the storefront.",
     "searchPlaceholder": "Search by name or slug...",
     "allLevels": "All Levels",
+    "allParents": "All Parents",
     "root": "Root",
     "sub": "Sub",
     "subSub": "Sub-sub",
@@ -339,6 +340,8 @@
     "titleArRequired": "ط·آ·ط¢آ§ط·آ¸أ¢â‚¬â€چط·آ·ط¢آ¹ط·آ¸أ¢â‚¬آ ط·آ¸ط«â€ ط·آ·ط¢آ§ط·آ¸أ¢â‚¬آ  ط·آ·ط¢آ¨ط·آ·ط¢آ§ط·آ¸أ¢â‚¬â€چط·آ·ط¢آ¹ط·آ·ط¢آ±ط·آ·ط¢آ¨ط·آ¸ط¸آ¹ط·آ·ط¢آ© ط·آ¸أ¢â‚¬آ¦ط·آ·ط¢آ·ط·آ¸أ¢â‚¬â€چط·آ¸ط«â€ ط·آ·ط¢آ¨",
     "startDateRequired": "Start date is required",
     "endDateRequired": "End date is required",
+    "endDateAfterStartDate": "End date must be after or equal to start date",
+    "invalidColor": "Invalid color format (e.g. #ff0000)",
     "typeRequired": "Type is required",
     "discountMin": "Discount must be 0 or more",
     "faqTitleEnRequired": "English title is required (min 3 characters)",
@@ -359,6 +362,7 @@
     "applyToRequired": "Apply to is required",
     "startAtRequired": "Start date is required",
     "endAtRequired": "End date is required",
+    "endAtAfterStartAt": "End date must be after or equal to start date",
     "maxDiscountAmountRequired": "Max discount amount is required for percentage discounts",
     "productIdsRequired": "At least one product is required for specific products",
     "attributeNameEnRequired": "English name is required (min 2 characters)",
@@ -378,7 +382,9 @@
     "invalidNumber": "Please enter a valid non-negative number",
     "invalidTime": "Please enter a valid time (HH:MM)",
     "taxRateRequired": "Tax rate is required when tax is enabled",
-    "taxRateRange": "Tax rate must be between 0 and 100"
+    "taxRateRange": "Tax rate must be between 0 and 100",
+    "closeAfterOpen": "Close time must be after open time",
+    "atLeastOneWorkingDay": "Select at least one working day"
   },
   "auth": {
     "welcomeBack": "Welcome back",

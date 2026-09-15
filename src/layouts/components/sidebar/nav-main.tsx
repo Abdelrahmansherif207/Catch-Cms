@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import { ChevronDown } from 'lucide-react'
 import {
   SidebarMenu,
@@ -18,11 +18,20 @@ interface NavMainProps {
 
 export function NavMain({ groups }: NavMainProps) {
   const { state } = useSidebar()
+  const { pathname } = useLocation()
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
   const toggleGroup = (title: string) => {
     setCollapsed((prev) => ({ ...prev, [title]: !prev[title] }))
   }
+
+  // Longest-prefix wins, so nested/detail pages (e.g. /orders/123)
+  // keep their parent item highlighted and exactly one item is active.
+  const activeUrl = groups
+    .flatMap((group) => group.items)
+    .map((item) => item.url)
+    .filter((url) => pathname === url || pathname.startsWith(url + '/'))
+    .sort((a, b) => b.length - a.length)[0]
 
   return (
     <>
@@ -62,6 +71,7 @@ export function NavMain({ groups }: NavMainProps) {
                       <SidebarMenuButton
                         render={<NavLink to={item.url} />}
                         tooltip={item.title}
+                        isActive={item.url === activeUrl}
                       >
                         <item.icon />
                         <span>{item.title}</span>
