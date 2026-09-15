@@ -326,7 +326,9 @@
     "imageFormat": "Only JPEG, PNG, GIF, and SVG images are allowed",
     "imageMaxSize": "Image must be 2MB or less",
     "invalidNumber": "يرجى إدخال رقم صحيح غير سالب",
-    "invalidTime": "يرجى إدخال وقت صحيح (HH:MM)"
+    "invalidTime": "يرجى إدخال وقت صحيح (HH:MM)",
+    "taxRateRequired": "نسبة الضريبة مطلوبة عند تفعيل الضريبة",
+    "taxRateRange": "يجب أن تكون نسبة الضريبة بين 0 و 100"
   },
   "auth": {
     "welcomeBack": "مرحباً بعودتك",
@@ -1418,6 +1420,7 @@
   "productsForm": {
     "createProduct": "إنشاء منتج",
     "createSubtitle": "املأ التفاصيل لإضافة منتج جديد.",
+    "updateProduct": "تحديث المنتج",
     "basicInfo": "المعلومات الأساسية",
     "nameEn": "الاسم (إنجليزي)",
     "nameAr": "الاسم (عربي)",
@@ -1476,6 +1479,15 @@
     "attributeValues": "السمات",
     "searchAttributes": "البحث في السمات...",
     "noAttributes": "لم يتم العثور على سمات",
+    "itemType": "طبيعة المنتج",
+    "physical": "مادي",
+    "digital": "رقمي",
+    "itemTypeLockedHint": "لا يمكن تغيير طبيعة المنتج بعد وجود طلبات أو ملفات رقمية مرتبطة به.",
+    "tax": "الضريبة",
+    "taxEnabled": "تفعيل الضريبة",
+    "taxRate": "نسبة الضريبة (%)",
+    "taxAmount": "قيمة الضريبة",
+    "priceIncludingTax": "السعر شامل الضريبة",
     "editProduct": "Edit Product",
     "editSubtitle": "Update the product details below."
   },

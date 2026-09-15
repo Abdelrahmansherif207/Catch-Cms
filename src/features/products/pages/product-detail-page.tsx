@@ -184,6 +184,11 @@ export function ProductDetailPage() {
               value={detail.product_type ?? '-'}
             />
             <InfoItem
+              icon={<Package className="h-4 w-4" />}
+              label={t('productsForm.itemType')}
+              value={detail.item_type === 'DIGITAL' ? t('productsForm.digital') : t('productsForm.physical')}
+            />
+            <InfoItem
               icon={detail.in_stock ? <span className="h-4 w-4 text-green-500">&#9679;</span> : <span className="h-4 w-4 text-red-500">&#9679;</span>}
               label={t('products.stock')}
               value={`${detail.available_stock} (${t('products.sold')}: ${detail.sold_quantity})`}
@@ -238,6 +243,15 @@ export function ProductDetailPage() {
               <Kv label={t('products.discountAmount')} value={detail.discount_amount ? Number(detail.discount_amount).toFixed(2) : '-'} />
               <Kv label={t('products.startDate')} value={detail.start_date ?? '-'} />
               <Kv label={t('products.endDate')} value={detail.end_date ?? '-'} />
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              <Kv label={t('productsForm.taxEnabled')} value={detail.tax?.tax_enabled ?? detail.tax_enabled ? t('common.yes') : t('common.no')} />
+              <Kv label={t('productsForm.taxRate')} value={(detail.tax?.tax_rate ?? detail.tax_rate) !== undefined && (detail.tax?.tax_rate ?? detail.tax_rate) !== null ? `${detail.tax?.tax_rate ?? detail.tax_rate}%` : '-'} />
+              <Kv label={t('productsForm.taxAmount')} value={detail.tax?.amount !== undefined && detail.tax?.amount !== null ? Number(detail.tax.amount).toFixed(2) : '-'} />
+              <Kv label={t('productsForm.priceIncludingTax')} value={detail.price_including_tax !== undefined && detail.price_including_tax !== null ? Number(detail.price_including_tax).toFixed(2) : '-'} />
             </div>
 
             <Separator className="my-4" />

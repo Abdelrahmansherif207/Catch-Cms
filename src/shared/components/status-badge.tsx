@@ -3,7 +3,7 @@ import { Badge } from '@/shared/ui/badge';
 import { cn } from '@/shared/lib/utils';
 
 interface StatusBadgeProps {
-  status: boolean | number | undefined;
+  status: boolean | number | string | undefined;
   className?: string;
 }
 

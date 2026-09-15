@@ -13,6 +13,9 @@ export const variantFormSchema = z.object({
 
 export const productFormSchema = z.object({
   productType: z.enum(['simple', 'variable']),
+  itemType: z.enum(['PHYSICAL', 'DIGITAL']).default('PHYSICAL'),
+  taxEnabled: z.boolean().default(false),
+  taxRate: z.coerce.number().min(0, 'validation.taxRateRange').max(100, 'validation.taxRateRange').optional(),
   nameEn: z.string().min(1, 'validation.nameEnRequired').max(255, 'validation.nameMaxLength'),
   nameAr: z.string().min(1, 'validation.nameArRequired').max(255, 'validation.nameMaxLength'),
   descriptionEn: z.string().min(1, 'validation.descriptionEnRequired').max(10000, 'validation.descriptionMaxLength'),
@@ -53,14 +56,41 @@ export const productFormSchema = z.object({
       ctx.addIssue({ code: 'custom', path: ['variants'], message: 'validation.atLeastOneVariant' });
     }
   }
+  if (data.taxEnabled) {
+    if (data.taxRate === undefined || data.taxRate === null || Number.isNaN(data.taxRate)) {
+      ctx.addIssue({ code: 'custom', path: ['taxRate'], message: 'validation.taxRateRequired' });
+    }
+  }
 });
 
 export type ProductFormInput = z.input<typeof productFormSchema>;
 export type ProductFormValues = z.output<typeof productFormSchema>;
 export type VariantFormValues = z.infer<typeof variantFormSchema>;
 
+/**
+ * Backend flag normalization. The API returns mixed shapes for flags:
+ * boolean true/false, int 1/0, or string "1"/"0" (e.g. in_stock).
+ * Plain Boolean("0") === true, so every toggle must go through this helper.
+ */
+export function isTruthyFlag(value: unknown): boolean {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
+/**
+ * Product status normalization. Besides the flag shapes above, the API
+ * returns string enums ("publish", "draft", "unpublish", ...). The CMS
+ * models status as a binary Active/Inactive toggle: only "publish"
+ * (and the generic truthy shapes) count as active.
+ */
+export function isActiveStatus(value: unknown): boolean {
+  return isTruthyFlag(value) || value === 'publish' || value === 'active';
+}
+
 export const productFormDefaults: ProductFormValues = {
   productType: 'simple',
+  itemType: 'PHYSICAL',
+  taxEnabled: false,
+  taxRate: undefined,
   nameEn: '',
   nameAr: '',
   descriptionEn: '',
@@ -96,6 +126,9 @@ export function toApiFormat(values: ProductFormValues) {
     'description[en]': values.descriptionEn || undefined,
     'description[ar]': values.descriptionAr || undefined,
     product_type: values.productType,
+    item_type: values.itemType,
+    tax_enabled: values.taxEnabled ? '1' : '0',
+    tax_rate: values.taxEnabled ? values.taxRate : undefined,
     in_stock: values.inStock ? '1' : '0',
     status: values.status ? '1' : '0',
     'categories[]': values.categoryIds,
@@ -114,17 +147,19 @@ export function toApiFormat(values: ProductFormValues) {
   };
 
   if (values.productType === 'simple') {
+    const isPhysical = values.itemType === 'PHYSICAL';
     return {
       ...base,
       price: values.price,
       quantity: values.quantity,
-      height: values.height || undefined,
-      width: values.width || undefined,
-      length: values.length || undefined,
-      weight: values.weight || undefined,
+      height: isPhysical ? values.height || undefined : undefined,
+      width: isPhysical ? values.width || undefined : undefined,
+      length: isPhysical ? values.length || undefined : undefined,
+      weight: isPhysical ? values.weight || undefined : undefined,
     };
   }
 
+  const isPhysical = values.itemType === 'PHYSICAL';
   return {
     ...base,
     variants: values.variants.map((v) => ({
@@ -132,10 +167,10 @@ export function toApiFormat(values: ProductFormValues) {
       quantity: v.quantity,
       sku: v.sku || undefined,
       attribute_values: v.attributeValueIds,
-      height: v.height || undefined,
-      width: v.width || undefined,
-      length: v.length || undefined,
-      weight: v.weight || undefined,
+      height: isPhysical ? v.height || undefined : undefined,
+      width: isPhysical ? v.width || undefined : undefined,
+      length: isPhysical ? v.length || undefined : undefined,
+      weight: isPhysical ? v.weight || undefined : undefined,
     })),
   };
 }

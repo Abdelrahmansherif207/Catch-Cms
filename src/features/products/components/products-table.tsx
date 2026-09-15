@@ -176,7 +176,14 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
                   )}
                 </TableCell>
                 <TableCell>
-                  <p className="font-medium truncate max-w-[200px]">{product.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium truncate max-w-[200px]">{product.name}</p>
+                    {product.item_type === 'DIGITAL' && (
+                      <Badge variant="secondary" className="shrink-0 text-xs">
+                        {t('productsForm.digital')}
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <button
@@ -327,7 +334,14 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className="font-medium truncate">{product.name}</p>
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="font-medium truncate">{product.name}</p>
+              {product.item_type === 'DIGITAL' && (
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  {t('productsForm.digital')}
+                </Badge>
+              )}
+            </div>
             <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
                 <MoreHorizontal className="h-4 w-4" />

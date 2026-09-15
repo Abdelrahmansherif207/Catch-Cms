@@ -55,6 +55,27 @@ export function ProductDetailDialog({
                 </Badge>
               </div>
               <div>
+                <p className="text-sm text-muted-foreground">{t('productsForm.itemType')}</p>
+                <Badge variant={detail.item_type === 'DIGITAL' ? 'default' : 'outline'}>
+                  {detail.item_type === 'DIGITAL' ? t('productsForm.digital') : t('productsForm.physical')}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t('productsForm.taxEnabled')}</p>
+                <p className="text-sm font-medium">
+                  {detail.tax?.tax_enabled ?? detail.tax_enabled ? t('common.yes') : t('common.no')}
+                  {(detail.tax?.tax_rate ?? detail.tax_rate) !== undefined && (detail.tax?.tax_rate ?? detail.tax_rate) !== null
+                    ? ` (${detail.tax?.tax_rate ?? detail.tax_rate}%)`
+                    : ''}
+                </p>
+              </div>
+              {detail.price_including_tax !== undefined && detail.price_including_tax !== null && (
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('productsForm.priceIncludingTax')}</p>
+                  <p className="font-medium">{Number(detail.price_including_tax).toFixed(2)}</p>
+                </div>
+              )}
+              <div>
                 <p className="text-sm text-muted-foreground">{t('products.price')}</p>
                 <p className="font-medium">{Number(detail.current_price).toFixed(2)}</p>
               </div>
