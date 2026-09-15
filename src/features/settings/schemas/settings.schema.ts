@@ -41,9 +41,13 @@ export const settingsSchema = z.object({
   fastShippingDurationMinutes: z.string().optional(),
   fastShippingStartHour: z.string().optional(),
   fastShippingEndHour: z.string().optional(),
+  // Global order tax. Rate is a percentage 0-100, sent as plain value.
+  orderTaxEnabled: z.boolean(),
+  orderTaxRate: z.coerce.number().min(0).max(100).optional(),
 });
 
 export type SettingsFormValues = z.infer<typeof settingsSchema>;
+export type SettingsFormInput = z.input<typeof settingsSchema>;
 
 /**
  * Backend flag normalization. The API returns mixed shapes:
@@ -55,8 +59,9 @@ export function toBooleanFlag(value: unknown): boolean {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
 
-export function toApiFormat(values: SettingsFormValues) {
+export function toApiFormat(values: SettingsFormInput) {
   const fastShippingEnabled = values.fastShippingPagePublish ? 1 : 0;
+  const orderTaxEnabled = values.orderTaxEnabled ? 1 : 0;
   return {
     'site_name[en]': values.siteNameEn,
     'site_name[ar]': values.siteNameAr,
@@ -77,6 +82,10 @@ export function toApiFormat(values: SettingsFormValues) {
     snapchat: values.snapchat || undefined,
     phone: values.phone || '',
     minimum_order_amount: values.minimumOrderAmount,
+    order_tax_enabled: orderTaxEnabled,
+    ...(values.orderTaxEnabled && values.orderTaxRate !== undefined && values.orderTaxRate !== null && values.orderTaxRate !== ''
+      ? { order_tax_rate: Number(values.orderTaxRate) }
+      : {}),
     // Keep the page flag and the operational nested flag in sync so the UI
     // toggle can never show Active while the backend reports disabled.
     fast_shipping_page_publish: fastShippingEnabled,

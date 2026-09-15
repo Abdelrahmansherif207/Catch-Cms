@@ -1099,7 +1099,11 @@
     "currencySelectionHint": "Allow customers to choose between available currencies",
     "currencyActive": "Active Currency",
     "currencyBase": "Base Currency",
-    "currencyCatalog": "Catalog Currency"
+    "currencyCatalog": "Catalog Currency",
+    "orderTax": "Order Tax",
+    "orderTaxEnabled": "Enable Order Tax",
+    "orderTaxEnabledHint": "Apply a global tax rate to orders at checkout",
+    "orderTaxRate": "Order Tax Rate (%)"
   },
   "users": {
     "title": "Users",

@@ -40,6 +40,10 @@ export interface Settings {
   // Top-level page visibility flag. Backend returns 1/0 (int) — see
   // options.fast_shipping.enabled for the operational flag.
   fast_shipping_page_publish: number | boolean | string;
+  // Global order tax (applied at checkout on top of product totals).
+  // Backend accepts mixed shapes like other flags: boolean / 1|0 / "1"|"0".
+  order_tax_enabled?: boolean | number | string;
+  order_tax_rate?: number | string | null;
   minimumOrderAmount: string;
   currency_selection_enabled: boolean | number | string;
   options: SettingsOptions | null;
@@ -62,6 +66,8 @@ export interface UpdateSettingsPayload {
   'site_copy_right[en]': string;
   'site_copy_right[ar]': string;
   minimum_order_amount?: string | number;
+  order_tax_enabled?: number;
+  order_tax_rate?: string | number;
   site_email: string;
   email_support: string;
   facebook: string;

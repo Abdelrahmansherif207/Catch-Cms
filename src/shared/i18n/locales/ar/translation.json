@@ -1003,7 +1003,11 @@
     "currencySelectionHint": "السماح للعملاء باختيار العملة المتاحة",
     "currencyActive": "العملة النشطة",
     "currencyBase": "العملة الأساسية",
-    "currencyCatalog": "عملة الكتالوج"
+    "currencyCatalog": "عملة الكتالوج",
+    "orderTax": "ضريبة الطلب",
+    "orderTaxEnabled": "تفعيل ضريبة الطلب",
+    "orderTaxEnabledHint": "تطبيق نسبة ضريبة عامة على الطلبات عند إتمام الشراء",
+    "orderTaxRate": "نسبة ضريبة الطلب (%)"
   },
   "users": {
     "title": "المستخدمون",

@@ -10,7 +10,7 @@ import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Switch } from '@/shared/ui/switch';
 import { useSettings, useUpdateSettings } from '../hooks/use-settings';
-import { settingsSchema, toApiFormat, toBooleanFlag, type SettingsFormValues } from '../schemas/settings.schema';
+import { settingsSchema, toApiFormat, toBooleanFlag, type SettingsFormInput, type SettingsFormValues } from '../schemas/settings.schema';
 import type { UpdateSettingsPayload } from '../types/settings.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -32,7 +32,7 @@ export function SettingsPage() {
     }
   }, [data?.data]);
 
-  const form = useForm<SettingsFormValues>({
+  const form = useForm<SettingsFormInput, unknown, SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     mode: 'onBlur',
     values: {
@@ -71,11 +71,19 @@ export function SettingsPage() {
         : '',
       fastShippingStartHour: data?.data?.options?.fast_shipping?.start_hour || '',
       fastShippingEndHour: data?.data?.options?.fast_shipping?.end_hour || '',
+      orderTaxEnabled: toBooleanFlag(data?.data?.order_tax_enabled),
+      orderTaxRate: (() => {
+        const raw = data?.data?.order_tax_rate;
+        if (raw === undefined || raw === null || raw === '') return undefined;
+        const num = Number(raw);
+        return Number.isFinite(num) ? num : undefined;
+      })(),
     },
   });
 
   const fastShippingPagePublish = useWatch({ control: form.control, name: 'fastShippingPagePublish' });
   const currencySelectionEnabled = useWatch({ control: form.control, name: 'currencySelectionEnabled' });
+  const orderTaxEnabled = useWatch({ control: form.control, name: 'orderTaxEnabled' });
 
   // The toggle reflects the effective state: ON only when both the page flag
   // and the backend operational flag (options.fast_shipping.enabled) are on.
@@ -365,6 +373,43 @@ export function SettingsPage() {
               <Input type="time" {...form.register('fastShippingEndHour')} />
             </div>
           </div>
+        </div>
+
+        <div className="rounded-lg border p-6 space-y-4">
+          <h2 className="text-lg font-semibold">{t('settings.orderTax')}</h2>
+          <Separator />
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <label className="text-sm font-medium">{t('settings.orderTaxEnabled')}</label>
+              <p className="text-xs text-muted-foreground">{t('settings.orderTaxEnabledHint')}</p>
+            </div>
+            <Switch
+              checked={orderTaxEnabled}
+              disabled={isPending}
+              onCheckedChange={(checked) => {
+                form.setValue('orderTaxEnabled', !!checked, { shouldDirty: true, shouldValidate: true });
+                if (!checked) {
+                  form.setValue('orderTaxRate', undefined, { shouldDirty: true });
+                }
+              }}
+            />
+          </div>
+          {orderTaxEnabled && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('settings.orderTaxRate')}</label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                {...form.register('orderTaxRate')}
+                placeholder="10"
+              />
+              {getError('orderTaxRate') && (
+                <p className="text-xs text-destructive">{getError('orderTaxRate')}</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border p-6 space-y-4">
