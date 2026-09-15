@@ -7,6 +7,7 @@ import { useProduct } from '../hooks/use-products';
 import { ProductForm } from '../components/product-form';
 import { productRoutes } from '../routes/product.routes';
 import type { ProductFormValues } from '../schemas/product.schema';
+import { isActiveStatus, isTruthyFlag } from '../schemas/product.schema';
 import type { Product } from '../types/product.types';
 
 function parseJsonField(val: string): { en: string; ar: string } {
@@ -21,20 +22,26 @@ function parseJsonField(val: string): { en: string; ar: string } {
   return { en: val, ar: val };
 }
 
+// The API returns mixed shapes for these flags (boolean, 1/0, or string
+// enums like "publish"/"draft" for status). Normalize to the booleans the
+// form schema expects — otherwise validation fails and submit never fires.
 function productToFormValues(product: Product): ProductFormValues {
   const name = parseJsonField(product.name);
   const description = parseJsonField(product.description);
 
   return {
     productType: (product.product_type as 'simple' | 'variable') || 'simple',
+    itemType: product.item_type === 'DIGITAL' ? 'DIGITAL' : 'PHYSICAL',
+    taxEnabled: isTruthyFlag(product.tax_enabled ?? product.tax?.tax_enabled),
+    taxRate: product.tax_rate ?? product.tax?.tax_rate ?? undefined,
     nameEn: name.en,
     nameAr: name.ar,
     descriptionEn: description.en,
     descriptionAr: description.ar,
     price: product.price || undefined,
     quantity: product.stock_quantity || undefined,
-    inStock: product.in_stock === 1,
-    status: product.status,
+    inStock: isTruthyFlag(product.in_stock),
+    status: isActiveStatus(product.status),
     categoryIds: product.categories?.map((c) => c.id) || [],
     brandIds: product.brands?.map((b) => b.id) || [],
     bannerIds: product.banners?.map((b) => b.id) || [],

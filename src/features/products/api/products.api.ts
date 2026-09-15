@@ -35,6 +35,9 @@ export interface CreateProductData {
   'description[en]'?: string;
   'description[ar]'?: string;
   product_type: string;
+  item_type?: 'PHYSICAL' | 'DIGITAL';
+  tax_enabled?: string;
+  tax_rate?: number;
   price?: number;
   quantity?: number;
   in_stock: string;
@@ -128,6 +131,9 @@ export async function updateProduct(id: number, payload: UpdateProductData): Pro
   if (payload['description[ar]']) formData.append('description[ar]', payload['description[ar]']);
 
   formData.append('product_type', payload.product_type);
+  if (payload.item_type) formData.append('item_type', payload.item_type);
+  if (payload.tax_enabled !== undefined) formData.append('tax_enabled', payload.tax_enabled);
+  if (payload.tax_rate !== undefined) formData.append('tax_rate', payload.tax_rate.toString());
   formData.append('in_stock', payload.in_stock);
   formData.append('status', payload.status);
 
@@ -202,6 +208,9 @@ export async function createProduct(payload: CreateProductData): Promise<ApiResp
   if (payload['description[ar]']) formData.append('description[ar]', payload['description[ar]']);
 
   formData.append('product_type', payload.product_type);
+  if (payload.item_type) formData.append('item_type', payload.item_type);
+  if (payload.tax_enabled !== undefined) formData.append('tax_enabled', payload.tax_enabled);
+  if (payload.tax_rate !== undefined) formData.append('tax_rate', payload.tax_rate.toString());
   formData.append('in_stock', payload.in_stock);
   formData.append('status', payload.status);
 

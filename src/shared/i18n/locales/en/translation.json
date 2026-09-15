@@ -381,6 +381,8 @@
     "imageMaxSize": "Image must be 2MB or less",
     "invalidNumber": "Please enter a valid non-negative number",
     "invalidTime": "Please enter a valid time (HH:MM)",
+    "taxRateRequired": "Tax rate is required when tax is enabled",
+    "taxRateRange": "Tax rate must be between 0 and 100",
     "closeAfterOpen": "Close time must be after open time",
     "atLeastOneWorkingDay": "Select at least one working day"
   },
@@ -751,6 +753,7 @@
     "active": "Active",
     "inactive": "Inactive",
     "sortBy": "Sort By",
+    "sortByDefault": "Default",
     "sortCreatedAt": "Created At",
     "sortDiscount": "Discount",
     "sortStartDate": "Start Date",
@@ -1102,7 +1105,11 @@
     "currencySelectionHint": "Allow customers to choose between available currencies",
     "currencyActive": "Active Currency",
     "currencyBase": "Base Currency",
-    "currencyCatalog": "Catalog Currency"
+    "currencyCatalog": "Catalog Currency",
+    "orderTax": "Order Tax",
+    "orderTaxEnabled": "Enable Order Tax",
+    "orderTaxEnabledHint": "Apply a global tax rate to orders at checkout",
+    "orderTaxRate": "Order Tax Rate (%)"
   },
   "users": {
     "title": "Users",
@@ -1519,6 +1526,7 @@
   "productsForm": {
     "createProduct": "Create Product",
     "createSubtitle": "Fill in the details to add a new product.",
+    "updateProduct": "Update Product",
     "editProduct": "Edit Product",
     "editSubtitle": "Update the product details below.",
     "basicInfo": "Basic Information",
@@ -1578,7 +1586,16 @@
     "skuPlaceholder": "Auto-generated if empty",
     "attributeValues": "Attributes",
     "searchAttributes": "Search attributes...",
-    "noAttributes": "No attributes found"
+    "noAttributes": "No attributes found",
+    "itemType": "Item Type",
+    "physical": "Physical",
+    "digital": "Digital",
+    "itemTypeLockedHint": "Item type cannot be changed once the product has orders or digital assets.",
+    "tax": "Tax",
+    "taxEnabled": "Tax Enabled",
+    "taxRate": "Tax Rate (%)",
+    "taxAmount": "Tax Amount",
+    "priceIncludingTax": "Price Including Tax"
   },
   "reviews": {
     "pageTitle": "Reviews",

@@ -85,9 +85,14 @@ export interface Product {
   available_stock: number;
   quantity: number;
   sold_quantity: number;
-  in_stock: number;
-  status: boolean;
+  in_stock: number | boolean;
+  status: boolean | number | string;
   product_type: string | null;
+  item_type?: 'PHYSICAL' | 'DIGITAL';
+  tax_enabled?: boolean;
+  tax_rate?: number | null;
+  tax?: { tax_enabled: boolean; tax_rate: number | null; amount: number } | null;
+  price_including_tax?: number | null;
   height: string;
   width: string;
   length: string;

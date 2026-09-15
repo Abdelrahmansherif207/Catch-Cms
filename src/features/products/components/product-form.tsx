@@ -1,12 +1,12 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2, X, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Textarea } from '@/shared/ui/textarea';
 import { ScrollArea } from '@/shared/ui/scroll-area';
+import { RichTextEditor } from '@/shared/components/rich-text-editor';
 import {
   Select,
   SelectContent,
@@ -130,11 +130,17 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
     defaultValues: productFormDefaults,
   });
 
+  // Reset only when the edited product changes. `initialValues` is rebuilt
+  // on every parent render, so resetting unconditionally would wipe
+  // in-progress edits (and could interfere with submit) on any re-render.
+  const lastResetKey = useRef<string | null>(null);
+  const resetKey = isEditMode ? `product:${productId}` : 'create';
   useEffect(() => {
-    if (initialValues) {
+    if (initialValues && lastResetKey.current !== resetKey) {
+      lastResetKey.current = resetKey;
       form.reset(initialValues);
     }
-  }, [initialValues, form]);
+  }, [initialValues, form, resetKey]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -142,6 +148,8 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   });
 
   const productType = form.watch('productType');
+  const itemType = form.watch('itemType');
+  const taxEnabled = form.watch('taxEnabled');
 
   const attributeValueItems = useMemo(() => {
     const attributes = attributesData ?? [];
@@ -261,21 +269,44 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           {t('productsForm.basicInfo')}
         </h3>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">{t('productsForm.productType')}</label>
-          <Select
-            value={form.watch('productType')}
-            onValueChange={(value) => form.setValue('productType', value as 'simple' | 'variable')}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="simple">{t('productsForm.simple')}</SelectItem>
-              <SelectItem value="variable">{t('productsForm.variable')}</SelectItem>
-            </SelectContent>
-          </Select>
-          {getError('productType') && <p className="text-xs text-destructive">{getError('productType')}</p>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('productsForm.productType')}</label>
+            <Select
+              value={form.watch('productType')}
+              onValueChange={(value) => form.setValue('productType', value as 'simple' | 'variable')}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="simple">{t('productsForm.simple')}</SelectItem>
+                <SelectItem value="variable">{t('productsForm.variable')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {getError('productType') && <p className="text-xs text-destructive">{getError('productType')}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('productsForm.itemType')}</label>
+            <Select
+              value={form.watch('itemType')}
+              onValueChange={(value) => form.setValue('itemType', value as 'PHYSICAL' | 'DIGITAL')}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PHYSICAL">{t('productsForm.physical')}</SelectItem>
+                <SelectItem value="DIGITAL">{t('productsForm.digital')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {(getError('itemType') || getError('item_type')) && (
+              <p className="text-xs text-destructive">{getError('itemType') || getError('item_type')}</p>
+            )}
+            {isEditMode && (
+              <p className="text-xs text-muted-foreground">{t('productsForm.itemTypeLockedHint')}</p>
+            )}
+          </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -297,12 +328,20 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             )}
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-1.5">
             <label htmlFor="descriptionEn" className="text-sm font-medium">
               {t('productsForm.descriptionEn')}
             </label>
-            <Textarea id="descriptionEn" placeholder={t('productsForm.descriptionEn')} rows={2} {...form.register('descriptionEn')} />
+            <RichTextEditor
+              id="descriptionEn"
+              value={form.watch('descriptionEn') ?? ''}
+              onChange={(content) =>
+                form.setValue('descriptionEn', content, { shouldDirty: true, shouldValidate: true })
+              }
+              onBlur={() => form.trigger('descriptionEn')}
+              placeholder={t('productsForm.descriptionEn')}
+            />
             {(getError('descriptionEn') || getError('description[en]')) && (
               <p className="text-xs text-destructive">{getError('descriptionEn') || getError('description[en]')}</p>
             )}
@@ -311,7 +350,16 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             <label htmlFor="descriptionAr" className="text-sm font-medium">
               {t('productsForm.descriptionAr')}
             </label>
-            <Textarea id="descriptionAr" placeholder={t('productsForm.descriptionAr')} dir="rtl" rows={2} {...form.register('descriptionAr')} />
+            <RichTextEditor
+              id="descriptionAr"
+              dir="rtl"
+              value={form.watch('descriptionAr') ?? ''}
+              onChange={(content) =>
+                form.setValue('descriptionAr', content, { shouldDirty: true, shouldValidate: true })
+              }
+              onBlur={() => form.trigger('descriptionAr')}
+              placeholder={t('productsForm.descriptionAr')}
+            />
             {(getError('descriptionAr') || getError('description[ar]')) && (
               <p className="text-xs text-destructive">{getError('descriptionAr') || getError('description[ar]')}</p>
             )}
@@ -471,6 +519,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                     </div>
                   </div>
 
+                  {itemType === 'PHYSICAL' && (
                   <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium">{t('productsForm.height')}</label>
@@ -501,6 +550,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -528,6 +578,56 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
           </div>
         </>
       )}
+
+      <hr className="border-t" />
+
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          {t('productsForm.tax')}
+        </h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('productsForm.taxEnabled')}</label>
+            <Select
+              value={taxEnabled ? '1' : '0'}
+              onValueChange={(value) => {
+                form.setValue('taxEnabled', value === '1');
+                if (value !== '1') {
+                  form.setValue('taxRate', undefined);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue>{taxEnabled ? t('productsForm.yes') : t('productsForm.no')}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">{t('productsForm.yes')}</SelectItem>
+                <SelectItem value="0">{t('productsForm.no')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {getError('taxEnabled') && <p className="text-xs text-destructive">{getError('taxEnabled')}</p>}
+          </div>
+          {taxEnabled && (
+            <div className="space-y-1.5">
+              <label htmlFor="taxRate" className="text-sm font-medium">
+                {t('productsForm.taxRate')} *
+              </label>
+              <Input
+                id="taxRate"
+                type="number"
+                step="0.01"
+                min={0}
+                max={100}
+                placeholder="0"
+                {...form.register('taxRate')}
+              />
+              {(getError('taxRate') || getError('tax_rate')) && (
+                <p className="text-xs text-destructive">{getError('taxRate') || getError('tax_rate')}</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       <hr className="border-t" />
 
@@ -748,7 +848,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
         )}
       </div>
 
-      {productType === 'simple' && (
+      {productType === 'simple' && itemType === 'PHYSICAL' && (
         <>
           <hr className="border-t" />
 
@@ -834,7 +934,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               {t('common.loading')}
             </>
           ) : (
-            t(isEditMode ? 'productsForm.editProduct' : 'productsForm.createProduct')
+            t(isEditMode ? 'productsForm.updateProduct' : 'productsForm.createProduct')
           )}
         </Button>
       </div>

@@ -331,6 +331,8 @@
     "imageMaxSize": "Image must be 2MB or less",
     "invalidNumber": "يرجى إدخال رقم صحيح غير سالب",
     "invalidTime": "يرجى إدخال وقت صحيح (HH:MM)",
+    "taxRateRequired": "نسبة الضريبة مطلوبة عند تفعيل الضريبة",
+    "taxRateRange": "يجب أن تكون نسبة الضريبة بين 0 و 100",
     "closeAfterOpen": "يجب أن يكون وقت الإغلاق بعد وقت الفتح",
     "atLeastOneWorkingDay": "اختر يوم عمل واحد على الأقل"
   },
@@ -655,6 +657,7 @@
     "active": "نشط",
     "inactive": "غير نشط",
     "sortBy": "ترتيب حسب",
+    "sortByDefault": "افتراضي",
     "sortCreatedAt": "تاريخ الإنشاء",
     "sortDiscount": "قيمة الخصم",
     "sortStartDate": "تاريخ البداية",
@@ -1006,7 +1009,11 @@
     "currencySelectionHint": "السماح للعملاء باختيار العملة المتاحة",
     "currencyActive": "العملة النشطة",
     "currencyBase": "العملة الأساسية",
-    "currencyCatalog": "عملة الكتالوج"
+    "currencyCatalog": "عملة الكتالوج",
+    "orderTax": "ضريبة الطلب",
+    "orderTaxEnabled": "تفعيل ضريبة الطلب",
+    "orderTaxEnabledHint": "تطبيق نسبة ضريبة عامة على الطلبات عند إتمام الشراء",
+    "orderTaxRate": "نسبة ضريبة الطلب (%)"
   },
   "users": {
     "title": "المستخدمون",
@@ -1423,6 +1430,7 @@
   "productsForm": {
     "createProduct": "إنشاء منتج",
     "createSubtitle": "املأ التفاصيل لإضافة منتج جديد.",
+    "updateProduct": "تحديث المنتج",
     "basicInfo": "المعلومات الأساسية",
     "nameEn": "الاسم (إنجليزي)",
     "nameAr": "الاسم (عربي)",
@@ -1481,6 +1489,15 @@
     "attributeValues": "السمات",
     "searchAttributes": "البحث في السمات...",
     "noAttributes": "لم يتم العثور على سمات",
+    "itemType": "طبيعة المنتج",
+    "physical": "مادي",
+    "digital": "رقمي",
+    "itemTypeLockedHint": "لا يمكن تغيير طبيعة المنتج بعد وجود طلبات أو ملفات رقمية مرتبطة به.",
+    "tax": "الضريبة",
+    "taxEnabled": "تفعيل الضريبة",
+    "taxRate": "نسبة الضريبة (%)",
+    "taxAmount": "قيمة الضريبة",
+    "priceIncludingTax": "السعر شامل الضريبة",
     "editProduct": "Edit Product",
     "editSubtitle": "Update the product details below."
   },
