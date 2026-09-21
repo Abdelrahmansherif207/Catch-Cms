@@ -45,6 +45,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { SliderImageCell } from './slider-image-cell';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { SliderDeleteDialog } from './slider-delete-dialog';
 import { useChangeSliderStatus, useReorderSliders } from '../hooks/use-sliders';
 import type { Slider } from '../types/slider.types';
@@ -128,7 +129,7 @@ function SortableRow({
             disabled={isPendingStatus}
             title={slider.status ? t('sliders.deactivate') : t('sliders.activate')}
           >
-            {slider.status ? <Power className="h-4 w-4 text-green-600" /> : <PowerOff className="h-4 w-4 text-muted-foreground" />}
+            {slider.status ? <Power className="h-4 w-4 text-success" /> : <PowerOff className="h-4 w-4 text-muted-foreground" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
@@ -202,13 +203,7 @@ export function SlidersTable({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -245,7 +240,7 @@ export function SlidersTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -265,8 +260,8 @@ export function SlidersTable({
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    {t('common.noData')}
+                  <TableCell colSpan={6}>
+                    <DataEmptyState className="border-0" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -312,7 +307,7 @@ function SliderCard({ slider, index, onMoveUp, onEdit, onToggleStatus, onDelete,
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-2">
+    <div className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -357,7 +352,7 @@ function SliderCard({ slider, index, onMoveUp, onEdit, onToggleStatus, onDelete,
             disabled={isPendingStatus}
             title={slider.status ? t('sliders.deactivate') : t('sliders.activate')}
           >
-            {slider.status ? <Power className="h-4 w-4 text-green-600" /> : <PowerOff className="h-4 w-4 text-muted-foreground" />}
+            {slider.status ? <Power className="h-4 w-4 text-success" /> : <PowerOff className="h-4 w-4 text-muted-foreground" />}
           </Button>
           <StatusBadge status={slider.status} />
         </div>
@@ -368,7 +363,7 @@ function SliderCard({ slider, index, onMoveUp, onEdit, onToggleStatus, onDelete,
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -404,7 +399,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-start gap-3">
             <Skeleton className="h-4 w-4 shrink-0" />
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />

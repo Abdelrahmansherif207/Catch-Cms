@@ -51,9 +51,9 @@ export function AttributeDeleteDialog({
         </DialogHeader>
 
         {valuesCount && valuesCount > 0 && (
-          <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/20">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-500" />
-            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+          <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning-soft p-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+            <p className="text-sm text-warning">
               {t('attributes.deleteCascadeWarning', { count: valuesCount })}
             </p>
           </div>

@@ -2,6 +2,8 @@
 import { Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -10,6 +12,8 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { DataErrorState } from '@/shared/components/data-state';
 import { SlidersTable } from '../components/sliders-table';
 import { SliderFormDialog } from '../components/slider-form-dialog';
 import { useSliders } from '../hooks/use-sliders';
@@ -33,7 +37,7 @@ export function SlidersPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, refetch } = useSliders(params);
+  const { data, isLoading, isError, refetch } = useSliders(params);
 
   const sliders = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -59,62 +63,77 @@ export function SlidersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t('sliders.pageTitle')}</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="me-1.5 h-4 w-4" />
-            {t('common.create')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('sliders.pageTitle')}
+        description={t('sliders.subtitle')}
+        actions={
+          <>
+            <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="me-1.5 h-4 w-4" />
+              {t('common.create')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Select value={activeFilter} onValueChange={(v) => v && (setActiveFilter(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('sliders.allStatuses')}</SelectItem>
-            <SelectItem value="1">{t('sliders.active')}</SelectItem>
-            <SelectItem value="0">{t('sliders.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={order} onValueChange={(v) => v && (setOrder(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('sliders.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="order">{t('sliders.sortOrder')}</SelectItem>
-            <SelectItem value="title">{t('sliders.sortTitle')}</SelectItem>
-            <SelectItem value="created_at">{t('sliders.sortCreatedAt')}</SelectItem>
-            <SelectItem value="status">{t('sliders.sortStatus')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortedBy} onValueChange={(v) => v && (setSortedBy(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[120px]">
-            <SelectValue placeholder={t('sliders.sortedBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">{t('sliders.asc')}</SelectItem>
-            <SelectItem value="desc">{t('sliders.desc')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[90px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="15">15</SelectItem>
-            <SelectItem value="25">25</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterBar
+        activeCount={[activeFilter].filter((v) => v !== 'all').length}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterSelect
+            value={activeFilter}
+            onValueChange={(v) => {
+              setActiveFilter(v);
+              setPage(1);
+            }}
+            prefix={t('common.status')}
+            allLabel={t('sliders.allStatuses')}
+            options={[
+              { value: '1', label: t('sliders.active') },
+              { value: '0', label: t('sliders.inactive') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
+          />
+          <Select value={order} onValueChange={(v) => v && (setOrder(v), setPage(1))}>
+            <SelectTrigger className="h-8 w-full md:w-[150px]">
+              <SelectValue placeholder={t('sliders.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="order">{t('sliders.sortOrder')}</SelectItem>
+              <SelectItem value="title">{t('sliders.sortTitle')}</SelectItem>
+              <SelectItem value="created_at">{t('sliders.sortCreatedAt')}</SelectItem>
+              <SelectItem value="status">{t('sliders.sortStatus')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortedBy} onValueChange={(v) => v && (setSortedBy(v), setPage(1))}>
+            <SelectTrigger className="h-8 w-full md:w-[120px]">
+              <SelectValue placeholder={t('sliders.sortedBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">{t('sliders.asc')}</SelectItem>
+              <SelectItem value="desc">{t('sliders.desc')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
+            <SelectTrigger className="h-8 w-full md:w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <SlidersTable
         data={sliders}

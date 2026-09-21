@@ -1,14 +1,7 @@
-import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+import { SearchInput } from '@/shared/components/search-input';
+import { FilterSelect } from '@/shared/components/filter-select';
 
 const LOG_NAME_OPTIONS = [
   { value: 'products', labelKey: 'sidebar.products' },
@@ -59,43 +52,37 @@ export function ActivityLogFilters({
 
   return (
     <>
-      <div className="relative flex-1 max-w-sm">
-        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t('activityLogs.searchPlaceholder')}
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="ps-9"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={onSearchChange}
+        placeholder={t('activityLogs.searchPlaceholder')}
+      />
 
-      <Select value={logName || '__all__'} onValueChange={onLogNameChange}>
-        <SelectTrigger className="h-8 w-full md:w-[160px]">
-          <SelectValue placeholder={t('activityLogs.allLogNames')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all__">{t('activityLogs.allLogNames')}</SelectItem>
-          {LOG_NAME_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {t(opt.labelKey)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        value={logName}
+        onValueChange={onLogNameChange}
+        prefix={t('activityLogs.entity')}
+        allLabel={t('activityLogs.allLogNames')}
+        options={LOG_NAME_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: t(opt.labelKey),
+        }))}
+        allValue=""
+        triggerClassName="w-full md:w-auto md:min-w-[190px]"
+      />
 
-      <Select value={event || '__all__'} onValueChange={onEventChange}>
-        <SelectTrigger className="h-8 w-full md:w-[150px]">
-          <SelectValue placeholder={t('activityLogs.allEvents')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all__">{t('activityLogs.allEvents')}</SelectItem>
-          {EVENT_OPTIONS.map((opt) => (
-            <SelectItem key={opt} value={opt}>
-              {opt.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim()}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        value={event}
+        onValueChange={onEventChange}
+        prefix={t('activityLogs.event')}
+        allLabel={t('activityLogs.allEvents')}
+        options={EVENT_OPTIONS.map((opt) => ({
+          value: opt,
+          label: opt.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim(),
+        }))}
+        allValue=""
+        triggerClassName="w-full md:w-auto md:min-w-[190px]"
+      />
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={onClear}>

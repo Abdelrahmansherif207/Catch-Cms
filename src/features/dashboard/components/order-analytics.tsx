@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import type { DashboardOrdersData, TimelineEntry } from '../types/dashboard.types';
 import { formatCurrency, formatNumber } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface OrderAnalyticsProps {
   data: DashboardOrdersData | undefined;
@@ -67,12 +68,7 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
   const [period, setPeriod] = useState<Period>('daily');
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.orders.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">{t('dashboard.errors.failedToLoad')}</div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.orders.title')} />;
   }
 
   const periods: { key: Period; labelKey: string }[] = [
@@ -96,19 +92,17 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
   ].filter((d) => d.value > 0) : [];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.orders.title')}</h3>
-
+    <ChartCard title={t('dashboard.orders.title')}>
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-[250px] w-full rounded-lg" />
-          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-lg" /><Skeleton className="h-[200px] rounded-lg" /></div>
+          <Skeleton className="h-[250px] w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-xl" /><Skeleton className="h-[200px] rounded-xl" /></div>
         </div>
       ) : data ? (
         <>
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.orders.timeline')}</h4>
+              <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.orders.timeline')}</h4>
               <div className="flex gap-1">
                 {periods.map((p) => (
                   <button key={p.key} onClick={() => setPeriod(p.key)}
@@ -132,13 +126,13 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+              <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
             )}
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.orders.successRate')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.orders.successRate')}</h4>
               {successPieData.length > 0 ? (
                 <div className="h-[200px] w-full" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
@@ -154,7 +148,7 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
               {sr && sr.total > 0 && (
                 <p className="text-center text-xs text-muted-foreground mt-2">
@@ -164,7 +158,7 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
             </div>
 
             <div className="flex flex-col justify-center">
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.orders.refundRate')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.orders.refundRate')}</h4>
               <div className="rounded-xl border border-border bg-card p-6 text-center">
                 <p className="text-4xl font-bold text-foreground tabular-nums">{data.refund_rate.toFixed(1)}%</p>
                 <p className="text-xs text-muted-foreground mt-1">{t('dashboard.orders.refundRate')}</p>
@@ -173,8 +167,8 @@ export function OrderAnalytics({ data, isLoading, error }: OrderAnalyticsProps) 
           </div>
         </>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
       )}
-    </div>
+    </ChartCard>
   );
 }

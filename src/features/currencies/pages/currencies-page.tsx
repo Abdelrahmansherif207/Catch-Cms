@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
-import { Input } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { FilterSelect } from '@/shared/components/filter-select';
+import { FilterBar } from '@/shared/ui/filter-bar';
 import { Button } from '@/shared/ui/button';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
 import { useCurrencies } from '../hooks/use-currencies';
 import { CurrenciesTable } from '../components/currencies-table';
 import { CurrencyFormDialog } from '../components/currency-form-dialog';
@@ -26,7 +29,7 @@ export function CurrenciesPage() {
     active: activeFilter === '1' ? true : activeFilter === '0' ? false : undefined,
   };
 
-  const { data, isLoading, refetch } = useCurrencies(params);
+  const { data, isLoading, isError, refetch } = useCurrencies(params);
   const currencies = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
   const from = data?.data?.from ?? 0;
@@ -51,53 +54,56 @@ export function CurrenciesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{t('currencies.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('currencies.subtitle')}</p>
-        </div>
-        <Button onClick={handleCreateCurrency}>
-          {t('currencies.addCurrency')}
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('currencies.searchPlaceholder')}
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="ps-9"
-          />
-        </div>
-        {search && (
-          <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setPage(1); }}>
-            {t('common.clear')}
+      <PageHeader
+        title={t('currencies.title')}
+        description={t('currencies.subtitle')}
+        actions={
+          <Button onClick={handleCreateCurrency}>
+            {t('currencies.addCurrency')}
           </Button>
-        )}
-        <Select value={activeFilter} onValueChange={(v) => { if (v) { setActiveFilter(v); setPage(1); } }}>
-          <SelectTrigger className="h-9 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('currencies.allStatuses')}</SelectItem>
-            <SelectItem value="1">{t('currencies.active')}</SelectItem>
-            <SelectItem value="0">{t('currencies.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
-          <SelectTrigger className="h-9 w-full md:w-[80px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="15">15</SelectItem>
-            <SelectItem value="25">25</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        }
+      />
+
+      <FilterBar
+        activeCount={
+          [search].filter(Boolean).length +
+          [activeFilter].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            value={search}
+            onChange={(value) => { setSearch(value); setPage(1); }}
+            placeholder={t('currencies.searchPlaceholder')}
+          />
+          <FilterSelect
+            value={activeFilter}
+            onValueChange={(v) => { setActiveFilter(v); setPage(1); }}
+            prefix={t('common.status')}
+            allLabel={t('currencies.allStatuses')}
+            options={[
+              { value: '1', label: t('currencies.active') },
+              { value: '0', label: t('currencies.inactive') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
+          />
+          <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
+            <SelectTrigger className="h-9 w-full md:w-[80px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <CurrenciesTable
         data={currencies}

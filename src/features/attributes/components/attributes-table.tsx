@@ -24,6 +24,7 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { AttributeDeleteDialog } from './attribute-delete-dialog';
+import { DataEmptyState } from '@/shared/components/data-state';
 import type { Attribute } from '../types/attribute.types';
 
 interface AttributesTableProps {
@@ -48,7 +49,7 @@ export function AttributesTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -62,8 +63,8 @@ export function AttributesTable({
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  {t('common.noData')}
+                <TableCell colSpan={5}>
+                  <DataEmptyState className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -133,7 +134,7 @@ export function AttributesTable({
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

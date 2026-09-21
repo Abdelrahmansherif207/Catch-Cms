@@ -1,4 +1,4 @@
-import { RefreshCw, Eye, Check, X, Star } from 'lucide-react';
+import { Eye, Check, X, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Table,
@@ -10,6 +10,7 @@ import {
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState, DataErrorState } from '@/shared/components/data-state';
 import { cn } from '@/shared/lib/utils';
 import { SiteReviewStatusBadge } from './site-review-status-badge';
 import type { SiteReview } from '../types/site-review.types';
@@ -43,7 +44,7 @@ function RatingStars({ rating }: { rating: number }) {
           key={i}
           className={cn(
             'h-3.5 w-3.5',
-            i < rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+            i < rating ? 'fill-warning text-warning' : 'text-muted-foreground/30'
           )}
         />
       ))}
@@ -74,20 +75,17 @@ export function SiteReviewsTable({
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border py-16">
-        <p className="text-sm text-muted-foreground">{t('siteReviews.loadError')}</p>
-        <Button variant="outline" size="sm" onClick={onRefresh}>
-          <RefreshCw className="me-2 h-4 w-4" />
-          {t('common.retry')}
-        </Button>
-      </div>
+      <DataErrorState
+        message={t('siteReviews.loadError')}
+        onRetry={onRefresh}
+      />
     );
   }
 
   const showActions = canApprove || canReject;
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -106,22 +104,18 @@ export function SiteReviewsTable({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showActions ? 10 : 9} className="h-48 text-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                    <Star className="h-8 w-8 text-muted-foreground/40" />
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm font-medium text-foreground">
-                      {t(hasActiveFilters ? 'siteReviews.noPending' : 'siteReviews.empty')}
-                    </p>
-                    {hasActiveFilters && (
+              <TableCell colSpan={showActions ? 10 : 9}>
+                <DataEmptyState
+                  title={t(hasActiveFilters ? 'siteReviews.noPending' : 'siteReviews.empty')}
+                  action={
+                    hasActiveFilters ? (
                       <Button variant="outline" size="sm" onClick={onClearFilters}>
                         {t('siteReviews.clearFilters')}
                       </Button>
-                    )}
-                  </div>
-                </div>
+                    ) : undefined
+                  }
+                  className="border-0"
+                />
               </TableCell>
             </TableRow>
           ) : (
@@ -170,7 +164,7 @@ export function SiteReviewsTable({
                           <Button
                             variant="ghost"
                             size="icon-sm"
-                            className="text-green-600 hover:text-green-700"
+                            className="text-success hover:text-success"
                             disabled={isRejecting}
                             onClick={() => onApprove(review)}
                           >
@@ -204,7 +198,7 @@ export function SiteReviewsTable({
 function TableSkeleton() {
   const showActions = true;
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

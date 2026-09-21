@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState } from '@/shared/components/data-state';
 import type { Contact } from '../types/contact.types';
 
 interface ContactsTableProps {
@@ -50,7 +51,7 @@ export function ContactsTable({
   }
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -65,19 +66,18 @@ export function ContactsTable({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                {hasActiveFilters ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-muted-foreground">{t('contacts.noFilterResults')}</p>
-                    <Button variant="outline" size="sm" onClick={onClearFilters}>
-                      {t('contacts.clearFilters')}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-muted-foreground">{t('contacts.empty')}</p>
-                  </div>
-                )}
+              <TableCell colSpan={6}>
+                <DataEmptyState
+                  title={hasActiveFilters ? t('contacts.noFilterResults') : t('contacts.empty')}
+                  action={
+                    hasActiveFilters ? (
+                      <Button variant="outline" size="sm" onClick={onClearFilters}>
+                        {t('contacts.clearFilters')}
+                      </Button>
+                    ) : undefined
+                  }
+                  className="border-0"
+                />
               </TableCell>
             </TableRow>
           ) : (
@@ -150,7 +150,7 @@ export function ContactsTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

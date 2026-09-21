@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -38,7 +42,7 @@ export function PromotionsPage() {
     sort: sort || undefined,
   };
 
-  const { data, isLoading, refetch } = usePromotions(params);
+  const { data, isLoading, isError, refetch } = usePromotions(params);
 
   const promotions = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -69,121 +73,124 @@ export function PromotionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{t('promotions.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('promotions.subtitle')}</p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('promotions.addPromotion')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('promotions.title')}
+        description={t('promotions.subtitle')}
+        actions={
+          <Button onClick={handleCreate}>
+            <Plus className="me-2 h-4 w-4" />
+            {t('promotions.addPromotion')}
+          </Button>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('promotions.searchPlaceholder')}
+      <FilterBar
+        activeCount={
+          [search].filter(Boolean).length +
+          [typeFilter, typeAmountFilter].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(value) => {
+              setSearch(value);
               setPage(1);
             }}
-            className="ps-9"
+            placeholder={t('promotions.searchPlaceholder')}
           />
+
+          {search && (
+            <Button variant="ghost" size="sm" onClick={handleClearSearch}>
+              {t('common.clear')}
+            </Button>
+          )}
+
+          <FilterSelect
+            value={typeFilter}
+            onValueChange={(v) => {
+              setTypeFilter(v);
+              setPage(1);
+            }}
+            prefix={t('promotions.type')}
+            allLabel={t('promotions.allTypes')}
+            options={[
+              { value: 'price', label: t('promotionsForm.priceDiscount') },
+              { value: 'quantity', label: t('promotionsForm.quantityPromotion') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
+          />
+
+          <FilterSelect
+            value={typeAmountFilter}
+            onValueChange={(v) => {
+              setTypeAmountFilter(v);
+              setPage(1);
+            }}
+            prefix={t('promotions.discountType')}
+            allLabel={t('promotions.allDiscountTypes')}
+            options={[
+              { value: 'fixed_rate', label: t('promotionsForm.fixedRate') },
+              { value: 'percentage', label: t('promotionsForm.percentage') },
+              { value: 'gift', label: t('promotionsForm.gift') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[200px]"
+          />
+
+          <Select
+            value={orderBy}
+            onValueChange={(v) => {
+              setOrderBy(v ?? 'created_at');
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-8 w-full md:w-[150px]">
+              <SelectValue placeholder={t('promotions.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">{t('promotions.sortCreatedAt')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={sort}
+            onValueChange={(v) => {
+              setSort(v ?? 'asc');
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-8 w-full md:w-[120px]">
+              <SelectValue placeholder={t('promotions.sortedBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">{t('promotions.asc')}</SelectItem>
+              <SelectItem value="desc">{t('promotions.desc')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={String(limit)}
+            onValueChange={(v) => {
+              setLimit(Number(v));
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-8 w-full md:w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+      </FilterBar>
 
-        {search && (
-          <Button variant="ghost" size="sm" onClick={handleClearSearch}>
-            {t('common.clear')}
-          </Button>
-        )}
-
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => {
-            setTypeFilter(v ?? 'all');
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[140px]">
-            <SelectValue placeholder={t('promotions.type')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('promotions.allTypes')}</SelectItem>
-            <SelectItem value="price">{t('promotionsForm.priceDiscount')}</SelectItem>
-            <SelectItem value="quantity">{t('promotionsForm.quantityPromotion')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={typeAmountFilter}
-          onValueChange={(v) => {
-            setTypeAmountFilter(v ?? 'all');
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[140px]">
-            <SelectValue placeholder={t('promotions.discountType')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('promotions.allDiscountTypes')}</SelectItem>
-            <SelectItem value="fixed_rate">{t('promotionsForm.fixedRate')}</SelectItem>
-            <SelectItem value="percentage">{t('promotionsForm.percentage')}</SelectItem>
-            <SelectItem value="gift">{t('promotionsForm.gift')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={orderBy}
-          onValueChange={(v) => {
-            setOrderBy(v ?? 'created_at');
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('promotions.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="created_at">{t('promotions.sortCreatedAt')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={sort}
-          onValueChange={(v) => {
-            setSort(v ?? 'asc');
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[120px]">
-            <SelectValue placeholder={t('promotions.sortedBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">{t('promotions.asc')}</SelectItem>
-            <SelectItem value="desc">{t('promotions.desc')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={String(limit)}
-          onValueChange={(v) => {
-            setLimit(Number(v));
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[90px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="15">15</SelectItem>
-            <SelectItem value="25">25</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <PromotionsTable
         data={promotions}

@@ -12,6 +12,7 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import type { RevenueData } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface RevenueChartProps {
   data: RevenueData | undefined;
@@ -41,37 +42,21 @@ export function RevenueChart({ data, isLoading, error }: RevenueChartProps) {
   const { t } = useTranslation();
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
-          {t('dashboard.revenue.title')}
-        </h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">
-          {t('dashboard.errors.failedToLoad')}
-        </div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.revenue.title')} />;
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">
-            {t('dashboard.revenue.title')}
-          </h3>
-          {data && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t('dashboard.revenue.total')}: {formatCurrency(data.total_revenue)} &middot;{' '}
-              {t('dashboard.revenue.today')}: {formatCurrency(data.todays_revenue)}
-            </p>
-          )}
-        </div>
-      </div>
+    <ChartCard title={t('dashboard.revenue.title')}>
+      {data && (
+        <p className="mb-4 text-xs text-muted-foreground">
+          {t('dashboard.revenue.total')}: {formatCurrency(data.total_revenue)} &middot;{' '}
+          {t('dashboard.revenue.today')}: {formatCurrency(data.todays_revenue)}
+        </p>
+      )}
 
       {isLoading ? (
         <div className="space-y-2">
-          <Skeleton className="h-[300px] w-full rounded-lg" />
+          <Skeleton className="h-[300px] w-full rounded-xl" />
         </div>
       ) : data?.monthly_breakdown && data.monthly_breakdown.length > 0 ? (
         <div className="h-[300px] w-full" dir="ltr">
@@ -114,10 +99,10 @@ export function RevenueChart({ data, isLoading, error }: RevenueChartProps) {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
           {t('dashboard.errors.noData')}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

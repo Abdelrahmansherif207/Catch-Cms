@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/shared/ui/select';
-import {
-  Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
-} from '@/shared/ui/pagination';
+import { FilterSelect } from '@/shared/components/filter-select';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
 import { useCountries } from '../hooks/use-shipping';
 import { CountriesTable } from '../components/countries-table';
 import { CountryFormDialog } from '../components/country-form-dialog';
@@ -21,20 +20,19 @@ export function CountriesPage() {
   const page = Number(searchParams.get('page')) || 1;
   const search = searchParams.get('search') || '';
   const status = searchParams.get('status') || '';
-  const [searchInput, setSearchInput] = useState(search);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
 
-  const { data, isLoading } = useCountries({ page, perPage: 15, search, status: status || undefined });
+  const { data, isLoading, isError, refetch } = useCountries({ page, perPage: 15, search, status: status || undefined });
   const countries = data?.data?.data || [];
   const pagination = data?.data;
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchInput) params.set('search', searchInput);
-    if (status) params.set('status', status);
+  const handleSearchChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) params.set('search', value);
+    else params.delete('search');
     params.set('page', '1');
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
   };
 
   const handleStatusFilter = (value: string) => {
@@ -63,69 +61,60 @@ export function CountriesPage() {
 
   return (
     <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('shipping.countriesTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('shipping.countriesSubtitle')}</p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="me-2 h-4 w-4" />{t('shipping.createCountry')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('shipping.countriesTitle')}
+        description={t('shipping.countriesSubtitle')}
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="me-2 h-4 w-4" />{t('shipping.createCountry')}
+          </Button>
+        }
+      />
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+      <FilterBar activeCount={[search, status].filter(Boolean).length}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <SearchInput
+            value={search}
+            onChange={handleSearchChange}
             placeholder={t('shipping.searchCountries')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="ps-9"
+            className="sm:max-w-xs"
+          />
+          <FilterSelect
+            value={status}
+            onValueChange={handleStatusFilter}
+            prefix={t('shipping.status')}
+            allLabel={t('shipping.allStatuses')}
+            options={[
+              { value: '1', label: t('shipping.active') },
+              { value: '0', label: t('shipping.inactive') },
+            ]}
+            allValue=""
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
           />
         </div>
-        <Select value={status || 'all'} onValueChange={(v) => handleStatusFilter(v ?? 'all')}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder={t('common.all')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('common.all')}</SelectItem>
-            <SelectItem value="1">{t('shipping.active')}</SelectItem>
-            <SelectItem value="0">{t('shipping.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <CountriesTable
         data={countries}
         isLoading={isLoading}
         onEdit={openEdit}
-        onRefresh={() => handleSearch()}
+        onRefresh={() => refetch()}
       />
 
-      {pagination && pagination.last_page > 1 && (
-        <Pagination>
-          <PaginationContent>
-            {pagination.current_page > 1 && (
-              <PaginationItem>
-                <PaginationPrevious onClick={() => handlePageChange(pagination.current_page - 1)} />
-              </PaginationItem>
-            )}
-            {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink isActive={p === pagination.current_page} onClick={() => handlePageChange(p)}>
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            {pagination.current_page < pagination.last_page && (
-              <PaginationItem>
-                <PaginationNext onClick={() => handlePageChange(pagination.current_page + 1)} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
+      <Pagination
+        page={pagination?.current_page ?? page}
+        lastPage={pagination?.last_page ?? 1}
+        total={pagination?.total ?? 0}
+        from={pagination?.from ?? 0}
+        to={pagination?.to ?? 0}
+        perPage={pagination?.per_page ?? 15}
+        onPageChange={handlePageChange}
+        className="py-2"
+      />
 
       <CountryFormDialog
         country={editingCountry}
@@ -133,7 +122,7 @@ export function CountriesPage() {
         onOpenChange={setFormOpen}
         onSuccess={() => {
           setEditingCountry(null);
-          handleSearch();
+          refetch();
         }}
       />
     </div>

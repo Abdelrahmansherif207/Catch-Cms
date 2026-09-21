@@ -23,10 +23,10 @@ export function StarRating({ rating, interactive, onChange, size = 'md' }: StarR
               type="button"
               onClick={() => onChange(i + 1)}
               className={`${sizeMap[size]} transition-colors ${
-                filled ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30 hover:text-amber-400/50'
+                filled ? 'fill-warning text-warning' : 'text-muted-foreground/30 hover:text-warning/50'
               }`}
             >
-              <Star className={`${sizeMap[size]} ${filled ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />
+              <Star className={`${sizeMap[size]} ${filled ? 'fill-warning text-warning' : 'text-muted-foreground/30'}`} />
             </button>
           );
         }
@@ -34,12 +34,12 @@ export function StarRating({ rating, interactive, onChange, size = 'md' }: StarR
           <Star
             key={i}
             className={`${sizeMap[size]} ${
-              filled ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+              filled ? 'fill-warning text-warning' : 'text-muted-foreground/30'
             }`}
           />
         );
       })}
-      <span className="ml-1.5 text-sm text-muted-foreground">({rating}/5)</span>
+      <span className="ms-1.5 text-sm text-muted-foreground">({rating}/5)</span>
     </div>
   );
 }

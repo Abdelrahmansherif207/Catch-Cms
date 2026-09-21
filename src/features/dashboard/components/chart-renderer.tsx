@@ -15,8 +15,11 @@ import {
 import type { ChartType } from './chart-switcher';
 
 const TM_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
-  '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
 ];
 
 interface BaseChartDataItem {
@@ -81,7 +84,7 @@ function SimpleTreemap({ data, formatter }: { data: { name: string; value: numbe
                   }}
                   title={`${item.name}: ${formatter ? formatter(item.value) : item.value}`}
                 >
-                  <span className="text-[10px] font-medium text-white leading-tight text-center px-1 pointer-events-none">
+                  <span className="text-2xs font-medium text-white leading-tight text-center px-1 pointer-events-none">
                     {item.name}
                   </span>
                 </div>
@@ -118,7 +121,7 @@ function MultiTreemap({ data, formatter }: { data: { name: string; value: number
                 }}
                 title={`${item.name}: ${formatter ? formatter(item.value) : item.value}`}
               >
-                <span className="text-[9px] font-medium text-white leading-tight text-center px-0.5 pointer-events-none">
+                <span className="text-2xs font-medium text-white leading-tight text-center px-0.5 pointer-events-none">
                   {item.name}
                 </span>
               </div>

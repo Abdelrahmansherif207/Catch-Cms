@@ -13,6 +13,7 @@ import { OrderStatusBadge } from '@/features/orders/components/order-status-badg
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { RecentOrder } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface RecentOrdersTableProps {
   data: RecentOrder[] | undefined;
@@ -25,29 +26,18 @@ export function RecentOrdersTable({ data, isLoading, error }: RecentOrdersTableP
   const lang = i18n.language || 'en';
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.recentOrders.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">
-          {t('dashboard.errors.failedToLoad')}
-        </div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.recentOrders.title')} />;
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">
-        {t('dashboard.recentOrders.title')}
-      </h3>
-
+    <ChartCard title={t('dashboard.recentOrders.title')}>
       {isLoading ? (
         <div className="space-y-2">
-          <Skeleton className="h-8 w-full rounded-lg" />
-          <Skeleton className="h-8 w-full rounded-lg" />
-          <Skeleton className="h-8 w-full rounded-lg" />
-          <Skeleton className="h-8 w-full rounded-lg" />
-          <Skeleton className="h-8 w-full rounded-lg" />
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <Skeleton className="h-8 w-full rounded-xl" />
         </div>
       ) : data && data.length > 0 ? (
         <div className="overflow-x-auto">
@@ -92,10 +82,10 @@ export function RecentOrdersTable({ data, isLoading, error }: RecentOrdersTableP
           </Table>
         </div>
       ) : (
-        <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+        <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
           {t('dashboard.errors.noData')}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

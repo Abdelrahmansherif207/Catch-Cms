@@ -8,6 +8,10 @@ interface StatusBadgeProps {
   className?: string;
 }
 
+/**
+ * Active / Inactive badge driven by semantic tokens
+ * (bg-success-soft / bg-destructive-soft) — no hardcoded palette classes.
+ */
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const { t } = useTranslation();
   // NB: plain Boolean("0") === true, so normalize explicitly.
@@ -17,10 +21,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        'text-xs font-normal',
+        'font-normal',
         isActive
-          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+          ? 'border-transparent bg-success-soft text-success'
+          : 'border-transparent bg-destructive-soft text-destructive',
         className
       )}
     >

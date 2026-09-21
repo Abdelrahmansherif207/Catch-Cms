@@ -16,6 +16,7 @@ import {
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState } from '@/shared/components/data-state';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,18 +49,12 @@ const { t, i18n } = useTranslation();
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -117,7 +112,7 @@ const { t, i18n } = useTranslation();
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,17 +1,14 @@
 ﻿import { useState } from 'react';
-import { Download, Plus, Search, Upload } from 'lucide-react';
+import { Download, Plus, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
 import { Pagination } from '@/shared/components/pagination';
-import { Input } from '@/shared/ui/input';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import { usePermissions } from '@/shared/auth/guards';
 import { useCategories, useToggleFeatured } from '../hooks/use-categories';
 import { CategoriesTable } from '../components/categories-table';
@@ -39,7 +36,7 @@ export function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<CategoryListItem | null>(null);
   const [viewTarget, setViewTarget] = useState<CategoryListItem | null>(null);
 
-  const { data, isLoading, refetch } = useCategories({
+  const { data, isLoading, isError, refetch } = useCategories({
     page,
     perPage: 15,
     search: search || undefined,
@@ -87,34 +84,30 @@ export function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('categories.title')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('categories.subtitle')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {canImport && (
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              {t('categories.importBtn')}
+      <PageHeader
+        title={t('categories.title')}
+        description={t('categories.subtitle')}
+        actions={
+          <>
+            {canImport && (
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <Upload className="me-2 h-4 w-4" />
+                {t('categories.importBtn')}
+              </Button>
+            )}
+            {canExport && (
+              <Button variant="outline" onClick={() => setExportOpen(true)}>
+                <Download className="me-2 h-4 w-4" />
+                {t('categories.exportBtn')}
+              </Button>
+            )}
+            <Button onClick={handleCreate}>
+              <Plus className="me-2 h-4 w-4" />
+              {t('categories.addCategory')}
             </Button>
-          )}
-          {canExport && (
-            <Button variant="outline" onClick={() => setExportOpen(true)}>
-              <Download className="mr-2 h-4 w-4" />
-              {t('categories.exportBtn')}
-            </Button>
-          )}
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('categories.addCategory')}
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -123,80 +116,66 @@ export function CategoriesPage() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t('categories.searchPlaceholder')}
+          <FilterBar
+            activeCount={
+              [search].filter(Boolean).length +
+              [level, parentId].filter((v) => v !== 'all').length
+            }
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <SearchInput
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
+                onChange={(value) => {
+                  setSearch(value);
                   setPage(1);
                 }}
-                className="ps-9"
+                placeholder={t('categories.searchPlaceholder')}
               />
+
+              <div className="flex items-center gap-2">
+                <FilterSelect
+                  value={level}
+                  onValueChange={(value) => {
+                    setLevel(value);
+                    setPage(1);
+                  }}
+                  prefix={t('categories.level')}
+                  allLabel={t('categories.allLevels')}
+                  options={[
+                    { value: '1', label: t('categories.root') },
+                    { value: '2', label: t('categories.sub') },
+                    { value: '3', label: t('categories.subSub') },
+                  ]}
+                  triggerClassName="w-full md:w-auto md:min-w-[170px]"
+                />
+
+                <FilterSelect
+                  value={parentId}
+                  onValueChange={(value) => {
+                    setParentId(value);
+                    setPage(1);
+                  }}
+                  prefix={t('categories.parent')}
+                  allLabel={t('categories.allParents')}
+                  options={(rootsData?.data?.data ?? []).map((root) => ({
+                    value: String(root.id),
+                    label: root.name,
+                  }))}
+                  triggerClassName="w-full md:w-auto md:min-w-[190px]"
+                />
+
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                    {t('common.clear')}
+                  </Button>
+                )}
+              </div>
             </div>
+          </FilterBar>
 
-            <div className="flex items-center gap-2">
-              <Select
-                value={level}
-                onValueChange={(value) => {
-                  setLevel(value ?? 'all');
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full md:w-[140px]">
-                  <SelectValue placeholder={t('categories.allLevels')}>
-                    {level === 'all'
-                      ? t('categories.allLevels')
-                      : level === '1'
-                        ? t('categories.root')
-                        : level === '2'
-                          ? t('categories.sub')
-                          : t('categories.subSub')}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('categories.allLevels')}</SelectItem>
-                  <SelectItem value="1">{t('categories.root')} </SelectItem>
-                  <SelectItem value="2">{t('categories.sub')} </SelectItem>
-                  <SelectItem value="3">{t('categories.subSub')} </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={parentId}
-                onValueChange={(value) => {
-                  setParentId(value ?? 'all');
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full md:w-[160px]">
-                  <SelectValue placeholder={t('categories.allParents')}>
-                    {parentId === 'all'
-                      ? t('categories.allParents')
-                      : (rootsData?.data?.data ?? []).find(
-                          (root) => String(root.id) === parentId
-                        )?.name ?? parentId}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('categories.allParents')}</SelectItem>
-                  {(rootsData?.data?.data ?? []).map((root) => (
-                    <SelectItem key={root.id} value={String(root.id)}>
-                      {root.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                  {t('common.clear')}
-                </Button>
-              )}
-            </div>
-          </div>
+          {isError && (
+            <DataErrorState onRetry={() => refetch()} />
+          )}
 
           <CategoriesTable
             data={data?.data?.data || []}

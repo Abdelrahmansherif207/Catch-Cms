@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, ArrowLeft } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 import { useSearchParams, useParams, useNavigate } from 'react-router';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import {
-  Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
-} from '@/shared/ui/pagination';
+import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
 import { useCities } from '../hooks/use-shipping';
 import { CitiesTable } from '../components/cities-table';
 import { CityFormDialog } from '../components/city-form-dialog';
@@ -20,19 +20,19 @@ export function CitiesPage() {
   const governorateId = params.governorateId ? Number(params.governorateId) : undefined;
   const page = Number(searchParams.get('page')) || 1;
   const search = searchParams.get('search') || '';
-  const [searchInput, setSearchInput] = useState(search);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCity, setEditingCity] = useState<City | null>(null);
 
-  const { data, isLoading } = useCities({ page, perPage: 15, search, governorate_id: governorateId });
+  const { data, isLoading, isError, refetch } = useCities({ page, perPage: 15, search, governorate_id: governorateId });
   const cities = data?.data?.data || [];
   const pagination = data?.data;
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchInput) params.set('search', searchInput);
+  const handleSearchChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) params.set('search', value);
+    else params.delete('search');
     params.set('page', '1');
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
   };
 
   const handlePageChange = (p: number) => {
@@ -53,62 +53,50 @@ export function CitiesPage() {
 
   return (
     <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('shipping.citiesTitle')}</h1>
-            <p className="text-sm text-muted-foreground">{t('shipping.citiesSubtitle')}</p>
-          </div>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="me-2 h-4 w-4" />{t('shipping.createCity')}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label={t('common.back')} className="shrink-0">
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         </Button>
-      </div>
-
-      <div className="relative flex-1 max-w-xs">
-        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t('shipping.searchCities')}
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          className="ps-9"
+        <PageHeader
+          title={t('shipping.citiesTitle')}
+          description={t('shipping.citiesSubtitle')}
+          actions={
+            <Button onClick={openCreate}>
+              <Plus className="me-2 h-4 w-4" />{t('shipping.createCity')}
+            </Button>
+          }
+          className="flex-1"
         />
       </div>
+
+      <SearchInput
+        value={search}
+        onChange={handleSearchChange}
+        placeholder={t('shipping.searchCities')}
+        className="sm:max-w-xs"
+      />
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <CitiesTable
         data={cities}
         isLoading={isLoading}
         onEdit={openEdit}
-        onRefresh={() => handleSearch()}
+        onRefresh={() => refetch()}
       />
 
-      {pagination && pagination.last_page > 1 && (
-        <Pagination>
-          <PaginationContent>
-            {pagination.current_page > 1 && (
-              <PaginationItem>
-                <PaginationPrevious onClick={() => handlePageChange(pagination.current_page - 1)} />
-              </PaginationItem>
-            )}
-            {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink isActive={p === pagination.current_page} onClick={() => handlePageChange(p)}>
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            {pagination.current_page < pagination.last_page && (
-              <PaginationItem>
-                <PaginationNext onClick={() => handlePageChange(pagination.current_page + 1)} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
+      <Pagination
+        page={pagination?.current_page ?? page}
+        lastPage={pagination?.last_page ?? 1}
+        total={pagination?.total ?? 0}
+        from={pagination?.from ?? 0}
+        to={pagination?.to ?? 0}
+        perPage={pagination?.per_page ?? 15}
+        onPageChange={handlePageChange}
+        className="py-2"
+      />
 
       <CityFormDialog
         city={editingCity}
@@ -117,7 +105,7 @@ export function CitiesPage() {
         onOpenChange={setFormOpen}
         onSuccess={() => {
           setEditingCity(null);
-          handleSearch();
+          refetch();
         }}
       />
     </div>

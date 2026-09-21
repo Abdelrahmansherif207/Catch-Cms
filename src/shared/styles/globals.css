@@ -17,9 +17,30 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
+  }
+  /* Tabular numerals for data-dense UI (tables, KPIs, pagination) */
+  [data-slot="table-cell"],
+  [data-slot="table-head"],
+  [data-slot="pagination"],
+  .tabular-data {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Skeleton shimmer sweep */
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes skeleton-shimmer-rtl {
+  100% {
+    transform: translateX(-100%);
   }
 }
 
@@ -27,4 +48,16 @@
   .direction-ltr {
     direction: ltr !important;
   }
+}
+
+/*
+ * TinyMCE chrome — match app inputs (Oxide skin has no token support,
+ * so align the container frame with our radius/border tokens).
+ */
+.tox-tinymce {
+  border-radius: var(--radius-lg) !important;
+  border-color: var(--input) !important;
+}
+.tox-tinymce:focus-within {
+  border-color: var(--ring) !important;
 }

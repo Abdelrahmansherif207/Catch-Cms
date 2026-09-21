@@ -105,7 +105,7 @@ export function SectionsTable({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
           <p className="text-sm text-muted-foreground">{t('staticPages.noSections')}</p>
           {canEdit && (
@@ -121,7 +121,7 @@ export function SectionsTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <DndContext sensors={canEdit ? sensors : undefined} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <Table>
             <TableHeader>
@@ -242,7 +242,7 @@ function SortableRow({
         <p className="font-medium truncate">{sectionTitle(section, lang)}</p>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="font-mono text-[11px]">
+        <Badge variant="outline" className="font-mono text-2xs">
           {section.type ?? 'text'}
         </Badge>
       </TableCell>
@@ -311,7 +311,7 @@ function SectionMediaThumb({ section }: { section: StaticPageSection }) {
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

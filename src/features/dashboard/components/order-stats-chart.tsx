@@ -13,6 +13,7 @@ import type { OrderStatsData, OrderStats } from '../types/dashboard.types';
 import { ChartSwitcher } from './chart-switcher';
 import type { ChartType } from './chart-switcher';
 import { SimpleChartRenderer } from './chart-renderer';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface OrderStatsChartProps {
   data: OrderStatsData | undefined;
@@ -30,14 +31,14 @@ const timeRanges: { key: TimeRange; labelKey: string }[] = [
 ];
 
 const STATUS_CONFIG: Record<string, { labelKey: string; color: string }> = {
-  pending: { labelKey: 'dashboard.orderStats.pending', color: '#CF9E36' },
-  processing: { labelKey: 'dashboard.orderStats.processing', color: '#E67E22' },
-  completed: { labelKey: 'dashboard.orderStats.completed', color: '#3DB87A' },
-  cancelled: { labelKey: 'dashboard.orderStats.cancelled', color: '#EF4444' },
-  refunded: { labelKey: 'dashboard.orderStats.refunded', color: '#8B8FA3' },
-  failed: { labelKey: 'dashboard.orderStats.failed', color: '#DC2626' },
-  local_facility: { labelKey: 'dashboard.orderStats.localFacility', color: '#6366F1' },
-  out_for_delivery: { labelKey: 'dashboard.orderStats.outForDelivery', color: '#0EA5E9' },
+  pending: { labelKey: 'dashboard.orderStats.pending', color: 'var(--warning)' },
+  processing: { labelKey: 'dashboard.orderStats.processing', color: 'var(--brand-processing)' },
+  completed: { labelKey: 'dashboard.orderStats.completed', color: 'var(--success)' },
+  cancelled: { labelKey: 'dashboard.orderStats.cancelled', color: 'var(--destructive)' },
+  refunded: { labelKey: 'dashboard.orderStats.refunded', color: 'var(--muted-foreground)' },
+  failed: { labelKey: 'dashboard.orderStats.failed', color: 'var(--chart-5)' },
+  local_facility: { labelKey: 'dashboard.orderStats.localFacility', color: 'var(--primary)' },
+  out_for_delivery: { labelKey: 'dashboard.orderStats.outForDelivery', color: 'var(--info)' },
 };
 
 interface CustomTooltipProps {
@@ -62,14 +63,7 @@ export function OrderStatsChart({ data, isLoading, error }: OrderStatsChartProps
   const [chartType, setChartType] = useState<ChartType>('pie');
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.orderStats.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">
-          {t('dashboard.errors.failedToLoad')}
-        </div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.orderStats.title')} />;
   }
 
   const currentData: OrderStats | undefined = data ? data[activeRange] : undefined;
@@ -80,16 +74,14 @@ export function OrderStatsChart({ data, isLoading, error }: OrderStatsChartProps
         .map(([key, value]) => ({
           name: t(STATUS_CONFIG[key]?.labelKey ?? key),
           value,
-          color: STATUS_CONFIG[key]?.color ?? '#8B8FA3',
+          color: STATUS_CONFIG[key]?.color ?? 'var(--muted-foreground)',
         }))
     : [];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">
-          {t('dashboard.orderStats.title')}
-        </h3>
+    <ChartCard
+      title={t('dashboard.orderStats.title')}
+      action={
         <div className="flex items-center gap-2">
           <ChartSwitcher type={chartType} onChange={setChartType} showPie />
           <div className="flex gap-1">
@@ -108,10 +100,10 @@ export function OrderStatsChart({ data, isLoading, error }: OrderStatsChartProps
             ))}
           </div>
         </div>
-      </div>
-
+      }
+    >
       {isLoading ? (
-        <Skeleton className="h-[250px] w-full rounded-lg" />
+        <Skeleton className="h-[250px] w-full rounded-xl" />
       ) : chartData.length > 0 ? (
         chartType === 'pie' ? (
           <div className="h-[250px] w-full" dir="ltr">
@@ -145,10 +137,10 @@ export function OrderStatsChart({ data, isLoading, error }: OrderStatsChartProps
           <SimpleChartRenderer data={chartData} chartType={chartType} height={250} />
         )
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
           {t('dashboard.errors.noData')}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

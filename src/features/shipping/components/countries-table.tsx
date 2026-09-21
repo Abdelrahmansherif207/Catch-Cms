@@ -10,10 +10,10 @@ import { Button } from '@/shared/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { DeleteDialog } from './delete-dialog';
 import { useDeleteCountry } from '../hooks/use-shipping';
 import type { Country } from '../types/shipping.types';
@@ -35,13 +35,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
   if (isLoading) return isMobile ? <MobileSkeleton /> : <TableSkeleton />;
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -49,7 +43,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
       <>
         <div className="space-y-3">
           {data.map((country) => (
-            <div key={country.id} className="rounded-lg border bg-card p-3 space-y-2">
+            <div key={country.id} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-medium">{getLocalizedName(country.name, i18n.language || 'en')}</p>
@@ -96,7 +90,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -113,9 +107,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
                 <TableCell className="font-medium">{getLocalizedName(country.name, i18n.language || 'en')}</TableCell>
                 <TableCell>+{country.phone_code}</TableCell>
                 <TableCell>
-                  <Badge variant={country.status ? 'default' : 'secondary'}>
-                    {country.status ? t('shipping.active') : t('shipping.inactive')}
-                  </Badge>
+                  <StatusBadge status={country.status} />
                 </TableCell>
                 <TableCell>
                   <Button variant="link" size="sm" onClick={() => navigate(`/shipping/countries/${country.id}/governorates`)}>
@@ -160,7 +152,7 @@ export function CountriesTable({ data, isLoading, onEdit, onRefresh }: Countries
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -191,7 +183,7 @@ function MobileSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-2">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-3 w-1/3" />
           <div className="flex gap-2">

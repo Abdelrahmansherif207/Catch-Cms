@@ -196,6 +196,7 @@ export function BrandFormDialog({
               <Input
                 id="nameEn"
                 placeholder={t('brandsForm.nameEn')}
+                aria-invalid={!!getError('nameEn')}
                 {...form.register('nameEn')}
               />
               {getError('nameEn') && (
@@ -209,6 +210,7 @@ export function BrandFormDialog({
                 id="nameAr"
                 placeholder={t('brandsForm.nameAr')}
                 dir="rtl"
+                aria-invalid={!!getError('nameAr')}
                 {...form.register('nameAr')}
               />
               {getError('nameAr') && (
@@ -263,7 +265,7 @@ export function BrandFormDialog({
               {productsDropdownOpen && (
                 <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                   <div className="relative mb-1">
-                    <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder={t('brandsForm.searchProducts')}
                       value={productSearch}

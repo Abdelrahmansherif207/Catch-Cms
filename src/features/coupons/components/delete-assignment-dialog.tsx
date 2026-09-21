@@ -83,13 +83,13 @@ export function DeleteAssignmentDialog({
           </div>
 
           {isBlocked && (
-            <div className="rounded-lg border bg-red-50 border-red-200 p-3 text-sm text-red-700">
+            <div className="rounded-lg border border-transparent bg-destructive-soft p-3 text-sm text-destructive">
               Cannot delete \u2014 user has already used this coupon ({assignment.used} time{assignment.used !== 1 ? 's' : ''}).
             </div>
           )}
 
           {apiConflict && (
-            <div className="rounded-lg border bg-red-50 border-red-200 p-3 text-sm text-red-700">
+            <div className="rounded-lg border border-transparent bg-destructive-soft p-3 text-sm text-destructive">
               Cannot delete assignment with usage history.
             </div>
           )}

@@ -340,7 +340,7 @@ export function SectionFormDialog({
                 <ExistingMediaPreview section={section!} onRemove={() => setRemoveMedia(true)} />
               )}
               {removeMedia && !mediaFile && (
-                <p className="text-xs text-amber-600">{t('staticPages.mediaWillBeRemoved', 'Existing media will be removed on save. Pick a file below to replace it instead.')}</p>
+                <p className="text-xs text-warning">{t('staticPages.mediaWillBeRemoved', 'Existing media will be removed on save. Pick a file below to replace it instead.')}</p>
               )}
               {mediaFile ? (
                 <div className="flex items-center gap-3 rounded-md bg-muted/40 p-2">
@@ -393,7 +393,7 @@ export function SectionFormDialog({
                     type="checkbox"
                     checked={removeMedia}
                     onChange={(e) => setRemoveMedia(e.target.checked)}
-                    className="h-4 w-4 accent-current"
+                    className="size-4 shrink-0 cursor-pointer accent-primary"
                   />
                   {t('staticPages.removeMedia', 'Remove existing media')}
                 </label>
@@ -405,7 +405,7 @@ export function SectionFormDialog({
             </div>
           ) : (
             mediaFile && (
-              <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs text-amber-600">
+              <p className="rounded-lg border border-warning/30 bg-warning-soft p-2 text-xs text-warning">
                 {t('staticPages.validation.mediaProhibited', 'Media files are not allowed for text sections.')}
               </p>
             )

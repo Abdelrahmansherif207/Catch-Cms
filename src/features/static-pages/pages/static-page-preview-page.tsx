@@ -6,6 +6,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
 import { useLanguage } from '@/shared/hooks/use-language';
 import { useStaticPagePreview } from '../hooks/use-static-pages';
 import { sectionTitle } from '../lib/static-page-utils';
@@ -65,21 +66,22 @@ export function StaticPagePreviewPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+      <PageBackHeader
+        title={title}
+        description={t('staticPages.previewPage.subtitle')}
+        backTo={`/static-pages/${slug}`}
+        actions={
+          <>
             <Badge variant="outline" className="font-mono text-xs">
               /{page.slug}
             </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">{t('staticPages.previewPage.subtitle')}</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw className="me-1.5 h-4 w-4" />
-          {t('common.retry')}
-        </Button>
-      </div>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="me-1.5 h-4 w-4" />
+              {t('common.retry')}
+            </Button>
+          </>
+        }
+      />
 
       {sections.length === 0 ? (
         <div className="rounded-lg border">
@@ -110,7 +112,7 @@ function PreviewSection({ section }: { section: StaticPageSection }) {
         </div>
       }
     >
-      <section className="rounded-lg border bg-card p-5">
+      <section className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold">{sectionTitle(section, language)}</h2>
           <SectionTypeBadge type={section.type} />

@@ -36,9 +36,20 @@
     "updating": "جاري التحديث...",
     "created": "تم الإنشاء بنجاح",
     "updated": "تم التحديث بنجاح",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "retry": "Retry",
+    "enabled": "مفعّل",
+    "disabled": "معطّل",
+    "retry": "إعادة المحاولة",
+    "filters": "عوامل التصفية",
+    "show": "عرض",
+    "hide": "إخفاء",
+    "clearFilters": "مسح عوامل التصفية",
+    "noResults": "لا توجد نتائج",
+    "loadError": "فشل تحميل البيانات. حاول مرة أخرى.",
+    "loadErrorTitle": "حدث خطأ ما",
+    "deleteTitle": "تأكيد الحذف",
+    "deleteDescription": "هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
+    "selected": "تم تحديد {{count}}",
+    "selectAll": "تحديد الكل",
     "forbidden": {
       "title": "تم رفض الوصول",
       "description": "ليس لديك صلاحية لعرض هذه الصفحة.",
@@ -120,6 +131,18 @@
     "allStatuses": "جميع الحالات",
     "allPaymentStatuses": "جميع المدفوعات",
     "allShippingMethods": "جميع الشحن",
+    "statuses": {
+      "pending": "قيد الانتظار",
+      "processing": "قيد المعالجة",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "delivered": "تم التوصيل"
+    },
+    "paymentStatuses": {
+      "payment-success": "تم الدفع",
+      "payment-pending": "بانتظار الدفع",
+      "payment-failed": "فشل الدفع"
+    },
     "orderNumber": "رقم الطلب",
     "customer": "العميل",
     "status": "الحالة",
@@ -373,8 +396,13 @@
   },
   "header": {
     "search": "بحث...",
+    "commandTitle": "تنقل سريع",
+    "commandDescription": "انتقل إلى أي صفحة في لوحة الإدارة.",
+    "goTo": "انتقل إلى",
     "profile": "الملف الشخصي",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "signingOut": "جاري تسجيل الخروج..."
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -645,6 +673,7 @@
   },
   "coupons": {
     "pageTitle": "الكوبونات",
+    "listError": "فشل تحميل الكوبونات. حاول مرة أخرى.",
     "subtitle": "إدارة كوبونات الخصم.",
     "createCoupon": "إضافة كوبون",
     "editCoupon": "تعديل الكوبون",
@@ -731,6 +760,7 @@
   },
   "contacts": {
     "pageTitle": "اتصل بنا",
+    "listError": "فشل تحميل الرسائل. حاول مرة أخرى.",
     "subtitle": "إدارة استفسارات العملاء والرسائل.",
     "viewTitle": "تفاصيل الرسالة",
     "replyTitle": "إرسال رد",
@@ -858,6 +888,7 @@
   },
   "exchangeRates": {
     "title": "أسعار الصرف",
+    "allCurrencies": "كل العملات",
     "subtitle": "إدارة أسعار صرف عملات المتجر.",
     "addRate": "إضافة سعر",
     "selectCurrency": "اختر العملة",
@@ -1017,6 +1048,7 @@
   },
   "users": {
     "title": "المستخدمون",
+    "listError": "فشل تحميل المستخدمين. حاول مرة أخرى.",
     "subtitle": "إدارة جميع المستخدمين والمشرفين وصلاحياتهم.",
     "addUser": "إضافة مستخدم",
     "createUser": "إنشاء مستخدم",
@@ -1764,6 +1796,8 @@
   },
   "reviews": {
     "pageTitle": "Reviews",
+    "listError": "فشل تحميل التقييمات. حاول مرة أخرى.",
+    "allStatuses": "كل الحالات",
     "pageDescription": "Manage product reviews, approve or reject customer feedback.",
     "selectProduct": "Select Product",
     "searchProduct": "Search products...",
@@ -1788,6 +1822,7 @@
     "pageDescription": "إدارة وتحديث تقييمات العملاء حول الموقع.",
     "statusFilter": "الحالة",
     "statusLabel": "الحالة",
+    "allStatuses": "كل الحالات",
     "all": "الكل",
     "id": "المعرّف",
     "customer": "العميل",
@@ -1817,6 +1852,7 @@
   },
   "shipping": {
     "countriesTitle": "الدول",
+    "allStatuses": "كل الحالات",
     "countriesSubtitle": "إدارة دول الشحن",
     "governoratesTitle": "المحافظات",
     "governoratesSubtitle": "إدارة المحافظات داخل الدولة",
@@ -1983,6 +2019,8 @@
     "searchPlaceholder": "ابحث في الفواتير...",
     "noResults": "لا توجد فواتير مطابقة لبحثك.",
     "listError": "فشل تحميل الفواتير. حاول مرة أخرى.",
+    "series": "السلسلة",
+    "allSeries": "كل السلاسل",
     "actions": {
       "regenerate": "إعادة توليد PDF",
       "verify": "تحقق",

@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Input } from '@/shared/ui/input';
 import { useUpdateAssignment } from '../hooks/use-coupons';
 import type { CouponAssignment } from '../types/coupon.types';
@@ -127,17 +128,14 @@ export function EditAssignmentDialog({
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="noExpiry"
+            <label className="flex cursor-pointer items-center gap-2">
+              <Checkbox
                 checked={form.watch('noExpiry')}
-                onChange={(e) => form.setValue('noExpiry', e.target.checked)}
-                className="h-4 w-4"
+                onCheckedChange={(checked) => form.setValue('noExpiry', checked === true)}
                 disabled={isPending}
               />
-              <label htmlFor="noExpiry" className="text-sm font-medium">No expiry</label>
-            </div>
+              <span className="text-sm font-medium">No expiry</span>
+            </label>
             {!form.watch('noExpiry') && (
               <Input
                 type="date"

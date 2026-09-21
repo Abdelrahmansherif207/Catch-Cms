@@ -45,32 +45,47 @@ export function Pagination({
   }
 
   return (
-    <div className={cn('flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between', className)}>
+    <div data-slot="pagination" className={cn('flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between', className)}>
       <p className="text-sm text-muted-foreground">
-        {t('common.showing')} {from} {t('common.to')} {to} {t('common.of')} {total} &mdash; {t('common.page')} {page} {t('common.of')} {lastPage} ({perPage} {t('common.perPage')})
+        {t('common.showing')}{' '}
+        <span className="font-semibold text-foreground">{from}–{to}</span>{' '}
+        {t('common.of')}{' '}
+        <span className="font-semibold text-foreground">{total}</span>{' '}
+        {t('common.results')} · {perPage} {t('common.perPage')}
+        <span className="mx-2 text-border">|</span>
+        {t('common.page')}{' '}
+        <span className="font-semibold text-foreground">{page}</span>{' '}
+        {t('common.of')} {lastPage}
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex w-fit items-center gap-0.5 rounded-xl border bg-card p-1 shadow-xs">
         <Button
           key="prev"
-          variant="outline"
+          variant="ghost"
           size="icon-sm"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
+          aria-label={t('common.previous')}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         </Button>
         {pages.map((p, i) => {
           const key = p === 'ellipsis' ? `ellipsis-${i}` : `page-${p}`;
           return p === 'ellipsis' ? (
             <span key={key} className="flex h-8 w-8 items-center justify-center text-sm text-muted-foreground">
-              ...
+              …
             </span>
           ) : (
             <Button
               key={key}
-              variant={p === page ? 'default' : 'outline'}
+              variant="ghost"
               size="icon-sm"
               onClick={() => onPageChange(p)}
+              aria-label={`${t('common.page')} ${p}`}
+              aria-current={p === page ? 'page' : undefined}
+              className={cn(
+                'min-w-8 font-medium tabular-nums',
+                p === page && 'bg-primary text-primary-foreground shadow-xs hover:bg-primary hover:text-primary-foreground'
+              )}
             >
               {p}
             </Button>
@@ -78,12 +93,13 @@ export function Pagination({
         })}
         <Button
           key="next"
-          variant="outline"
+          variant="ghost"
           size="icon-sm"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= lastPage}
+          aria-label={t('common.next')}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </Button>
       </div>
     </div>

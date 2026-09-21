@@ -105,7 +105,7 @@ export function ContactReplyDialog({
               {messageError && (
                 <p className="text-xs text-destructive">{messageError}</p>
               )}
-              <p className={'text-xs ml-auto ' + (message.length > MESSAGE_MAX * 0.9 ? 'text-destructive' : 'text-muted-foreground')}>
+              <p className={'text-xs ms-auto ' + (message.length > MESSAGE_MAX * 0.9 ? 'text-destructive' : 'text-muted-foreground')}>
                 {message.length}/{MESSAGE_MAX}
               </p>
             </div>

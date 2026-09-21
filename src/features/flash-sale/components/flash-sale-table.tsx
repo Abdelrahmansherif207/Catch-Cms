@@ -27,6 +27,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { FlashSaleImageCell } from './flash-sale-image-cell';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { FlashSaleDeleteDialog } from './flash-sale-delete-dialog';
 import { useReorderFlashSales } from '../hooks/use-flash-sale';
 import type { FlashSale } from '../types/flash-sale.types';
@@ -65,13 +66,7 @@ export function FlashSaleTable({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -106,7 +101,7 @@ export function FlashSaleTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -166,7 +161,7 @@ export function FlashSaleTable({
                   <div className="flex items-center gap-1.5">
                     <StatusBadge status={sale.status} />
                     {sale.is_valid && (
-                      <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                      <Circle className="h-2 w-2 fill-success text-success" />
                     )}
                   </div>
                 </TableCell>
@@ -220,7 +215,7 @@ function FlashSaleCard({ sale, index, onMoveUp, onEdit, onDelete }: { sale: Flas
   }
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-2">
+    <div className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -269,7 +264,7 @@ function FlashSaleCard({ sale, index, onMoveUp, onEdit, onDelete }: { sale: Flas
         <div className="flex items-center gap-1.5">
           <StatusBadge status={sale.status} />
           {sale.is_valid && (
-            <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+            <Circle className="h-2 w-2 fill-success text-success" />
           )}
         </div>
       </div>
@@ -279,7 +274,7 @@ function FlashSaleCard({ sale, index, onMoveUp, onEdit, onDelete }: { sale: Flas
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -319,7 +314,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-start gap-3">
             <Skeleton className="h-4 w-4 shrink-0" />
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />

@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { PickupLocationDeleteDialog } from './pickup-location-delete-dialog';
 import { useSetDefaultPickupLocation } from '../hooks/use-pickup-locations';
 import type { PickupLocation } from '../types/pickup-location.types';
@@ -43,7 +44,7 @@ export function PickupLocationsTable({ data, isLoading, sortedBy, onToggleSort, 
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -74,8 +75,8 @@ export function PickupLocationsTable({ data, isLoading, sortedBy, onToggleSort, 
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  {t('common.noData')}
+                <TableCell colSpan={6}>
+                  <DataEmptyState className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -161,7 +162,7 @@ export function PickupLocationsTable({ data, isLoading, sortedBy, onToggleSort, 
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,19 +1,23 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Plus, Search, Upload, Download, ArrowUp, ArrowDown, Trash2, Filter, ChevronsUpDown } from 'lucide-react';
+import { Plus, Upload, Download, ArrowUp, ArrowDown, Trash2, Filter, ChevronsUpDown, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-keys';
 import { Button } from '@/shared/ui/button';
-import { Pagination } from '@/shared/components/pagination';
-import { Input } from '@/shared/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
+import { Input } from '@/shared/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -89,7 +93,7 @@ function ComboboxFilter({
     <Popover open={open} onOpenChange={onOpenChange}>
             <PopoverTrigger render={<Button variant="outline" role="combobox" aria-expanded={open} className="w-full md:w-[200px] justify-between" />}>
         {selectedLabel}
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-full md:w-[200px] p-0">
         <Command shouldFilter={false}>
@@ -223,7 +227,7 @@ export function ProductsPage() {
     if (!open) setSliderSearch('');
   }, []);
 
-  const { data, isLoading, refetch } = useProducts({
+  const { data, isLoading, isError, refetch } = useProducts({
     page,
     limit: 15,
     search: search || undefined,
@@ -271,85 +275,91 @@ export function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('products.title')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('products.subtitle')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <Upload className="mr-2 h-4 w-4" />
-            {t('products.importBtn')}
-          </Button>
-          <Button variant="outline" onClick={() => setExportOpen(true)}>
-            <Download className="mr-2 h-4 w-4" />
-            {t('products.exportBtn')}
-          </Button>
-          <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteAllOpen(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t('products.deleteAllBtn')}
-          </Button>
-          <Button onClick={() => navigate(productRoutes.create)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('products.addProduct')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('products.title')}
+        description={t('products.subtitle')}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="me-2 h-4 w-4" />
+              {t('products.importBtn')}
+            </Button>
+            <Button variant="outline" onClick={() => setExportOpen(true)}>
+              <Download className="me-2 h-4 w-4" />
+              {t('products.exportBtn')}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label={t('common.actions')} />}>
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteAllOpen(true)}>
+                  <Trash2 className="me-2 h-4 w-4" />
+                  {t('products.deleteAllBtn')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={() => navigate(productRoutes.create)}>
+              <Plus className="me-2 h-4 w-4" />
+              {t('products.addProduct')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 w-full md:max-w-sm">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('products.searchPlaceholder')}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="ps-9"
-          />
-        </div>
+      <FilterBar
+        activeCount={
+          [search, dateFrom, dateTo].filter(Boolean).length +
+          [statusFilter, categoryFilter, bannerFilter, flashSaleFilter, sliderFilter].filter(
+            (v) => v !== 'all'
+          ).length +
+          (orderBy ? 1 : 0)
+        }
+      >
+        <div className="flex w-full flex-wrap items-center gap-3">
+        <SearchInput
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          placeholder={t('products.searchPlaceholder')}
+          className="md:max-w-sm"
+        />
 
-        <Select
+        <FilterSelect
           value={statusFilter}
           onValueChange={(value) => {
-            setStatusFilter(value ?? 'all');
+            setStatusFilter(value);
             setPage(1);
           }}
-        >
-          <SelectTrigger className="w-full md:w-[140px]">
-            <SelectValue placeholder={t('products.allStatuses')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('products.allStatuses')}</SelectItem>
-            <SelectItem value="1">{t('products.active')}</SelectItem>
-            <SelectItem value="0">{t('products.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
+          prefix={t('products.status')}
+          allLabel={t('products.allStatuses')}
+          options={[
+            { value: '1', label: t('products.active') },
+            { value: '0', label: t('products.inactive') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
 
-        <Select
+        <FilterSelect
           value={orderBy}
           onValueChange={(value) => {
-            setOrderBy(value ?? '');
+            setOrderBy(value);
             setPage(1);
           }}
-        >
-          <SelectTrigger className="w-full md:w-[150px]">
-            <SelectValue placeholder={t('products.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('products.sortByDefault')}</SelectItem>
-            <SelectItem value="name">{t('products.name')}</SelectItem>
-            <SelectItem value="price">{t('products.price')}</SelectItem>
-            <SelectItem value="created_at">{t('products.date')}</SelectItem>
-            <SelectItem value="stock_quantity">{t('products.stock')}</SelectItem>
-            <SelectItem value="status">{t('products.status')}</SelectItem>
-          </SelectContent>
-        </Select>
+          prefix={t('products.sortBy')}
+          allLabel={t('products.sortByDefault')}
+          allValue=""
+          options={[
+            { value: 'name', label: t('products.name') },
+            { value: 'price', label: t('products.price') },
+            { value: 'created_at', label: t('products.date') },
+            { value: 'stock_quantity', label: t('products.stock') },
+            { value: 'status', label: t('products.status') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
 
         {orderBy && (
           <Button variant="outline" size="icon-sm" onClick={toggleSortDir} title={sortDir === 'asc' ? t('products.sortAsc') : t('products.sortDesc')}>
@@ -386,7 +396,7 @@ export function ProductsPage() {
           size="sm"
           onClick={() => setShowAdvancedFilters((v) => !v)}
         >
-          <Filter className="mr-1.5 h-4 w-4" />
+          <Filter className="me-1.5 h-4 w-4" />
           {t('products.filters')}
         </Button>
 
@@ -398,7 +408,7 @@ export function ProductsPage() {
       </div>
 
       {showAdvancedFilters && (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3">
           <ComboboxFilter
             open={categoryOpen}
             onOpenChange={handleCatOpenChange}
@@ -457,6 +467,7 @@ export function ProductsPage() {
           />
         </div>
       )}
+      </FilterBar>
 
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2.5">
@@ -468,7 +479,7 @@ export function ProductsPage() {
             size="sm"
             onClick={() => setBulkDeleteOpen(true)}
           >
-            <Trash2 className="mr-1.5 h-4 w-4" />
+            <Trash2 className="me-1.5 h-4 w-4" />
             {t('products.deleteSelected')}
           </Button>
           <Button
@@ -479,6 +490,10 @@ export function ProductsPage() {
             {t('common.clear')}
           </Button>
         </div>
+      )}
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
       )}
 
       <ProductsTable

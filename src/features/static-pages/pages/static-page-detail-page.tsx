@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Eye, Loader2, Plus } from 'lucide-react';
+import { Eye, Loader2, Newspaper, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Skeleton } from '@/shared/ui/skeleton';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
 import { useLanguage } from '@/shared/hooks/use-language';
 import { usePermissions } from '@/shared/auth/guards';
 import { STATIC_PAGE_PERMISSIONS } from '../permissions/static-pages.permissions';
@@ -49,45 +51,48 @@ export function StaticPageDetailPage() {
     refetch();
   };
 
-  const title = localizedText(page?.title, language);
+  const title = localizedText(page?.title, language) || slug;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate('/static-pages')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold">
-                {isLoading ? <Skeleton className="h-6 w-40" /> : title}
-              </h1>
-              {page && (
-                <Badge variant="outline" className="font-mono text-xs">
-                  /{page.slug}
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground">{t('staticPages.sectionsSubtitle')}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/static-pages/${slug}/preview`)}>
-            <Eye className="me-1.5 h-4 w-4" />
-            {t('staticPages.preview')}
-          </Button>
-          {canCreate && (
-            <Button onClick={handleAdd}>
-              <Plus className="me-1.5 h-4 w-4" />
-              {t('staticPages.addSection')}
+    <div className="space-y-6">
+      <PageBackHeader
+        title={title}
+        description={t('staticPages.sectionsSubtitle')}
+        backTo="/static-pages"
+      />
+
+      <DetailHero
+        icon={Newspaper}
+        title={title}
+        badges={
+          page && (
+            <Badge variant="outline" className="font-mono text-xs">
+              /{page.slug}
+            </Badge>
+          )
+        }
+        facts={[
+          { label: t('staticPages.slug'), value: page ? `/${page.slug}` : `/${slug}` },
+          { label: t('staticPages.sections'), value: sections.length },
+        ]}
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/static-pages/${slug}/preview`)}>
+              <Eye className="me-1.5 h-4 w-4" />
+              {t('staticPages.preview')}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button onClick={handleAdd}>
+                <Plus className="me-1.5 h-4 w-4" />
+                {t('staticPages.addSection')}
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {isError && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center">
           <p className="text-sm text-destructive">{t('staticPages.detailLoadError')}</p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             {t('common.retry')}
@@ -95,17 +100,22 @@ export function StaticPageDetailPage() {
         </div>
       )}
 
-      <SectionsTable
-        slug={slug}
-        data={sections}
-        isLoading={isLoading}
-        lang={language}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onEdit={handleEdit}
-        onAdd={handleAdd}
-        onRefresh={() => refetch()}
-      />
+      <CardSection
+        title={t('staticPages.sections')}
+        description={t('staticPages.sectionsSubtitle')}
+      >
+        <SectionsTable
+          slug={slug}
+          data={sections}
+          isLoading={isLoading}
+          lang={language}
+          canEdit={canEdit}
+          canDelete={canDelete}
+          onEdit={handleEdit}
+          onAdd={handleAdd}
+          onRefresh={() => refetch()}
+        />
+      </CardSection>
 
       {page && (
         <SectionFormDialog

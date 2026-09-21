@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
+import { PageBackHeader } from '@/shared/components/page-header';
 import { ProductForm } from '../components/product-form';
+import { productRoutes } from '../routes/product.routes';
 
 export function CreateProductPage() {
   const { t } = useTranslation();
@@ -10,21 +10,13 @@ export function CreateProductPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/products')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('productsForm.createProduct')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('productsForm.createSubtitle')}
-          </p>
-        </div>
-      </div>
+      <PageBackHeader
+        title={t('productsForm.createProduct')}
+        description={t('productsForm.createSubtitle')}
+        backTo={productRoutes.list}
+      />
 
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
         <ProductForm
           onSuccess={() => navigate('/products')}
           onCancel={() => navigate('/products')}

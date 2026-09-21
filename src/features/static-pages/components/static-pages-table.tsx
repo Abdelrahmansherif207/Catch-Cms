@@ -46,7 +46,7 @@ export function StaticPagesTable({
   }
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -119,7 +119,7 @@ export function StaticPagesTable({
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

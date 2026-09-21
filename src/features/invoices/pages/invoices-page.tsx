@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import {
@@ -46,7 +50,7 @@ export function InvoicesPage() {
   const parsedOrderId = orderId.trim() === '' ? undefined : Number(orderId);
   const parsedUserId = userId.trim() === '' ? undefined : Number(userId);
 
-  const { data, isLoading } = useInvoices({
+  const { data, isLoading, isError, refetch } = useInvoices({
     page,
     limit: perPage,
     search: search || undefined,
@@ -97,86 +101,64 @@ export function InvoicesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('invoices.title')}</h1>
-        <p className="text-muted-foreground">{t('invoices.subtitle')}</p>
-      </div>
+      <PageHeader title={t('invoices.title')} description={t('invoices.subtitle')} />
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t('invoices.searchPlaceholder')}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="ps-9"
-            />
-          </div>
+      <FilterBar
+        activeCount={
+          [search, dateFrom, dateTo, orderId.trim(), userId.trim()].filter(Boolean).length +
+          [status, currency, invoiceSeries].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
+          <SearchInput
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            placeholder={t('invoices.searchPlaceholder')}
+            className="flex-1"
+          />
 
           <div className="flex flex-wrap items-center gap-2">
-            <Select
+            <FilterSelect
               value={status}
               onValueChange={(value) => {
-                setStatus(value ?? 'all');
+                setStatus(value);
                 setPage(1);
               }}
-            >
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder={t('invoices.allStatuses')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('invoices.allStatuses')}</SelectItem>
-                {INVOICE_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {t(`invoices.status.${s}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              prefix={t('invoices.statusColumn')}
+              allLabel={t('invoices.allStatuses')}
+              options={INVOICE_STATUSES.map((s) => ({
+                value: s,
+                label: t(`invoices.status.${s}`, { defaultValue: s }),
+              }))}
+              triggerClassName="w-full md:w-auto md:min-w-[190px]"
+            />
 
-            <Select
+            <FilterSelect
               value={currency}
               onValueChange={(value) => {
-                setCurrency(value ?? 'all');
+                setCurrency(value);
                 setPage(1);
               }}
-            >
-              <SelectTrigger className="w-full md:w-[130px]">
-                <SelectValue placeholder={t('invoices.allCurrencies')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('invoices.allCurrencies')}</SelectItem>
-                {INVOICE_CURRENCIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              prefix={t('invoices.currency')}
+              allLabel={t('invoices.allCurrencies')}
+              options={INVOICE_CURRENCIES.map((c) => ({ value: c, label: c }))}
+              triggerClassName="w-full md:w-auto md:min-w-[190px]"
+            />
 
-            <Select
+            <FilterSelect
               value={invoiceSeries}
               onValueChange={(value) => {
-                setInvoiceSeries(value ?? 'all');
+                setInvoiceSeries(value);
                 setPage(1);
               }}
-            >
-              <SelectTrigger className="w-full md:w-[130px]">
-                <SelectValue placeholder={t('invoices.allSeries', { defaultValue: 'All series' })} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('invoices.allSeries', { defaultValue: 'All series' })}</SelectItem>
-                {INVOICE_SERIES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              prefix={t('invoices.series')}
+              allLabel={t('invoices.allSeries')}
+              options={INVOICE_SERIES.map((s) => ({ value: s, label: s }))}
+              triggerClassName="w-full md:w-auto md:min-w-[190px]"
+            />
 
             <Input
               type="number"
@@ -209,7 +191,7 @@ export function InvoicesPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{t('invoices.from')}</span>
             <Input
@@ -256,7 +238,11 @@ export function InvoicesPage() {
             </Select>
           </div>
         </div>
-      </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState message={t('invoices.listError')} onRetry={() => refetch()} />
+      )}
 
       <InvoicesTable
         data={data?.data?.data || []}

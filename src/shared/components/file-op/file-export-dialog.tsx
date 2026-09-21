@@ -157,12 +157,12 @@ export function FileExportDialog({ ns, api, open, onOpenChange }: FileExportDial
 
           {isCompleted && (
             <div className="flex flex-col items-center gap-2 py-2">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
+              <CheckCircle2 className="h-10 w-10 text-success" />
               <p className="text-center text-sm text-muted-foreground">
                 {t('common.exportCompletedDesc')}
               </p>
               <Button variant="outline" className="w-full" onClick={api.download}>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="me-2 h-4 w-4" />
                 {t('common.downloadAgain')}
               </Button>
             </div>
@@ -190,7 +190,7 @@ export function FileExportDialog({ ns, api, open, onOpenChange }: FileExportDial
                 {t('common.cancel')}
               </Button>
               <Button onClick={handleExport} disabled={api.isStarting}>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="me-2 h-4 w-4" />
                 {t(`${ns}.exportBtn`)}
               </Button>
             </>
@@ -198,7 +198,7 @@ export function FileExportDialog({ ns, api, open, onOpenChange }: FileExportDial
 
           {busy && (
             <Button variant="outline" disabled>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
               {t(`${ns}.exporting`)}
             </Button>
           )}
@@ -212,7 +212,7 @@ export function FileExportDialog({ ns, api, open, onOpenChange }: FileExportDial
           {isFailed && (
             <>
               <Button variant="outline" onClick={handleRetry}>
-                <RotateCcw className="mr-2 h-4 w-4" />
+                <RotateCcw className="me-2 h-4 w-4" />
                 {t('common.retry')}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>

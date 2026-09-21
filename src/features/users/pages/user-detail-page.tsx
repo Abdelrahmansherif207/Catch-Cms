@@ -2,16 +2,20 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowLeft,
   BadgeCheck,
   Mail,
   Phone,
   UserRound,
   ShieldCheck,
   Calendar,
+  MapPin,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
@@ -47,7 +51,7 @@ export function UserDetailPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
-        <div className="rounded-xl border p-6 shadow-sm">
+        <div className="rounded-2xl border p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <Skeleton className="size-16 rounded-full" />
             <div className="space-y-2">
@@ -74,31 +78,26 @@ export function UserDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => navigate(userRoutes.list)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('common.back')}
-        </Button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setActivationOpen(true)}>
-            {user.is_active ? t('users.deactivate') : t('users.activate')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-            {t('common.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageBackHeader
+        title={user.name}
+        description={user.email}
+        backTo={userRoutes.list}
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setActivationOpen(true)}>
+              {user.is_active ? t('users.deactivate') : t('users.activate')}
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-16">
-            <AvatarImage src={user.image || undefined} alt={user.name} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
-              {initials || <UserRound className="size-6" />}
-            </AvatarFallback>
-          </Avatar>
-          <div className="space-y-1.5">
-            <h2 className="text-xl font-semibold">{user.name}</h2>
+      <DetailHero
+        title={user.name}
+        subtitle={
+          <>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="size-3.5" />
               {user.email}
@@ -107,28 +106,40 @@ export function UserDetailPage() {
               <Phone className="size-3.5" />
               {user.phone_number}
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                {user.is_active ? t('users.active') : t('users.inactive')}
+          </>
+        }
+        badges={
+          <>
+            <StatusBadge status={user.is_active} />
+            <Badge variant="outline" className="capitalize">{user.type}</Badge>
+            {user.email_verified_at ? (
+              <Badge variant="outline" className="gap-1">
+                <BadgeCheck className="size-3" />
+                {t('users.emailVerified')}
               </Badge>
-              <Badge variant="outline" className="capitalize">{user.type}</Badge>
-              {user.email_verified_at ? (
-                <Badge variant="outline" className="gap-1">
-                  <BadgeCheck className="size-3" />
-                  {t('users.emailVerified')}
-                </Badge>
-              ) : (
-                <Badge variant="outline">{t('users.notVerified')}</Badge>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+            ) : (
+              <Badge variant="outline">{t('users.notVerified')}</Badge>
+            )}
+          </>
+        }
+        avatar={
+          <Avatar className="size-14">
+            <AvatarImage src={user.image || undefined} alt={user.name} />
+            <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
+              {initials || <UserRound className="size-6" />}
+            </AvatarFallback>
+          </Avatar>
+        }
+        facts={[
+          { icon: ShieldCheck, label: t('users.rolesTab'), value: user.roles?.length ?? 0 },
+          { icon: Calendar, label: t('users.createdAt'), value: user.email_verified_at ? new Date(user.email_verified_at).toLocaleString() : '—' },
+        ]}
+      />
 
       <Tabs defaultValue="roles">
         <TabsList>
           <TabsTrigger value="roles">
-            <ShieldCheck className="mr-1.5 size-4" />
+            <ShieldCheck className="me-1.5 size-4" />
             {t('users.rolesTab')}
           </TabsTrigger>
           {user.type === 'user' && (
@@ -137,7 +148,8 @@ export function UserDetailPage() {
             </TabsTrigger>
           )}
         </TabsList>
-        <TabsContent value="roles" className="rounded-xl border bg-card p-6 shadow-sm">
+        <TabsContent value="roles">
+          <CardSection title={t('users.rolesTab')} icon={ShieldCheck}>
           {user.roles && user.roles.length > 0 ? (
             <div className="space-y-4">
               {user.roles.map((role) => (
@@ -159,20 +171,16 @@ export function UserDetailPage() {
           ) : (
             <p className="text-sm text-muted-foreground">{t('users.noRoles')}</p>
           )}
+          </CardSection>
         </TabsContent>
         {user.type === 'user' && (
-          <TabsContent value="addresses" className="rounded-xl border bg-card p-6 shadow-sm">
+          <TabsContent value="addresses">
+            <CardSection title={t('users.addressesTab')} icon={MapPin}>
             <p className="text-sm text-muted-foreground">{t('users.noAddresses')}</p>
+            </CardSection>
           </TabsContent>
         )}
       </Tabs>
-
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <Calendar className="size-3.5" />
-          {t('users.createdAt')}: {user.email_verified_at ? new Date(user.email_verified_at).toLocaleString() : '—'}
-        </span>
-      </div>
 
       <UserActivationDialog
         userId={user.id}

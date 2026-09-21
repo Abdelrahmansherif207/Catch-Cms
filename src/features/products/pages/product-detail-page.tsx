@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowLeft,
   Pencil,
   Trash2,
   Star,
@@ -12,9 +11,17 @@ import {
   Ruler,
   Weight,
   Clock,
+  FileText,
+  ImageIcon,
+  Store,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ImagePreview } from '@/shared/components/image-preview';
@@ -77,7 +84,7 @@ function StarRating({ rating }: { rating: number }) {
           }`}
         />
       ))}
-      <span className="ml-1.5 text-sm text-muted-foreground">({rating}/5)</span>
+      <span className="ms-1.5 text-sm text-muted-foreground">({rating}/5)</span>
     </div>
   );
 }
@@ -87,7 +94,7 @@ function DetailSkeleton() {
     <div className="space-y-6">
       <Skeleton className="h-8 w-32" />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <Skeleton className="aspect-square rounded-xl" />
+        <Skeleton className="aspect-square rounded-2xl" />
         <div className="space-y-4">
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
@@ -134,38 +141,70 @@ export function ProductDetailPage() {
   const productDescription = getLocalizedValue(detail.description, language);
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => navigate(productRoutes.list)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('common.back')}
-        </Button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(productRoutes.edit(detail.id))}>
-            <Pencil className="mr-2 h-4 w-4" />
-            {t('common.edit')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t('common.delete')}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageBackHeader
+        title={productName}
+        description={`/${detail.slug}`}
+        backTo={productRoutes.list}
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => navigate(productRoutes.edit(detail.id))}>
+              <Pencil className="me-2 h-4 w-4" />
+              {t('common.edit')}
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="me-2 h-4 w-4" />
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      />
+
+      <DetailHero
+        title={productName}
+        subtitle={`/${detail.slug}`}
+        badges={
+          <>
+            <StatusBadge status={detail.status} />
+            {detail.has_discount && (
+              <Badge variant="outline" className="gap-1">
+                <Tag className="h-3 w-3" />
+                {t('products.hasDiscount')}
+              </Badge>
+            )}
+            {detail.has_flash_sale && (
+              <Badge variant="outline" className="gap-1">
+                <Zap className="h-3 w-3" />
+                {t('products.hasFlashSale')}
+              </Badge>
+            )}
+          </>
+        }
+        avatar={
+          detail.images && detail.images.length > 0 ? (
+            <img
+              src={detail.images[0]}
+              alt={productName}
+              className="h-14 w-14 shrink-0 rounded-2xl border object-cover"
+            />
+          ) : (
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <ImageIcon className="h-7 w-7" strokeWidth={1.75} aria-hidden />
+            </span>
+          )
+        }
+        facts={[
+          { icon: Tag, label: t('products.price'), value: Number(detail.current_price).toFixed(2) },
+          { icon: Package, label: t('products.stock'), value: detail.available_stock },
+          { icon: Package, label: t('products.sold'), value: detail.sold_quantity },
+          { icon: Tag, label: t('products.sku'), value: detail.sku },
+        ]}
+      />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <ImageGallery images={detail.images} alt={productName} />
 
         <div className="space-y-5">
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">{productName}</h1>
-              <Badge variant={detail.status ? 'default' : 'secondary'} className="shrink-0">
-                {detail.status ? t('products.active') : t('products.inactive')}
-              </Badge>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground font-mono">/{detail.slug}</p>
-          </div>
-
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold">
               {Number(detail.current_price).toFixed(2)}
@@ -190,7 +229,7 @@ export function ProductDetailPage() {
               value={detail.item_type === 'DIGITAL' ? t('productsForm.digital') : t('productsForm.physical')}
             />
             <InfoItem
-              icon={detail.in_stock ? <span className="h-4 w-4 text-green-500">&#9679;</span> : <span className="h-4 w-4 text-red-500">&#9679;</span>}
+              icon={detail.in_stock ? <span className="h-4 w-4 text-success">&#9679;</span> : <span className="h-4 w-4 text-destructive">&#9679;</span>}
               label={t('products.stock')}
               value={`${detail.available_stock} (${t('products.sold')}: ${detail.sold_quantity})`}
             />
@@ -206,31 +245,25 @@ export function ProductDetailPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-lg border p-5">
-            <h2 className="text-lg font-semibold mb-3">{t('products.description')}</h2>
+          <CardSection title={t('products.description')} icon={FileText}>
             <SafeHtml
               html={productDescription}
               dir={language === 'ar' ? 'rtl' : 'ltr'}
               className="text-muted-foreground leading-relaxed [&_p]:mb-2 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_a]:text-primary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:px-2 [&_td]:py-1 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:list-decimal [&_ol]:ps-5"
             />
-          </section>
+          </CardSection>
 
           {detail.categories && detail.categories.length > 0 && (
-            <section className="rounded-lg border p-5">
-              <h2 className="text-lg font-semibold mb-3">{t('products.categories')}</h2>
+            <CardSection title={t('products.categories')} icon={Tag}>
               <div className="flex flex-wrap gap-2">
                 {detail.categories.map((cat) => (
                   <Badge key={cat.id} variant="outline">{cat.name}</Badge>
                 ))}
               </div>
-            </section>
+            </CardSection>
           )}
 
-          <section className="rounded-lg border p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              {t('products.discountInfo')}
-            </h2>
+          <CardSection title={t('products.discountInfo')} icon={Tag}>
 
             <div className="grid grid-cols-2 gap-x-6 gap-y-3">
               <Kv label={t('products.regularPrice')} value={Number(detail.price).toFixed(2)} />
@@ -261,7 +294,7 @@ export function ProductDetailPage() {
 
             <Separator className="my-4" />
 
-            <h3 className="text-base font-semibold mb-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
+            <h3 className="text-base font-semibold mb-3 flex items-center gap-2 text-warning">
               <Zap className="h-4 w-4" />
               {t('products.flashSale')}
             </h3>
@@ -273,17 +306,15 @@ export function ProductDetailPage() {
                 {detail.flash_sales.map((fs) => {
                   const fsTitle = getLocalizedValue(fs.title, language);
                   return (
-                    <div key={fs.id} className="rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20 p-3 space-y-1.5">
+                    <div key={fs.id} className="rounded-lg border border-warning/30 bg-warning-soft p-3 space-y-1.5">
                       <p className="font-medium">{fsTitle}</p>
                       <p className="text-sm text-muted-foreground">{fs.description}</p>
                       <div className="flex items-center gap-4 text-sm">
-                        <span className="text-orange-600 font-medium">
+                        <span className="text-warning font-medium">
                           {fs.type}: {fs.discount}
                           {fs.max_discount_amount ? ` (max ${fs.max_discount_amount})` : ''}
                         </span>
-                        <Badge variant={fs.is_valid ? 'default' : 'secondary'} className={fs.is_valid ? 'bg-orange-500 hover:bg-orange-600' : ''}>
-                          {fs.is_valid ? t('products.active') : t('products.inactive')}
-                        </Badge>
+                        <StatusBadge status={fs.is_valid} />
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {fs.start_date} → {fs.end_date}
@@ -295,11 +326,10 @@ export function ProductDetailPage() {
             ) : (
               <p className="text-sm text-muted-foreground italic">{t('common.noData')}</p>
             )}
-          </section>
+          </CardSection>
 
           {detail.reviews && detail.reviews.length > 0 && (
-            <section className="rounded-lg border p-5">
-              <h2 className="text-lg font-semibold mb-4">{t('products.reviews')}</h2>
+            <CardSection title={t('products.reviews')} icon={Star}>
               <div className="space-y-4">
                 {detail.reviews.map((review) => (
                   <div key={review.id} className="border-b pb-4 last:border-0 last:pb-0">
@@ -318,21 +348,20 @@ export function ProductDetailPage() {
                       </div>
                     )}
                     {review.is_approved && (
-                      <Badge variant="outline" className="mt-2 text-xs text-green-600 border-green-300">
+                      <Badge variant="outline" className="mt-2 border-transparent bg-success-soft text-success">
                         {t('products.approved')}
                       </Badge>
                     )}
                   </div>
                 ))}
               </div>
-            </section>
+            </CardSection>
           )}
         </div>
 
         <div className="space-y-6">
           {detail.brands && detail.brands.length > 0 && (
-            <section className="rounded-lg border p-5">
-              <h2 className="text-lg font-semibold mb-3">{t('products.brand')}</h2>
+            <CardSection title={t('products.brand')} icon={Store}>
               {detail.brands.map((brand) => (
                 <div key={brand.id} className="space-y-2">
                   {brand.image?.desktop && (
@@ -346,13 +375,12 @@ export function ProductDetailPage() {
                   <p className="text-sm text-muted-foreground">{brand.details}</p>
                 </div>
               ))}
-            </section>
+            </CardSection>
           )}
 
-          <section className="rounded-lg border p-5">
-            <h2 className="text-lg font-semibold mb-3">{t('products.createdAt')}</h2>
+          <CardSection title={t('products.createdAt')} icon={Clock}>
             <p className="text-sm text-muted-foreground">{detail.created_at}</p>
-          </section>
+          </CardSection>
         </div>
       </div>
 
@@ -367,7 +395,7 @@ export function ProductDetailPage() {
                   key={related.id}
                   type="button"
                   onClick={() => navigate(productRoutes.detail(related.id))}
-                  className="rounded-lg border bg-card text-left hover:shadow-md transition-shadow overflow-hidden"
+                  className="rounded-lg border bg-card text-start hover:shadow-md transition-shadow overflow-hidden"
                 >
                   {related.images && related.images.length > 0 && (
                     <img
@@ -384,8 +412,8 @@ export function ProductDetailPage() {
                         : Number(related.current_price).toFixed(2)}
                     </p>
                     <div className="flex items-center gap-1">
-                      {related.has_discount && <Tag className="h-3 w-3 text-amber-500" />}
-                      {related.has_flash_sale && <Zap className="h-3 w-3 text-orange-500" />}
+                      {related.has_discount && <Tag className="h-3 w-3 text-discount" />}
+                      {related.has_flash_sale && <Zap className="h-3 w-3 text-discount" />}
                     </div>
                   </div>
                 </button>
@@ -396,8 +424,7 @@ export function ProductDetailPage() {
       )}
 
       {detail.banners && detail.banners.length > 0 && (
-        <section className="rounded-lg border p-5">
-          <h2 className="text-lg font-semibold mb-3">{t('products.banners')}</h2>
+        <CardSection title={t('products.banners')} icon={ImageIcon}>
           <div className="space-y-3">
             {detail.banners.map((banner) => (
               <div key={banner.id} className="flex items-center gap-3 border-b pb-3 last:border-0 last:pb-0">
@@ -412,18 +439,15 @@ export function ProductDetailPage() {
                   <p className="font-medium text-sm">{banner.title}</p>
                   <p className="text-xs text-muted-foreground">{banner.description}</p>
                 </div>
-                <Badge variant={banner.status ? 'default' : 'secondary'} className="ml-auto shrink-0">
-                  {banner.status ? t('products.active') : t('products.inactive')}
-                </Badge>
+                <StatusBadge status={banner.status} className="ms-auto shrink-0" />
               </div>
             ))}
           </div>
-        </section>
+        </CardSection>
       )}
 
       {detail.sliders && detail.sliders.length > 0 && (
-        <section className="rounded-lg border p-5">
-          <h2 className="text-lg font-semibold mb-3">{t('products.sliders')}</h2>
+        <CardSection title={t('products.sliders')} icon={Layers}>
           <div className="space-y-3">
             {detail.sliders.map((slider) => (
               <div key={slider.id} className="flex items-center gap-3 border-b pb-3 last:border-0 last:pb-0">
@@ -438,13 +462,11 @@ export function ProductDetailPage() {
                   <p className="font-medium text-sm">{slider.title.en}</p>
                   <p className="text-xs text-muted-foreground">/{slider.slug}</p>
                 </div>
-                <Badge variant={slider.status ? 'default' : 'secondary'} className="ml-auto shrink-0">
-                  {slider.status ? t('products.active') : t('products.inactive')}
-                </Badge>
+                <StatusBadge status={slider.status} className="ms-auto shrink-0" />
               </div>
             ))}
           </div>
-        </section>
+        </CardSection>
       )}
 
       <ProductDeleteDialog

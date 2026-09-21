@@ -26,30 +26,29 @@ export function FileOpBadge({ state, hasErrors, live, className }: FileOpBadgePr
   const { t } = useTranslation();
 
   let label = t('common.queued');
-  let tone =
-    'bg-muted text-muted-foreground dark:bg-muted/50 dark:text-muted-foreground';
+  let tone = 'border-transparent bg-muted text-muted-foreground';
 
   switch (state) {
     case 'processing':
       label = t('common.liveProcessing');
-      tone = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      tone = 'border-transparent bg-info-soft text-info';
       break;
     case 'cancelling':
       label = t('common.cancellingOp');
-      tone = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+      tone = 'border-transparent bg-warning-soft text-warning';
       break;
     case 'completed':
       if (hasErrors) {
         label = t('common.completedWithErrors');
-        tone = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+        tone = 'border-transparent bg-warning-soft text-warning';
       } else {
         label = t('common.completedOp');
-        tone = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        tone = 'border-transparent bg-success-soft text-success';
       }
       break;
     case 'completed_with_errors':
       label = t('common.completedWithErrors');
-      tone = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+      tone = 'border-transparent bg-warning-soft text-warning';
       break;
     case 'failed':
       label = t('common.failedOp');

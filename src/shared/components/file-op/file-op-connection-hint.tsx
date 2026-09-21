@@ -20,7 +20,7 @@ export function FileOpConnectionHint({ connectionState, className }: FileOpConne
     <p
       className={cn(
         'flex items-center justify-center gap-1.5 text-xs',
-        live ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400',
+        live ? 'text-muted-foreground' : 'text-warning',
         className,
       )}
       aria-live="polite"

@@ -20,6 +20,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { BannerImageCell } from './banner-image-cell';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { BannerDeleteDialog } from './banner-delete-dialog';
 import type { Banner } from '../types/banner.types';
 
@@ -45,13 +46,7 @@ export function BannersTable({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -82,7 +77,7 @@ export function BannersTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -177,7 +172,7 @@ function BannerCard({ banner, onEdit, onDelete }: { banner: Banner; onEdit: (ban
   const displayDesc = parsedDescription.en || parsedDescription.ar || banner.description;
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-2">
+    <div className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
       <div className="flex items-start gap-3">
         <BannerImageCell image={banner.image} alt={displayTitle} />
         <div className="flex-1 min-w-0">
@@ -213,7 +208,7 @@ function BannerCard({ banner, onEdit, onDelete }: { banner: Banner; onEdit: (ban
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -244,7 +239,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-start gap-3">
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
             <div className="flex-1 space-y-1.5">

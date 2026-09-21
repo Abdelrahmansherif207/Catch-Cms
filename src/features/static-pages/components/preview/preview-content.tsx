@@ -125,7 +125,7 @@ export function SectionPreview({ section, lang }: { section: StaticPageSection; 
 
 export function SectionTypeBadge({ type }: { type: StaticPageSection['type'] }) {
   return (
-    <Badge variant="outline" className="font-mono text-[11px]">
+    <Badge variant="outline" className="font-mono text-2xs">
       {type ?? 'text'}
     </Badge>
   );

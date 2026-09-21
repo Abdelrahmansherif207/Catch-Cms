@@ -1,9 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -11,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { Pagination } from '@/shared/components/pagination';
 import { CouponsTable } from '../components/coupons-table';
 import { CouponFormDialog } from '../components/coupon-form-dialog';
 import { useCoupons } from '../hooks/use-coupons';
@@ -23,7 +27,6 @@ export function CouponsPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
   const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [order, setOrder] = useState('');
   const [sortedBy, setSortedBy] = useState('');
@@ -42,7 +45,7 @@ export function CouponsPage() {
     sortedBy: order && sortedBy ? sortedBy : undefined,
   };
 
-  const { data, isLoading, refetch } = useCoupons(params);
+  const { data, isLoading, isError, refetch } = useCoupons(params);
 
   const coupons = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -66,77 +69,86 @@ export function CouponsPage() {
     refetch();
   }, [refetch]);
 
-  const handleSearch = () => {
-    setSearch(searchInput);
-    setPage(1);
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t('coupons.pageTitle')}</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="me-1.5 h-4 w-4" />
-            {t('common.create')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('coupons.pageTitle')}
+        description={t('coupons.subtitle')}
+        actions={
+          <>
+            <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="me-1.5 h-4 w-4" />
+              {t('common.create')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 w-full md:max-w-xs">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={handleSearch}
-            aria-label={t('common.search')}
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-          <Input
-            placeholder={t('coupons.searchPlaceholder')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            className="h-8 ps-9"
-          />
-        </div>
-        <Select value={activeFilter} onValueChange={(v) => { if (v) setActiveFilter(v); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('coupons.allStatuses')}</SelectItem>
-            <SelectItem value="active">{t('coupons.active')}</SelectItem>
-            <SelectItem value="inactive">{t('coupons.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={order} onValueChange={(v) => { setOrder(v ?? ''); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('coupons.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('coupons.sortByDefault')}</SelectItem>
-            <SelectItem value="created_at">{t('coupons.sortCreatedAt')}</SelectItem>
-            <SelectItem value="discount">{t('coupons.sortDiscount')}</SelectItem>
-            <SelectItem value="start_date">{t('coupons.sortStartDate')}</SelectItem>
-            <SelectItem value="end_date">{t('coupons.sortEndDate')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortedBy} onValueChange={(v) => { setSortedBy(v ?? ''); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[120px]">
-            <SelectValue placeholder={t('coupons.sortedBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('coupons.sortByDefault')}</SelectItem>
-            <SelectItem value="asc">{t('coupons.asc')}</SelectItem>
-            <SelectItem value="desc">{t('coupons.desc')}</SelectItem>
-          </SelectContent>
-        </Select>
+      <FilterBar
+        activeCount={
+          [search].filter(Boolean).length +
+          [activeFilter].filter((v) => v !== 'all').length +
+          [order, sortedBy].filter((v) => v !== '').length
+        }
+      >
+        <div className="flex w-full flex-wrap items-center gap-2">
+        <SearchInput
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          placeholder={t('coupons.searchPlaceholder')}
+        />
+        <FilterSelect
+          value={activeFilter}
+          onValueChange={(v) => {
+            setActiveFilter(v);
+            setPage(1);
+          }}
+          prefix={t('common.status')}
+          allLabel={t('coupons.allStatuses')}
+          options={[
+            { value: 'active', label: t('coupons.active') },
+            { value: 'inactive', label: t('coupons.inactive') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={order}
+          onValueChange={(v) => {
+            setOrder(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.sortBy')}
+          allLabel={t('coupons.sortByDefault')}
+          allValue=""
+          options={[
+            { value: 'created_at', label: t('coupons.sortCreatedAt') },
+            { value: 'discount', label: t('coupons.sortDiscount') },
+            { value: 'start_date', label: t('coupons.sortStartDate') },
+            { value: 'end_date', label: t('coupons.sortEndDate') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={sortedBy}
+          onValueChange={(v) => {
+            setSortedBy(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.sortedBy')}
+          allLabel={t('coupons.sortByDefault')}
+          allValue=""
+          options={[
+            { value: 'asc', label: t('coupons.asc') },
+            { value: 'desc', label: t('coupons.desc') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
         <Select value={String(perPage)} onValueChange={(v) => { if (v) setPerPage(Number(v)); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[90px]">
             <SelectValue />
@@ -149,6 +161,14 @@ export function CouponsPage() {
           </SelectContent>
         </Select>
       </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState
+          message={t('coupons.listError')}
+          onRetry={() => refetch()}
+        />
+      )}
 
       <CouponsTable
         data={coupons}

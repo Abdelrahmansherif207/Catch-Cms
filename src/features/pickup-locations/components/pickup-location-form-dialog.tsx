@@ -189,31 +189,31 @@ export function PickupLocationFormDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t('pickupLocations.storeName')} *</label>
-              <Input {...form.register('storeName')} placeholder={t('pickupLocations.storeNamePlaceholder')} />
+              <Input {...form.register('storeName')} placeholder={t('pickupLocations.storeNamePlaceholder')} aria-invalid={!!getError('storeName')} />
               {renderError(getError('storeName'))}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t('pickupLocations.displayOrder')}</label>
-              <Input type="number" min={0} {...form.register('displayOrder', { valueAsNumber: true })} />
+              <Input type="number" min={0} {...form.register('displayOrder', { valueAsNumber: true })} aria-invalid={!!(getError('display_order') || getError('displayOrder'))} />
               {renderError(getError('display_order') || getError('displayOrder'))}
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium">{t('pickupLocations.address')} *</label>
-            <Input {...form.register('address')} placeholder={t('pickupLocations.addressPlaceholder')} />
+            <Input {...form.register('address')} placeholder={t('pickupLocations.addressPlaceholder')} aria-invalid={!!getError('address')} />
             {renderError(getError('address'))}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t('pickupLocations.phone')} *</label>
-              <Input {...form.register('phone')} placeholder={t('pickupLocations.phonePlaceholder')} />
+              <Input {...form.register('phone')} placeholder={t('pickupLocations.phonePlaceholder')} aria-invalid={!!getError('phone')} />
               {renderError(getError('phone'))}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t('pickupLocations.email')}</label>
-              <Input type="email" {...form.register('email')} placeholder={t('pickupLocations.emailPlaceholder')} />
+              <Input type="email" {...form.register('email')} placeholder={t('pickupLocations.emailPlaceholder')} aria-invalid={!!getError('email')} />
               {renderError(getError('email'))}
             </div>
           </div>
@@ -305,6 +305,7 @@ export function PickupLocationFormDialog({
                           value={hour.open}
                           onChange={(e) => updateWorkingHour(index, 'open', e.target.value)}
                           className="h-8 w-36 shrink-0"
+                          aria-invalid={!!(getHourError(index, 'open') || getHourError(index, 'close'))}
                         />
                         <span className="text-xs text-muted-foreground">—</span>
                         <Input
@@ -312,6 +313,7 @@ export function PickupLocationFormDialog({
                           value={hour.close}
                           onChange={(e) => updateWorkingHour(index, 'close', e.target.value)}
                           className="h-8 w-36 shrink-0"
+                          aria-invalid={!!(getHourError(index, 'open') || getHourError(index, 'close'))}
                         />
                       </div>
                       {renderError(getHourError(index, 'open') || getHourError(index, 'close'))}

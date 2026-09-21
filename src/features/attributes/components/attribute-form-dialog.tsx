@@ -146,14 +146,14 @@ export function AttributeFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label htmlFor="nameEn" className="text-sm font-medium">{t('attributesForm.nameEn')} *</label>
-              <Input id="nameEn" {...form.register('nameEn')} />
+              <Input id="nameEn" aria-invalid={!!getError('nameEn')} {...form.register('nameEn')} />
               {getError('nameEn') && (
                 <p className="text-xs text-destructive">{getError('nameEn')}</p>
               )}
             </div>
             <div className="space-y-1.5">
               <label htmlFor="nameAr" className="text-sm font-medium">{t('attributesForm.nameAr')} *</label>
-              <Input id="nameAr" {...form.register('nameAr')} />
+              <Input id="nameAr" aria-invalid={!!getError('nameAr')} {...form.register('nameAr')} />
               {getError('nameAr') && (
                 <p className="text-xs text-destructive">{getError('nameAr')}</p>
               )}
@@ -181,6 +181,7 @@ export function AttributeFormDialog({
                     <Input
                       {...form.register(`values.${index}.valueEn` as const)}
                       placeholder={t('attributesForm.valueEnPlaceholder')}
+                      aria-invalid={!!form.formState.errors.values?.[index]?.valueEn}
                     />
                     {form.formState.errors.values?.[index]?.valueEn && (
                       <p className="text-xs text-destructive">
@@ -192,6 +193,7 @@ export function AttributeFormDialog({
                     <Input
                       {...form.register(`values.${index}.valueAr` as const)}
                       placeholder={t('attributesForm.valueArPlaceholder')}
+                      aria-invalid={!!form.formState.errors.values?.[index]?.valueAr}
                     />
                     {form.formState.errors.values?.[index]?.valueAr && (
                       <p className="text-xs text-destructive">

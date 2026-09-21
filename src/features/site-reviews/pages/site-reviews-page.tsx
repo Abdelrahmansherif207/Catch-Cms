@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -10,6 +12,7 @@ import {
 } from '@/shared/ui/select';
 import { Button } from '@/shared/ui/button';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
 import { usePermissions } from '@/shared/auth/guards';
 import { SITE_REVIEW_PERMISSIONS } from '../permissions/site-reviews.permissions';
 import {
@@ -79,37 +82,33 @@ export function SiteReviewsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">{t('siteReviews.pageTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('siteReviews.pageDescription')}</p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title={t('siteReviews.pageTitle')}
+        description={t('siteReviews.pageDescription')}
+        actions={
           <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
+      <FilterBar activeCount={statusFilter !== 'all' ? 1 : 0}>
+        <div className="flex w-full flex-wrap items-center gap-2">
+        <FilterSelect
           value={statusFilter}
           onValueChange={(v) => {
-            if (!v) return;
             setStatusFilter(v as SiteReviewStatus | 'all');
             setPage(1);
           }}
-        >
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('siteReviews.statusFilter')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('siteReviews.all')}</SelectItem>
-            <SelectItem value="pending">{t('siteReviews.status.pending')}</SelectItem>
-            <SelectItem value="approved">{t('siteReviews.status.approved')}</SelectItem>
-            <SelectItem value="rejected">{t('siteReviews.status.rejected')}</SelectItem>
-          </SelectContent>
-        </Select>
+          prefix={t('siteReviews.statusLabel')}
+          allLabel={t('siteReviews.allStatuses')}
+          options={[
+            { value: 'pending', label: t('siteReviews.status.pending') },
+            { value: 'approved', label: t('siteReviews.status.approved') },
+            { value: 'rejected', label: t('siteReviews.status.rejected') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
 
         <Select
           value={String(perPage)}
@@ -129,6 +128,7 @@ export function SiteReviewsPage() {
           </SelectContent>
         </Select>
       </div>
+      </FilterBar>
 
       <SiteReviewsTable
         data={reviews}

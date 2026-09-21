@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { DashboardCouponsData } from '../types/dashboard.types';
 import { formatCurrency, formatNumber } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface CouponAnalyticsProps {
   data: DashboardCouponsData | undefined;
@@ -42,41 +43,34 @@ export function CouponAnalytics({ data, isLoading, error }: CouponAnalyticsProps
   const lang = i18n.language || 'en';
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.coupons.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">{t('dashboard.errors.failedToLoad')}</div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.coupons.title')} />;
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.coupons.title')}</h3>
-
+    <ChartCard title={t('dashboard.coupons.title')}>
       {isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3"><Skeleton className="h-20 rounded-lg" /><Skeleton className="h-20 rounded-lg" /></div>
-          <Skeleton className="h-[200px] rounded-lg" />
+          <div className="grid grid-cols-2 gap-3"><Skeleton className="h-20 rounded-xl" /><Skeleton className="h-20 rounded-xl" /></div>
+          <Skeleton className="h-[200px] rounded-xl" />
         </div>
       ) : data ? (
         <>
           <div className="mb-6">
-            <div className="rounded-lg border border-border p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="rounded-md p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                  <TicketPercent className="h-4 w-4" />
+            <div className="rounded-xl border bg-muted/40 p-3.5 transition-colors hover:bg-muted/60">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-info-soft text-info">
+                  <TicketPercent className="h-3.5 w-3.5" strokeWidth={2} />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground uppercase">{t('dashboard.coupons.totalUsage')}</span>
+                <span className="truncate text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.coupons.totalUsage')}</span>
               </div>
-              <p className="text-2xl font-bold text-foreground tabular-nums">{formatNumber(data.total_usage)}</p>
+              <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">{formatNumber(data.total_usage)}</p>
             </div>
 
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.coupons.topCoupons')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.coupons.topCoupons')}</h4>
               {data.top_coupons.length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
@@ -99,12 +93,12 @@ export function CouponAnalytics({ data, isLoading, error }: CouponAnalyticsProps
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
 
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.coupons.revenueByCoupon')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.coupons.revenueByCoupon')}</h4>
               {data.revenue_by_coupon.length > 0 ? (
                 <div className="h-[220px] w-full" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
@@ -118,14 +112,14 @@ export function CouponAnalytics({ data, isLoading, error }: CouponAnalyticsProps
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
           </div>
         </>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
       )}
-    </div>
+    </ChartCard>
   );
 }

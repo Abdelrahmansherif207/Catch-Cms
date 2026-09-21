@@ -195,6 +195,7 @@ export function SliderFormDialog({
             <Input
               id="titleEn"
               placeholder={t('slidersForm.titleEn')}
+              aria-invalid={!!getError('titleEn')}
               {...form.register('titleEn')}
             />
             {getError('titleEn') && (
@@ -207,6 +208,7 @@ export function SliderFormDialog({
             <Input
               id="titleAr"
               placeholder={t('slidersForm.titleAr')}
+              aria-invalid={!!getError('titleAr')}
               {...form.register('titleAr')}
             />
             {getError('titleAr') && (
@@ -250,7 +252,7 @@ export function SliderFormDialog({
               {productsDropdownOpen && (
                 <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                   <div className="relative mb-1">
-                    <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder={t('slidersForm.searchProducts')}
                       value={productSearch}

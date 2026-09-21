@@ -29,7 +29,7 @@ export function ImagePreview({ src, alt, thumbnailClassName = '' }: ImagePreview
             <Button
               variant="secondary"
               size="icon"
-              className="absolute -right-2 -top-2 z-10 rounded-full shadow-lg"
+              className="absolute -end-2 -top-2 z-10 rounded-full shadow-lg"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-4 w-4" />

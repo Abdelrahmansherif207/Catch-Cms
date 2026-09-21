@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { AuthCard } from '../components/auth-card';
 import { loginSchema, loginDefaults, type LoginFormData } from '../schemas/auth.schema';
 import { useLogin } from '../hooks/use-auth';
 
@@ -29,20 +30,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/5 to-primary/10 p-4">
-      <div className="w-full max-w-md">
-        <div className="rounded-xl border bg-card p-8 shadow-lg">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <img src="/catch-logo.png" alt="Catch Beauty" className="mb-6 h-12 w-auto rounded-lg" />
-            <h1 className="text-xl font-bold tracking-tight text-foreground">
-              {t('auth.welcomeBack')}
-            </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {t('auth.signInSubtitle')}
-            </p>
-          </div>
-
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <AuthCard title={t('auth.welcomeBack')} subtitle={t('auth.signInSubtitle')}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <div className="space-y-2">
               <label htmlFor="identifier" className="text-sm font-medium">
                 {t('auth.emailOrPhone')}
@@ -110,21 +99,20 @@ export function LoginPage() {
 
             <Button
               type="submit"
+              size="lg"
               className="w-full"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t('auth.signingIn')}
                 </>
               ) : (
                 t('auth.signIn')
               )}
             </Button>
-          </form>
-        </div>
-      </div>
-    </div>
+      </form>
+    </AuthCard>
   );
 }

@@ -1,8 +1,11 @@
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Pencil, Trash2, Loader2, List } from 'lucide-react';
+import { Pencil, Trash2, Loader2, List } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
 import { useAttribute, useDeleteAttribute } from '../hooks/use-attributes';
 import { attributeRoutes } from '../routes/attribute.routes';
 import { AttributeDeleteDialog } from '../components/attribute-delete-dialog';
@@ -52,7 +55,6 @@ export function AttributeDetailPage() {
         <List className="h-12 w-12 text-muted-foreground" />
         <p className="text-lg font-medium">{t('attributes.notFound')}</p>
         <Button variant="outline" onClick={() => navigate(attributeRoutes.list)}>
-          <ArrowLeft className="me-2 h-4 w-4" />
           {t('attributes.backToList')}
         </Button>
       </div>
@@ -68,32 +70,39 @@ export function AttributeDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(attributeRoutes.list)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-semibold">{currentName}</h1>
-            <p className="text-sm text-muted-foreground">{t('attributes.detailSubtitle')}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(attributeRoutes.list)}>
-            <Pencil className="me-2 h-4 w-4" />
-            {t('common.edit')}
-          </Button>
-          <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="me-2 h-4 w-4" />
-            {t('common.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageBackHeader
+        title={currentName}
+        description={t('attributes.detailSubtitle')}
+        backTo={attributeRoutes.list}
+      />
 
-      <div className="rounded-lg border p-4">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          {t('attributes.attributeInfo')}
-        </h2>
+      <DetailHero
+        icon={List}
+        title={currentName}
+        subtitle={attr.slug}
+        facts={[
+          { label: t('attributes.id'), value: attr.id },
+          { label: t('attributes.slug'), value: attr.slug },
+          {
+            label: t('attributes.valuesCount', { count: values.length }),
+            value: values.length,
+          },
+        ]}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => navigate(attributeRoutes.list)}>
+              <Pencil className="me-2 h-4 w-4" />
+              {t('common.edit')}
+            </Button>
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="me-2 h-4 w-4" />
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      />
+
+      <CardSection title={t('attributes.attributeInfo')}>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
             <dt className="text-muted-foreground">{t('attributes.id')}</dt>
@@ -114,12 +123,9 @@ export function AttributeDetailPage() {
             </dd>
           </div>
         </dl>
-      </div>
+      </CardSection>
 
-      <div className="rounded-lg border p-4">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          {t('attributes.valuesCount', { count: values.length })}
-        </h2>
+      <CardSection title={t('attributes.valuesCount', { count: values.length })}>
         {values.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('attributes.noValues')}</p>
         ) : (
@@ -147,7 +153,7 @@ export function AttributeDetailPage() {
             })}
           </div>
         )}
-      </div>
+      </CardSection>
 
       <AttributeDeleteDialog
         attributeId={attributeId}

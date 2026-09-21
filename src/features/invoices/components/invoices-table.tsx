@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Download } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/shared/ui/table';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Button } from '@/shared/ui/button';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { InvoiceStatusBadge } from './invoice-status-badge';
 import {
   formatMoney,
@@ -29,11 +30,11 @@ interface InvoicesTableProps {
 }
 
 function SortIcon({ field, orderBy, sort }: { field: string; orderBy: string; sort: string }) {
-  if (orderBy !== field) return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
+  if (orderBy !== field) return <ArrowUpDown className="ms-1 inline h-3 w-3 opacity-40" />;
   return sort === 'asc' ? (
-    <ArrowUp className="ml-1 inline h-3 w-3" />
+    <ArrowUp className="ms-1 inline h-3 w-3" />
   ) : (
-    <ArrowDown className="ml-1 inline h-3 w-3" />
+    <ArrowDown className="ms-1 inline h-3 w-3" />
   );
 }
 
@@ -54,17 +55,13 @@ export function InvoicesTable({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border py-16 text-center">
-        <p className="text-sm text-muted-foreground">{t('invoices.empty')}</p>
-      </div>
-    );
+    return <DataEmptyState title={t('invoices.empty')} />;
   }
 
   const sortable = (field: SortField) => onSortChange(field);
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -127,7 +124,7 @@ export function InvoicesTable({
               <TableCell className="text-end font-medium">
                 {formatMoney(invoice.total, invoice.currency)}
               </TableCell>
-              <TableCell className="text-end text-green-600">
+              <TableCell className="text-end text-success">
                 {formatMoney(invoice.amount_paid, invoice.currency)}
               </TableCell>
               <TableCell>
@@ -168,7 +165,7 @@ export function InvoicesTable({
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

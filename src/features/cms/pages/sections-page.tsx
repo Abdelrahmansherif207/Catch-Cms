@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
+import { PageHeader } from '@/shared/components/page-header';
 import { SectionsTable } from '../components/sections-table';
 import { SectionFormDialog } from '../components/section-form-dialog';
 import { useSections } from '../hooks/use-sections';
@@ -32,22 +33,22 @@ export function SectionsPage() {
   }, [refetch]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">{t('sections.pageTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('sections.pageDescription')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="me-1.5 h-4 w-4" />
-            {t('sections.addSection')}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('sections.pageTitle')}
+        description={t('sections.pageDescription')}
+        actions={
+          <>
+            <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="me-1.5 h-4 w-4" />
+              {t('sections.addSection')}
+            </Button>
+          </>
+        }
+      />
 
       <SectionsTable
         data={sections}

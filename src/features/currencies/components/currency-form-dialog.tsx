@@ -79,7 +79,7 @@ function Field({
         {required && <span className="text-destructive">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && !error && <p className="text-2xs text-muted-foreground">{hint}</p>}
       <FieldError message={error} />
     </div>
   );
@@ -87,7 +87,7 @@ function Field({
 
 function SectionLabel({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
   return (
-    <p className="mb-2 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <p className="mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
       <Icon className="h-3 w-3" />
       {label}
     </p>
@@ -239,13 +239,13 @@ export function CurrencyFormDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label={t('currencyForm.nameEn')} required error={errors.nameEn?.message || serverErrors['name.en']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">EN</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">EN</span>
                     <Input placeholder="US Dollar" className="ps-8" {...register('nameEn')} />
                   </div>
                 </Field>
                 <Field label={t('currencyForm.nameAr')} required error={errors.nameAr?.message || serverErrors['name.ar']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">AR</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">AR</span>
                     <Input placeholder="دولار أمريكي" dir="rtl" className="ps-8" {...register('nameAr')} />
                   </div>
                 </Field>
@@ -258,25 +258,25 @@ export function CurrencyFormDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label={t('currencyForm.symbolEn') || 'Symbol (EN)'} required error={errors.symbolEn?.message || serverErrors['symbol.en']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">EN</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">EN</span>
                     <Input placeholder="$" className="ps-8" {...register('symbolEn')} />
                   </div>
                 </Field>
                 <Field label={t('currencyForm.symbolAr') || 'Symbol (AR)'} required error={errors.symbolAr?.message || serverErrors['symbol.ar']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">AR</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">AR</span>
                     <Input placeholder="$" dir="rtl" className="ps-8" {...register('symbolAr')} />
                   </div>
                 </Field>
                 <Field label={t('currencyForm.countryEn') || 'Country (EN)'} required icon={MapPin} error={errors.countryEn?.message || serverErrors['country_name.en']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">EN</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">EN</span>
                     <Input placeholder="United States" className="ps-8" {...register('countryEn')} />
                   </div>
                 </Field>
                 <Field label={t('currencyForm.countryAr') || 'Country (AR)'} required icon={MapPin} error={errors.countryAr?.message || serverErrors['country_name.ar']?.[0]}>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-[10px] font-bold text-muted-foreground">AR</span>
+                    <span className="pointer-events-none absolute inset-y-0 start-2.5 flex items-center text-2xs font-bold text-muted-foreground">AR</span>
                     <Input placeholder="الولايات المتحدة" dir="rtl" className="ps-8" {...register('countryAr')} />
                   </div>
                 </Field>

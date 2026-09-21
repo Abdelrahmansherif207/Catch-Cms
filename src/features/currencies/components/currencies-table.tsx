@@ -14,6 +14,7 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,18 +48,12 @@ export function CurrenciesTable({
   if (isLoading) return <TableSkeleton />;
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -98,15 +93,15 @@ export function CurrenciesTable({
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {currency.is_base && (
-                      <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                      <Badge variant="outline" className="border-transparent bg-warning-soft font-normal text-warning">
                         <Crown className="me-1 h-3 w-3" />
                         {t('currency.base')}
                       </Badge>
                     )}
                     {currency.is_catalog && (
-                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                      <Badge variant="outline" className="border-transparent bg-info-soft font-normal text-info">
                         <BookOpen className="me-1 h-3 w-3" />
-                        {t('currency.catalog') || 'Catalog'}
+                        {t('currency.catalog', { defaultValue: 'Catalog' })}
                       </Badge>
                     )}
                   </div>
@@ -178,7 +173,7 @@ export function CurrenciesTable({
 function TableSkeleton() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

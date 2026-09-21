@@ -15,6 +15,7 @@ import { ChartSwitcher } from './chart-switcher';
 import type { ChartType } from './chart-switcher';
 import { SimpleChartRenderer } from './chart-renderer';
 import { useState } from 'react';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface CategoryChartsProps {
   data: CategoryStatsData | undefined;
@@ -47,14 +48,7 @@ export function CategoryCharts({ data, isLoading, error }: CategoryChartsProps) 
   const [salesChartType, setSalesChartType] = useState<ChartType>('pie');
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.categoryStats.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">
-          {t('dashboard.errors.failedToLoad')}
-        </div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.categoryStats.title')} />;
   }
 
   const productDist = (data?.product_distribution ?? []).map((item) => ({
@@ -76,21 +70,17 @@ export function CategoryCharts({ data, isLoading, error }: CategoryChartsProps) 
   }));
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">
-        {t('dashboard.categoryStats.title')}
-      </h3>
-
+    <ChartCard title={t('dashboard.categoryStats.title')}>
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-[200px] w-full rounded-lg" />
-          <Skeleton className="h-[200px] w-full rounded-lg" />
+          <Skeleton className="h-[200px] w-full rounded-xl" />
+          <Skeleton className="h-[200px] w-full rounded-xl" />
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                 {t('dashboard.categoryStats.productDistribution')}
               </h4>
               <ChartSwitcher type={prodChartType} onChange={setProdChartType} />
@@ -98,7 +88,7 @@ export function CategoryCharts({ data, isLoading, error }: CategoryChartsProps) 
             {productDist.length > 0 ? (
               <SimpleChartRenderer data={productDist} chartType={prodChartType} height={220} />
             ) : (
-              <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+              <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">
                 {t('dashboard.errors.noData')}
               </div>
             )}
@@ -106,7 +96,7 @@ export function CategoryCharts({ data, isLoading, error }: CategoryChartsProps) 
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
                 {t('dashboard.categoryStats.salesDistribution')}
               </h4>
               <ChartSwitcher type={salesChartType} onChange={setSalesChartType} showPie />
@@ -132,13 +122,13 @@ export function CategoryCharts({ data, isLoading, error }: CategoryChartsProps) 
                 <SimpleChartRenderer data={salesBarData} chartType={salesChartType} formatter={formatCurrency} height={220} />
               )
             ) : (
-              <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+              <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">
                 {t('dashboard.errors.noData')}
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

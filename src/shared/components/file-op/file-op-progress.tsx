@@ -59,7 +59,7 @@ export function FileOpProgress({
         </div>
         <div className="rounded-lg border bg-card p-3 text-center">
           <p className="text-xs text-muted-foreground">{successLabel}</p>
-          <p className="mt-0.5 text-lg font-semibold text-green-600 tabular-nums">{ok}</p>
+          <p className="mt-0.5 text-lg font-semibold text-success tabular-nums">{ok}</p>
         </div>
       </div>
 

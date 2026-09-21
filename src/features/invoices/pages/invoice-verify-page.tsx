@@ -113,8 +113,8 @@ export function InvoiceVerifyPage() {
           )}
 
           {isRateLimited && (
-            <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-8 text-center dark:border-yellow-800 dark:bg-yellow-950/50">
-              <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-yellow-600" />
+            <div className="rounded-xl border border-warning/30 bg-warning-soft p-8 text-center">
+              <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-warning" />
               <h2 className="text-lg font-semibold">
                 {t('invoices.verify.rateLimited', { defaultValue: 'Too many attempts' })}
               </h2>
@@ -159,10 +159,10 @@ export function InvoiceVerifyPage() {
 
           {isAuthentic && invoice && (
             <div className="space-y-6">
-              <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/50">
-                <BadgeCheck className="h-10 w-10 shrink-0 text-green-600 dark:text-green-400" />
+              <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success-soft p-4">
+                <BadgeCheck className="h-10 w-10 shrink-0 text-success" />
                 <div>
-                  <h2 className="text-lg font-semibold text-green-700 dark:text-green-300">
+                  <h2 className="text-lg font-semibold text-success">
                     {t('invoices.verify.authentic')}
                   </h2>
                   <p className="text-sm text-muted-foreground">{t('invoices.verify.authenticHint')}</p>

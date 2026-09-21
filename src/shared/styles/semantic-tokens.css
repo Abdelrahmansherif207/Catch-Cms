@@ -33,13 +33,35 @@
   --accent: var(--brand-accent);
   --accent-foreground: var(--brand-text-primary);
 
-  /* Destructive */
-  --destructive: var(--brand-secondary);
+  /* Destructive — true red (was: near-black secondary, error semantics were lost) */
+  --destructive: var(--brand-danger);
   --destructive-foreground: #ffffff;
+
+  /* Warning */
+  --warning: var(--brand-warning);
+  --warning-foreground: #ffffff;
+
+  /* Info */
+  --info: var(--brand-info);
+  --info-foreground: #ffffff;
+
+  /* Soft fills for status badges / pills */
+  --success-soft: var(--brand-success-soft);
+  --destructive-soft: var(--brand-danger-soft);
+  --warning-soft: var(--brand-warning-soft);
+  --info-soft: var(--brand-info-soft);
+
+  /* Canvas — tinted page backdrop; cards stay pure white */
+  --canvas: var(--brand-canvas);
 
   /* Border & Input */
   --border: var(--brand-border);
   --input: var(--brand-border);
+
+  /* Elevation — layered soft shadows (light theme) */
+  --shadow-card: 0 1px 2px rgb(28 26 26 / 0.05), 0 4px 16px -6px rgb(28 26 26 / 0.08);
+  --shadow-pop: 0 6px 12px -2px rgb(28 26 26 / 0.08), 0 20px 44px -12px rgb(28 26 26 / 0.22);
+  --shadow-lift: 0 2px 6px -1px rgb(28 26 26 / 0.06), 0 14px 30px -10px rgb(28 26 26 / 0.18);
 
   /* Ring */
   --ring: var(--brand-primary);
@@ -58,8 +80,8 @@
   --chart-4: var(--brand-success);
   --chart-5: var(--brand-primary-dark);
 
-  /* Radius */
-  --radius: 0.625rem;
+  /* Radius — 12px base for a softer premium feel */
+  --radius: 0.75rem;
 
   /* Sidebar */
   --sidebar: var(--brand-surface);
@@ -104,6 +126,28 @@
   /* Destructive */
   --destructive: #d4555b;
   --destructive-foreground: #ffffff;
+
+  /* Warning */
+  --warning: #e8a13c;
+  --warning-foreground: #1c1a1a;
+
+  /* Info */
+  --info: #6b9bff;
+  --info-foreground: #1c1a1a;
+
+  /* Soft fills for status badges / pills */
+  --success-soft: #1d3a2a;
+  --destructive-soft: #402024;
+  --warning-soft: #3d2f1a;
+  --info-soft: #1e2c4d;
+
+  /* Canvas */
+  --canvas: #14161c;
+
+  /* Elevation (dark theme) */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 8px 20px -8px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 10px 24px -4px rgb(0 0 0 / 0.55), 0 24px 48px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 4px 10px -2px rgb(0 0 0 / 0.5), 0 18px 36px -12px rgb(0 0 0 / 0.6);
 
   /* Border & Input */
   --border: #2a2d38;

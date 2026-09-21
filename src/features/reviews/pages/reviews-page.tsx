@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Popover,
   PopoverContent,
@@ -21,6 +16,8 @@ import {
   CommandList,
 } from '@/shared/ui/command';
 import { Button } from '@/shared/ui/button';
+import { PageHeader } from '@/shared/components/page-header';
+import { DataErrorState } from '@/shared/components/data-state';
 import { useProducts } from '@/features/products/hooks/use-products';
 import { useReviews } from '../hooks/use-reviews';
 import { ReviewsTable } from '../components/reviews-table';
@@ -38,7 +35,7 @@ export function ReviewsPage() {
     limit: 20,
   });
 
-  const { data: reviewsData, isLoading: reviewsLoading, refetch } = useReviews({
+  const { data: reviewsData, isLoading: reviewsLoading, isError: reviewsError, refetch } = useReviews({
     product_id: selectedProduct?.id ?? 0,
   });
 
@@ -52,20 +49,17 @@ export function ReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('reviews.pageTitle')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('reviews.pageDescription')}
-        </p>
-      </div>
+      <PageHeader
+        title={t('reviews.pageTitle')}
+        description={t('reviews.pageDescription')}
+      />
 
-      <div className="flex flex-wrap items-center gap-4">
+      <FilterBar activeCount={(selectedProduct ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0)}>
+        <div className="flex w-full flex-wrap items-center gap-4">
         <div className="space-y-1.5">
           <label className="text-sm font-medium">{t('reviews.selectProduct')}</label>
           <Popover open={productPopoverOpen} onOpenChange={setProductPopoverOpen}>
-            <PopoverTrigger render={<Button variant="outline" className="w-[280px] justify-start text-left font-normal" />}>
+            <PopoverTrigger render={<Button variant="outline" className="w-[280px] justify-start text-start font-normal" />}>
               {selectedProduct ? (
                 <span className="truncate">{selectedProduct.name}</span>
               ) : (
@@ -106,27 +100,34 @@ export function ReviewsPage() {
           </Popover>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">{t('reviews.filterStatus')}</label>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? 'all')}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('reviews.all')}</SelectItem>
-              <SelectItem value="approved">{t('reviews.approved')}</SelectItem>
-              <SelectItem value="pending">{t('reviews.pending')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value)}
+          prefix={t('reviews.status')}
+          allLabel={t('reviews.allStatuses')}
+          options={[
+            { value: 'approved', label: t('reviews.approved') },
+            { value: 'pending', label: t('reviews.pending') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
       </div>
+      </FilterBar>
 
       {selectedProduct ? (
-        <ReviewsTable
-          data={filteredReviews}
-          isLoading={reviewsLoading}
-          onRefresh={refetch}
-        />
+        <>
+          {reviewsError && (
+            <DataErrorState
+              message={t('reviews.listError')}
+              onRetry={() => refetch()}
+            />
+          )}
+          <ReviewsTable
+            data={filteredReviews}
+            isLoading={reviewsLoading}
+            onRefresh={refetch}
+          />
+        </>
       ) : (
         <div className="rounded-lg border">
           <div className="flex h-48 items-center justify-center">

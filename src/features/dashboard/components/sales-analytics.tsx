@@ -12,10 +12,11 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { SalesData } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
+import { useState } from 'react';
 import { ChartSwitcher } from './chart-switcher';
 import type { ChartType } from './chart-switcher';
 import { SimpleChartRenderer, MultiSeriesChartRenderer } from './chart-renderer';
-import { useState } from 'react';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface SalesAnalyticsProps {
   data: SalesData | undefined;
@@ -47,20 +48,15 @@ export function SalesAnalytics({ data, isLoading, error }: SalesAnalyticsProps) 
   const [paymentChartType, setPaymentChartType] = useState<ChartType>('pie');
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.sales.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">{t('dashboard.errors.failedToLoad')}</div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.sales.title')} />;
   }
 
   const dailyCards = data ? [
-    { label: t('dashboard.sales.today'), value: data.daily_revenue.today, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-    { label: t('dashboard.sales.yesterday'), value: data.daily_revenue.yesterday, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
-    { label: t('dashboard.sales.last7days'), value: data.daily_revenue.last_7_days, icon: CalendarRange, color: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/30' },
-    { label: t('dashboard.sales.last30days'), value: data.daily_revenue.last_30_days, icon: CalendarRange, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-    { label: t('dashboard.sales.averageOrderValue'), value: data.average_order_value, icon: Wallet, color: 'text-rose-600', bg: 'bg-rose-100 dark:bg-rose-900/30' },
+    { label: t('dashboard.sales.today'), value: data.daily_revenue.today, icon: DollarSign, color: 'text-info', bg: 'bg-info-soft' },
+    { label: t('dashboard.sales.yesterday'), value: data.daily_revenue.yesterday, icon: TrendingUp, color: 'text-success', bg: 'bg-success-soft' },
+    { label: t('dashboard.sales.last7days'), value: data.daily_revenue.last_7_days, icon: CalendarRange, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: t('dashboard.sales.last30days'), value: data.daily_revenue.last_30_days, icon: CalendarRange, color: 'text-warning', bg: 'bg-warning-soft' },
+    { label: t('dashboard.sales.averageOrderValue'), value: data.average_order_value, icon: Wallet, color: 'text-destructive', bg: 'bg-destructive-soft' },
   ] : [];
 
   const comparisonData = data ? [
@@ -76,36 +72,35 @@ export function SalesAnalytics({ data, isLoading, error }: SalesAnalyticsProps) 
   }));
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.sales.title')}</h3>
+    <ChartCard title={t('dashboard.sales.title')}>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="grid grid-cols-5 gap-3">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
           </div>
-          <Skeleton className="h-[200px] w-full rounded-lg" />
+          <Skeleton className="h-[220px] w-full rounded-xl" />
         </div>
       ) : data ? (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {dailyCards.map((card) => (
-              <div key={card.label} className="rounded-lg border border-border p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`rounded-md p-1.5 ${card.bg} ${card.color}`}>
-                    <card.icon className="h-3.5 w-3.5" />
+              <div key={card.label} className="rounded-xl border bg-muted/40 p-3.5 transition-colors hover:bg-muted/60">
+                <div className="mb-2 flex items-center gap-2">
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${card.bg} ${card.color}`}>
+                    <card.icon className="h-3.5 w-3.5" strokeWidth={2} />
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase">{card.label}</span>
+                  <span className="truncate text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{card.label}</span>
                 </div>
-                <p className="text-lg font-bold text-foreground tabular-nums">{formatCurrency(card.value)}</p>
+                <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">{formatCurrency(card.value)}</p>
               </div>
             ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.sales.revenueComparison')}</h4>
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.sales.revenueComparison')}</h4>
                 <ChartSwitcher type={compChartType} onChange={setCompChartType} />
               </div>
               {comparisonData.length > 0 ? (
@@ -125,7 +120,7 @@ export function SalesAnalytics({ data, isLoading, error }: SalesAnalyticsProps) 
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {comparisonData.map((item) => (
                   <div key={item.name} className="rounded-md border border-border p-2 text-center">
-                    <p className="text-[10px] text-muted-foreground truncate">{item.name}</p>
+                    <p className="text-2xs text-muted-foreground truncate">{item.name}</p>
                     <p className={`text-xs font-bold tabular-nums ${item.change >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {item.change >= 0 ? '+' : ''}{item.change.toFixed(1)}%
                     </p>
@@ -135,8 +130,8 @@ export function SalesAnalytics({ data, isLoading, error }: SalesAnalyticsProps) 
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.sales.revenueByPaymentMethod')}</h4>
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.sales.revenueByPaymentMethod')}</h4>
                 <ChartSwitcher type={paymentChartType} onChange={setPaymentChartType} showPie />
               </div>
               {paymentData.length > 0 ? (
@@ -164,8 +159,8 @@ export function SalesAnalytics({ data, isLoading, error }: SalesAnalyticsProps) 
           </div>
         </>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
       )}
-    </div>
+    </ChartCard>
   );
 }

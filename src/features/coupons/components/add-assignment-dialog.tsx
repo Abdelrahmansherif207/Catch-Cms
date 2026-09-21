@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Input } from '@/shared/ui/input';
 import { useCreateAssignment } from '../hooks/use-coupons';
 import type { ApiErrorResponse } from '@/shared/api';
@@ -154,7 +155,7 @@ export function AddAssignmentDialog({
                   onChange={(e) => handleSearch(e.target.value)}
                 />
                 {searching && (
-                  <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="absolute end-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                 )}
               </div>
               {showResults && searchResults.length > 0 && (
@@ -163,7 +164,7 @@ export function AddAssignmentDialog({
                     <button
                       key={user.id}
                       type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-start"
                       onClick={() => selectUser(user)}
                     >
                       <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -221,12 +222,11 @@ export function AddAssignmentDialog({
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="noExpiry"
                 checked={form.watch('noExpiry')}
-                onChange={(e) => form.setValue('noExpiry', e.target.checked)}
-                className="h-4 w-4"
+                onCheckedChange={(checked) => form.setValue('noExpiry', checked === true)}
+                aria-label="No expiry"
               />
               <label htmlFor="noExpiry" className="text-sm font-medium">No expiry</label>
             </div>
