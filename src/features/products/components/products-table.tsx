@@ -21,6 +21,8 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { ProductDeleteDialog } from './product-delete-dialog';
@@ -82,13 +84,7 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState title={t('common.noData')} />;
   }
 
   if (isMobile) {
@@ -125,17 +121,16 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
 
   return (
     <>
-      <div className="rounded-lg border overflow-x-auto">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
-                  ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
-                  onChange={toggleSelectAll}
-                  className="size-4 cursor-pointer"
+                  indeterminate={someSelected && !allSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label={t('common.selectAll')}
                 />
               </TableHead>
               <TableHead className="w-12">{t('products.image')}</TableHead>
@@ -155,11 +150,10 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
             {data.map((product) => (
               <TableRow key={product.id} aria-selected={selectedIds.includes(product.id)} data-selected={selectedIds.includes(product.id) || undefined}>
                 <TableCell>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedIds.includes(product.id)}
-                    onChange={() => toggleSelect(product.id)}
-                    className="size-4 cursor-pointer"
+                    onCheckedChange={() => toggleSelect(product.id)}
+                    aria-label={product.name}
                   />
                 </TableCell>
                 <TableCell>
@@ -193,7 +187,7 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
                   >
                     <span className="truncate max-w-[140px]">{product.slug}</span>
                     {copiedSlugId === product.id ? (
-                      <Check className="h-3.5 w-3.5 shrink-0 text-green-500" />
+                      <Check className="h-3.5 w-3.5 shrink-0 text-success" />
                     ) : (
                       <Copy className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
@@ -213,7 +207,7 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className={product.in_stock ? 'text-green-600' : 'text-red-600'}>
+                  <span className={product.in_stock ? 'text-success' : 'text-destructive'}>
                     {product.available_stock}
                   </span>
                 </TableCell>
@@ -236,12 +230,12 @@ export function ProductsTable({ data, isLoading, onView, onNavigateDetail, onEdi
                   <div className="flex gap-1">
                     {product.has_discount && (
                       <span title={t('products.hasDiscount')}>
-                        <Tag className="h-4 w-4 text-amber-500" />
+                        <Tag className="h-4 w-4 text-discount" />
                       </span>
                     )}
                     {product.has_flash_sale && (
                       <span title={t('products.hasFlashSale')}>
-                        <Zap className="h-4 w-4 text-orange-500" />
+                        <Zap className="h-4 w-4 text-discount" />
                       </span>
                     )}
                   </div>
@@ -312,13 +306,13 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className={`rounded-lg border bg-card p-3 space-y-2 ${selected ? 'ring-2 ring-primary' : ''}`}>
+    <div className={`rounded-2xl border bg-card p-4 space-y-3 shadow-xs ${selected ? 'ring-2 ring-primary' : ''}`}>
       <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selected}
-          onChange={() => onToggleSelect(product.id)}
-          className="mt-1 size-4 cursor-pointer shrink-0"
+          onCheckedChange={() => onToggleSelect(product.id)}
+          aria-label={product.name}
+          className="mt-1 shrink-0"
         />
         {product.images && product.images.length > 0 ? (
           <ImagePreview
@@ -373,7 +367,7 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
           >
             <span className="truncate">{product.slug}</span>
             {copiedSlugId === product.id ? (
-              <Check className="h-3 w-3 shrink-0 text-green-500" />
+              <Check className="h-3 w-3 shrink-0 text-success" />
             ) : (
               <Copy className="h-3 w-3 shrink-0" />
             )}
@@ -391,7 +385,7 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className={product.in_stock ? 'text-green-600 text-xs' : 'text-red-600 text-xs'}>
+          <span className={product.in_stock ? 'text-success text-xs' : 'text-destructive text-xs'}>
             {product.available_stock} {t('products.stock').toLowerCase()}
           </span>
           <StatusBadge status={product.status} className="text-xs" />
@@ -407,8 +401,8 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
             ))}
           </div>
         <div className="flex items-center gap-1.5">
-          {product.has_discount && <Tag className="h-3.5 w-3.5 text-amber-500" />}
-          {product.has_flash_sale && <Zap className="h-3.5 w-3.5 text-orange-500" />}
+          {product.has_discount && <Tag className="h-3.5 w-3.5 text-discount" />}
+          {product.has_flash_sale && <Zap className="h-3.5 w-3.5 text-discount" />}
           <span className="text-xs text-muted-foreground">
             {format(new Date(product.created_at), 'PP')}
           </span>
@@ -422,7 +416,7 @@ function ProductCard({ product, copiedSlugId, onCopySlug, onView, onNavigateDeta
 
 function DesktopSkeleton() {
   return (
-    <div className="rounded-lg border overflow-x-auto">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -465,7 +459,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-start gap-3">
             <Skeleton className="h-14 w-14 rounded-lg shrink-0" />
             <div className="flex-1 space-y-1.5">

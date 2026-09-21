@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Settings as SettingsIcon, Mail, Share2, Palette, Truck, Percent, Coins } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
-import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Switch } from '@/shared/ui/switch';
+import { PageHeader } from '@/shared/components/page-header';
+import { CardSection } from '@/shared/components/card-section';
+import { Field } from '@/shared/components/field';
 import { useSettings, useUpdateSettings } from '../hooks/use-settings';
 import { settingsSchema, toApiFormat, toBooleanFlag, type SettingsFormInput, type SettingsFormValues } from '../schemas/settings.schema';
 import type { UpdateSettingsPayload } from '../types/settings.types';
@@ -160,178 +162,131 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('sidebar.settings')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('settings.subtitle')}
-        </p>
-      </div>
+      <PageHeader title={t('sidebar.settings')} description={t('settings.subtitle')} />
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.general')}</h2>
-          <Separator />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <CardSection title={t('settings.general')} icon={SettingsIcon} contentClassName="space-y-4">
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.siteNameEn')} *</label>
+            <Field label={t('settings.siteNameEn')} error={getError('siteNameEn')} required>
               <Input {...form.register('siteNameEn')} placeholder="Site Name" />
-              {getError('siteNameEn') && <p className="text-xs text-destructive">{getError('siteNameEn')}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.siteNameAr')} *</label>
+            </Field>
+            <Field label={t('settings.siteNameAr')} error={getError('siteNameAr')} required>
               <Input {...form.register('siteNameAr')} placeholder="اسم الموقع" dir="rtl" />
-              {getError('siteNameAr') && <p className="text-xs text-destructive">{getError('siteNameAr')}</p>}
-            </div>
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.siteDescEn')}</label>
+            <Field label={t('settings.siteDescEn')}>
               <Textarea {...form.register('siteDescEn')} rows={2} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.siteDescAr')}</label>
+            </Field>
+            <Field label={t('settings.siteDescAr')}>
               <Textarea {...form.register('siteDescAr')} rows={2} dir="rtl" />
-            </div>
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.metaDescEn')}</label>
+            <Field label={t('settings.metaDescEn')}>
               <Textarea {...form.register('metaDescEn')} rows={2} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.metaDescAr')}</label>
+            </Field>
+            <Field label={t('settings.metaDescAr')}>
               <Textarea {...form.register('metaDescAr')} rows={2} dir="rtl" />
-            </div>
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.copyRightEn')}</label>
+            <Field label={t('settings.copyRightEn')}>
               <Input {...form.register('siteCopyRightEn')} placeholder="© 2026" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.copyRightAr')}</label>
+            </Field>
+            <Field label={t('settings.copyRightAr')}>
               <Input {...form.register('siteCopyRightAr')} placeholder="© 2026" dir="rtl" />
-            </div>
+            </Field>
           </div>
-        </div>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.contact')}</h2>
-          <Separator />
+        <CardSection title={t('settings.contact')} icon={Mail} contentClassName="space-y-4">
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.siteEmail')}</label>
+            <Field label={t('settings.siteEmail')} error={getError('siteEmail')}>
               <Input {...form.register('siteEmail')} type="email" placeholder="info@example.com" />
-              {getError('siteEmail') && <p className="text-xs text-destructive">{getError('siteEmail')}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.emailSupport')}</label>
+            </Field>
+            <Field label={t('settings.emailSupport')} error={getError('emailSupport')}>
               <Input {...form.register('emailSupport')} type="email" placeholder="support@example.com" />
-              {getError('emailSupport') && <p className="text-xs text-destructive">{getError('emailSupport')}</p>}
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('settings.phone')}</label>
+          <Field label={t('settings.phone')}>
             <Input {...form.register('phone')} placeholder="+201111111111" />
-          </div>
-        </div>
+          </Field>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.social')}</h2>
-          <Separator />
+        <CardSection title={t('settings.social')} icon={Share2} contentClassName="space-y-4">
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Facebook</label>
+            <Field label="Facebook" error={getError('facebook')}>
               <Input {...form.register('facebook')} placeholder="https://facebook.com/..." />
-              {getError('facebook') && <p className="text-xs text-destructive">{getError('facebook')}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Instagram</label>
+            </Field>
+            <Field label="Instagram" error={getError('instagram')}>
               <Input {...form.register('instagram')} placeholder="https://instagram.com/..." />
-              {getError('instagram') && <p className="text-xs text-destructive">{getError('instagram')}</p>}
-            </div>
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">LinkedIn</label>
+            <Field label="LinkedIn" error={getError('linkedin')}>
               <Input {...form.register('linkedin')} placeholder="https://linkedin.com/..." />
-              {getError('linkedin') && <p className="text-xs text-destructive">{getError('linkedin')}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">YouTube</label>
+            </Field>
+            <Field label="YouTube" error={getError('youtube')}>
               <Input {...form.register('youtube')} placeholder="https://youtube.com/..." />
-              {getError('youtube') && <p className="text-xs text-destructive">{getError('youtube')}</p>}
-            </div>
+            </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">TikTok</label>
+            <Field label="TikTok" error={getError('tiktok')}>
               <Input {...form.register('tiktok')} placeholder="https://tiktok.com/..." />
-              {getError('tiktok') && <p className="text-xs text-destructive">{getError('tiktok')}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Snapchat</label>
+            </Field>
+            <Field label="Snapchat" error={getError('snapchat')}>
               <Input {...form.register('snapchat')} placeholder="https://snapchat.com/..." />
-              {getError('snapchat') && <p className="text-xs text-destructive">{getError('snapchat')}</p>}
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('settings.promoVideo')}</label>
+          <Field label={t('settings.promoVideo')} error={getError('promotionVideoUrl')}>
             <Input {...form.register('promotionVideoUrl')} placeholder="https://youtube.com/watch?v=..." />
-            {getError('promotionVideoUrl') && <p className="text-xs text-destructive">{getError('promotionVideoUrl')}</p>}
-          </div>
-        </div>
+          </Field>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.branding')}</h2>
-          <Separator />
+        <CardSection title={t('settings.branding')} icon={Palette} contentClassName="space-y-4">
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.logo')}</label>
-              <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'logo', setLogoPreview)} />
-              {getError('logo') && <p className="text-xs text-destructive">{getError('logo')}</p>}
-              {logoPreview && <img src={logoPreview} alt="Logo" className="h-16 rounded border object-contain mt-1" />}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.footerLogo')}</label>
-              <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'footerLogo', setFooterLogoPreview)} />
-              {getError('footerLogo') && <p className="text-xs text-destructive">{getError('footerLogo')}</p>}
-              {footerLogoPreview && <img src={footerLogoPreview} alt="Footer Logo" className="h-16 rounded border object-contain mt-1" />}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.favicon')}</label>
-              <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'favicon', setFaviconPreview)} />
-              {getError('favicon') && <p className="text-xs text-destructive">{getError('favicon')}</p>}
-              {faviconPreview && <img src={faviconPreview} alt="Favicon" className="h-10 rounded border object-contain mt-1" />}
-            </div>
+            <Field label={t('settings.logo')} error={getError('logo')}>
+              <>
+                <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'logo', setLogoPreview)} />
+                {logoPreview && <img src={logoPreview} alt="Logo" className="h-16 rounded border object-contain mt-1" />}
+              </>
+            </Field>
+            <Field label={t('settings.footerLogo')} error={getError('footerLogo')}>
+              <>
+                <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'footerLogo', setFooterLogoPreview)} />
+                {footerLogoPreview && <img src={footerLogoPreview} alt="Footer Logo" className="h-16 rounded border object-contain mt-1" />}
+              </>
+            </Field>
+            <Field label={t('settings.favicon')} error={getError('favicon')}>
+              <>
+                <Input type="file" accept="image/jpeg,image/png,image/gif,image/svg+xml" onChange={(e) => handleFileChange(e, 'favicon', setFaviconPreview)} />
+                {faviconPreview && <img src={faviconPreview} alt="Favicon" className="h-10 rounded border object-contain mt-1" />}
+              </>
+            </Field>
           </div>
-        </div>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.shipping')}</h2>
-          <Separator />
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('settings.minimumOrderAmount')}</label>
+        <CardSection title={t('settings.shipping')} icon={Truck} contentClassName="space-y-4">
+          <Field label={t('settings.minimumOrderAmount')}>
             <Input
               type="number"
               min={0}
               {...form.register('minimumOrderAmount')}
               placeholder="100"
             />
-          </div>
+          </Field>
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <label className="text-sm font-medium">{t('settings.fastShippingPage')}</label>
@@ -344,8 +299,7 @@ export function SettingsPage() {
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.fastShippingFee')}</label>
+            <Field label={t('settings.fastShippingFee')}>
               <Input
                 type="number"
                 min={0}
@@ -353,9 +307,8 @@ export function SettingsPage() {
                 {...form.register('fastShippingFee')}
                 placeholder="0"
               />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.fastShippingDuration')}</label>
+            </Field>
+            <Field label={t('settings.fastShippingDuration')}>
               <Input
                 type="number"
                 min={0}
@@ -363,21 +316,17 @@ export function SettingsPage() {
                 {...form.register('fastShippingDurationMinutes')}
                 placeholder="50"
               />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.fastShippingStartHour')}</label>
+            </Field>
+            <Field label={t('settings.fastShippingStartHour')}>
               <Input type="time" {...form.register('fastShippingStartHour')} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.fastShippingEndHour')}</label>
+            </Field>
+            <Field label={t('settings.fastShippingEndHour')}>
               <Input type="time" {...form.register('fastShippingEndHour')} />
-            </div>
+            </Field>
           </div>
-        </div>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.orderTax')}</h2>
-          <Separator />
+        <CardSection title={t('settings.orderTax')} icon={Percent} contentClassName="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <label className="text-sm font-medium">{t('settings.orderTaxEnabled')}</label>
@@ -395,8 +344,7 @@ export function SettingsPage() {
             />
           </div>
           {orderTaxEnabled && (
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('settings.orderTaxRate')}</label>
+            <Field label={t('settings.orderTaxRate')} error={getError('orderTaxRate')}>
               <Input
                 type="number"
                 min={0}
@@ -405,16 +353,11 @@ export function SettingsPage() {
                 {...form.register('orderTaxRate')}
                 placeholder="10"
               />
-              {getError('orderTaxRate') && (
-                <p className="text-xs text-destructive">{getError('orderTaxRate')}</p>
-              )}
-            </div>
+            </Field>
           )}
-        </div>
+        </CardSection>
 
-        <div className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t('settings.currency')}</h2>
-          <Separator />
+        <CardSection title={t('settings.currency')} icon={Coins} contentClassName="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <label className="text-sm font-medium">{t('settings.currencySelection')}</label>
@@ -444,14 +387,14 @@ export function SettingsPage() {
               </div>
             </div>
           )}
-        </div>
+        </CardSection>
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending}>
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('common.loading')}</>
+              <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('common.loading')}</>
             ) : (
-              <><Save className="mr-2 h-4 w-4" /> {t('common.save')}</>
+              <><Save className="me-2 h-4 w-4" /> {t('common.save')}</>
             )}
           </Button>
         </div>
@@ -468,7 +411,7 @@ function SettingsSkeleton() {
         <Skeleton className="mt-2 h-4 w-64" />
       </div>
       {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-lg border p-6 space-y-4">
+        <div key={i} className="rounded-2xl border p-6 space-y-4">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-px w-full" />
           <div className="grid gap-4 sm:grid-cols-2">

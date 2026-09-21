@@ -42,7 +42,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { Badge } from '@/shared/ui/badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { SectionTypeBadge } from './section-type-badge';
 import { SectionDeleteDialog } from './section-delete-dialog';
 import { useToggleSectionActive, useReorderSections } from '../hooks/use-sections';
@@ -117,16 +117,7 @@ function SortableRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge
-          variant="outline"
-          className={
-            section.is_active
-              ? 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400'
-              : 'border-muted bg-muted/50 text-muted-foreground'
-          }
-        >
-          {section.is_active ? t('sections.active') : t('sections.inactive')}
-        </Badge>
+        <StatusBadge status={section.is_active} />
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
@@ -138,7 +129,7 @@ function SortableRow({
             title={section.is_active ? t('sections.deactivate') : t('sections.activate')}
           >
             {section.is_active ? (
-              <Power className="h-4 w-4 text-green-600" />
+              <Power className="h-4 w-4 text-success" />
             ) : (
               <PowerOff className="h-4 w-4 text-muted-foreground" />
             )}
@@ -210,7 +201,7 @@ export function SectionsTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -275,7 +266,7 @@ export function SectionsTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

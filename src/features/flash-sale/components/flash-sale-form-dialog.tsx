@@ -205,6 +205,7 @@ export function FlashSaleFormDialog({
               <Input
                 id="titleEn"
                 placeholder={t('flashSaleForm.titleEn')}
+                aria-invalid={!!getError('titleEn')}
                 {...form.register('titleEn')}
               />
               {getError('titleEn') && (
@@ -218,6 +219,7 @@ export function FlashSaleFormDialog({
                 id="titleAr"
                 placeholder={t('flashSaleForm.titleAr')}
                 dir="rtl"
+                aria-invalid={!!getError('titleAr')}
                 {...form.register('titleAr')}
               />
               {getError('titleAr') && (
@@ -241,7 +243,7 @@ export function FlashSaleFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="startDate" className="text-sm font-medium">{t('flashSaleForm.startDate')} *</label>
-              <Input id="startDate" type="date" {...form.register('startDate')} />
+              <Input id="startDate" type="date" aria-invalid={!!getError('startDate')} {...form.register('startDate')} />
               {getError('startDate') && (
                 <p className="text-xs text-destructive">{getError('startDate')}</p>
               )}
@@ -249,7 +251,7 @@ export function FlashSaleFormDialog({
 
             <div className="space-y-1.5">
               <label htmlFor="endDate" className="text-sm font-medium">{t('flashSaleForm.endDate')} *</label>
-              <Input id="endDate" type="date" {...form.register('endDate')} />
+              <Input id="endDate" type="date" aria-invalid={!!getError('endDate')} {...form.register('endDate')} />
               {getError('endDate') && (
                 <p className="text-xs text-destructive">{getError('endDate')}</p>
               )}
@@ -279,7 +281,7 @@ export function FlashSaleFormDialog({
 
             <div className="space-y-1.5">
               <label htmlFor="discount" className="text-sm font-medium">{t('flashSaleForm.discount')} *</label>
-              <Input id="discount" type="number" step="0.01" min="0" {...form.register('discount')} />
+              <Input id="discount" type="number" step="0.01" min="0" aria-invalid={!!getError('discount')} {...form.register('discount')} />
               {getError('discount') && (
                 <p className="text-xs text-destructive">{getError('discount')}</p>
               )}
@@ -329,7 +331,7 @@ export function FlashSaleFormDialog({
               {productsDropdownOpen && (
                 <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                   <div className="relative mb-1">
-                    <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder={t('flashSaleForm.searchProducts')}
                       value={productSearch}

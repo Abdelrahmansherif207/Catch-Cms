@@ -139,6 +139,7 @@ export function FaqFormDialog({
             <Input
               id="faqTitleEn"
               placeholder={t('faqsForm.faqTitleEn')}
+              aria-invalid={!!getError('faqTitleEn')}
               {...form.register('faqTitleEn')}
             />
             {getError('faqTitleEn') && (
@@ -151,6 +152,7 @@ export function FaqFormDialog({
             <Input
               id="faqTitleAr"
               placeholder={t('faqsForm.faqTitleAr')}
+              aria-invalid={!!getError('faqTitleAr')}
               {...form.register('faqTitleAr')}
             />
             {getError('faqTitleAr') && (
@@ -163,6 +165,7 @@ export function FaqFormDialog({
             <Textarea
               id="faqDescriptionEn"
               placeholder={t('faqsForm.faqDescriptionEn')}
+              aria-invalid={!!getError('faqDescriptionEn')}
               {...form.register('faqDescriptionEn')}
             />
             {getError('faqDescriptionEn') && (
@@ -175,6 +178,7 @@ export function FaqFormDialog({
             <Textarea
               id="faqDescriptionAr"
               placeholder={t('faqsForm.faqDescriptionAr')}
+              aria-invalid={!!getError('faqDescriptionAr')}
               {...form.register('faqDescriptionAr')}
             />
             {getError('faqDescriptionAr') && (

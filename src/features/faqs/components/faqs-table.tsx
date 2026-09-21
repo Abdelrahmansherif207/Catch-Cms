@@ -44,6 +44,7 @@ import { FaqDeleteDialog } from './faq-delete-dialog';
 import { useReorderFaqs } from '../hooks/use-faqs';
 import { cn } from '@/shared/lib/utils';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import type { Faq } from '../types/faq.types';
 
 interface FaqsTableProps {
@@ -128,10 +129,10 @@ function SortableRow({
       </TableCell>
       <TableCell>
         <Badge variant="outline" className={cn(
-          'text-xs font-normal',
+          'border-transparent font-normal',
           faq.faq_type === 'global'
-            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-            : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+            ? 'bg-info-soft text-info'
+            : 'bg-muted text-muted-foreground'
         )}>
           {faq.faq_type === 'global' ? t('faqs.global') : t('faqs.shop')}
         </Badge>
@@ -197,7 +198,7 @@ export function FaqsTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -218,8 +219,8 @@ export function FaqsTable({
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    {t('common.noData')}
+                  <TableCell colSpan={7}>
+                    <DataEmptyState className="border-0" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -259,7 +260,7 @@ export function FaqsTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

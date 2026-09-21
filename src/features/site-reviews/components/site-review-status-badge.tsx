@@ -4,9 +4,9 @@ import { cn } from '@/shared/lib/utils';
 import type { SiteReviewStatus } from '../types/site-review.types';
 
 const STATUS_STYLES: Record<SiteReviewStatus, string> = {
-  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  pending: 'border-transparent bg-warning-soft text-warning',
+  approved: 'border-transparent bg-success-soft text-success',
+  rejected: 'border-transparent bg-destructive-soft text-destructive',
 };
 
 interface SiteReviewStatusBadgeProps {
@@ -17,7 +17,7 @@ interface SiteReviewStatusBadgeProps {
 export function SiteReviewStatusBadge({ status, className }: SiteReviewStatusBadgeProps) {
   const { t } = useTranslation();
   return (
-    <Badge variant="outline" className={cn(STATUS_STYLES[status], className)}>
+    <Badge variant="outline" className={cn('font-normal', STATUS_STYLES[status], className)}>
       {t(`siteReviews.status.${status}`)}
     </Badge>
   );

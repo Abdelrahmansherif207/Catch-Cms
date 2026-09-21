@@ -39,6 +39,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { BrandImageCell } from './brand-image-cell';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { BrandDeleteDialog } from './brand-delete-dialog';
 import { useReorderBrands } from '../hooks/use-brands';
 import type { Brand } from '../types/brand.types';
@@ -105,13 +106,7 @@ export function BrandsTable({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -146,7 +141,7 @@ export function BrandsTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
             <Table>
@@ -279,7 +274,7 @@ function BrandCard({ brand, index, onMoveUp, onEdit, onDelete }: { brand: Brand;
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-2">
+    <div className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -324,7 +319,7 @@ function BrandCard({ brand, index, onMoveUp, onEdit, onDelete }: { brand: Brand;
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -368,7 +363,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-start gap-3">
             <Skeleton className="h-4 w-4 shrink-0" />
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />

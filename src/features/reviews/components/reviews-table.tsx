@@ -12,6 +12,7 @@ import {
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { StarRating } from './star-rating';
 import { ReviewDeleteDialog } from './review-delete-dialog';
 import { useToggleApproveReview } from '../hooks/use-reviews';
@@ -34,7 +35,7 @@ export function ReviewsTable({ data, isLoading, onRefresh }: ReviewsTableProps) 
 
   return (
     <>
-      <div className="rounded-lg border overflow-x-auto">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -49,8 +50,8 @@ export function ReviewsTable({ data, isLoading, onRefresh }: ReviewsTableProps) 
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {t('common.noData')}
+                <TableCell colSpan={6}>
+                  <DataEmptyState className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -86,8 +87,8 @@ export function ReviewsTable({ data, isLoading, onRefresh }: ReviewsTableProps) 
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={review.is_approved ? 'default' : 'secondary'}
-                      className={review.is_approved ? 'bg-green-600 hover:bg-green-700' : ''}
+                      variant="outline"
+                      className={review.is_approved ? 'border-transparent bg-success-soft font-normal text-success' : 'border-transparent bg-muted font-normal text-muted-foreground'}
                     >
                       {review.is_approved ? t('reviews.approved') : t('reviews.pending')}
                     </Badge>
@@ -104,7 +105,7 @@ export function ReviewsTable({ data, isLoading, onRefresh }: ReviewsTableProps) 
                         {review.is_approved ? (
                           <ThumbsDown className="h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <ThumbsUp className="h-4 w-4 text-green-600" />
+                          <ThumbsUp className="h-4 w-4 text-success" />
                         )}
                       </Button>
                       <Button
@@ -138,7 +139,7 @@ export function ReviewsTable({ data, isLoading, onRefresh }: ReviewsTableProps) 
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border overflow-x-auto">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

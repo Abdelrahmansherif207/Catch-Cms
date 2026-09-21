@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { AlertCircle, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import { Input } from '@/shared/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
 import { Button } from '@/shared/ui/button';
 import { useOrders } from '../hooks/use-orders';
 import { OrdersTable } from '../components/orders-table';
@@ -59,139 +56,109 @@ export function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('orders.title')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('orders.subtitle')}
-        </p>
-      </div>
+      <PageHeader title={t('orders.title')} description={t('orders.subtitle')} />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('orders.searchPlaceholder')}
+      <FilterBar
+        activeCount={
+          [search, dateFrom, dateTo].filter(Boolean).length +
+          [status, paymentStatus, shippingMethod].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
+          <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(value) => {
+              setSearch(value);
               setPage(1);
             }}
-            className="ps-9"
+            placeholder={t('orders.searchPlaceholder')}
           />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterSelect
+              value={status}
+              onValueChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+              prefix={t('orders.status')}
+              allLabel={t('orders.allStatuses')}
+              options={ORDER_STATUSES.map((s) => ({
+                value: s,
+                label: t(`orders.statuses.${s}`, { defaultValue: s }),
+              }))}
+              triggerClassName="w-full md:w-auto md:min-w-[190px]"
+            />
+
+            <FilterSelect
+              value={paymentStatus}
+              onValueChange={(value) => {
+                setPaymentStatus(value);
+                setPage(1);
+              }}
+              prefix={t('orders.paymentStatus')}
+              allLabel={t('orders.allPaymentStatuses')}
+              options={PAYMENT_STATUSES.map((s) => ({
+                value: s,
+                label: t(`orders.paymentStatuses.${s}`, { defaultValue: s }),
+              }))}
+              triggerClassName="w-full md:w-auto md:min-w-[200px]"
+            />
+
+            <FilterSelect
+              value={shippingMethod}
+              onValueChange={(value) => {
+                setShippingMethod(value);
+                setPage(1);
+              }}
+              prefix={t('orders.shippingMethod')}
+              allLabel={t('orders.allShippingMethods')}
+              options={SHIPPING_METHODS.map((s) => ({ value: s, label: s }))}
+              triggerClassName="w-full md:w-auto md:min-w-[190px]"
+            />
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                {t('common.clear')}
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Select
-            value={status}
-            onValueChange={(value) => {
-              setStatus(value ?? 'all');
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[140px]">
-              <SelectValue placeholder={t('orders.allStatuses')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('orders.allStatuses')}</SelectItem>
-              {ORDER_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={paymentStatus}
-            onValueChange={(value) => {
-              setPaymentStatus(value ?? 'all');
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[160px]">
-              <SelectValue placeholder={t('orders.allPaymentStatuses')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('orders.allPaymentStatuses')}</SelectItem>
-              {PAYMENT_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s
-                    .replace(/-/g, ' ')
-                    .replace(/\b\w/g, (c) => c.toUpperCase())}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={shippingMethod}
-            onValueChange={(value) => {
-              setShippingMethod(value ?? 'all');
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[150px]">
-              <SelectValue placeholder={t('orders.allShippingMethods')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('orders.allShippingMethods')}</SelectItem>
-              {SHIPPING_METHODS.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-              {t('common.clear')}
-            </Button>
-          )}
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex items-center gap-2">
+            <span className="whitespace-nowrap text-sm text-muted-foreground">
+              {t('orders.dateFrom')}
+            </span>
+            <Input
+              type="datetime-local"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="h-9 w-auto"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="whitespace-nowrap text-sm text-muted-foreground">
+              {t('orders.dateTo')}
+            </span>
+            <Input
+              type="datetime-local"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="h-9 w-auto"
+            />
+          </div>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {t('orders.dateFrom')}
-          </span>
-          <Input
-            type="datetime-local"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value);
-              setPage(1);
-            }}
-            className="h-9 w-auto"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {t('orders.dateTo')}
-          </span>
-          <Input
-            type="datetime-local"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value);
-              setPage(1);
-            }}
-            className="h-9 w-auto"
-          />
-        </div>
-      </div>
+      </FilterBar>
 
       {isError && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-8 text-center">
-          <AlertCircle className="h-8 w-8 text-destructive" />
-          <p className="text-sm text-muted-foreground">{t('orders.listError')}</p>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            {t('common.retry')}
-          </Button>
-        </div>
+        <DataErrorState message={t('orders.listError')} onRetry={() => refetch()} />
       )}
 
       <OrdersTable

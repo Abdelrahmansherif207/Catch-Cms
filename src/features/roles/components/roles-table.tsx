@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MoreHorizontal, Eye, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import {
@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState, DataErrorState } from '@/shared/components/data-state';
 import { RoleDeleteDialog } from './role-delete-dialog';
 import { parseDisplayName } from '../schemas/role.schema';
 import { roleRoutes } from '../routes/role.routes';
@@ -86,20 +87,12 @@ export function RolesTable({
   }
 
   if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border py-12">
-        <p className="text-sm text-muted-foreground">{t('roles.loadError')}</p>
-        <Button variant="outline" size="sm" onClick={onRefresh}>
-          <RefreshCw className="me-2 h-4 w-4" />
-          {t('common.retry')}
-        </Button>
-      </div>
-    );
+    return <DataErrorState message={t('roles.loadError')} onRetry={onRefresh} />;
   }
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -128,8 +121,8 @@ export function RolesTable({
           <TableBody>
             {sorted.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  {t('common.noData')}
+                <TableCell colSpan={4}>
+                  <DataEmptyState className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -192,7 +185,7 @@ export function RolesTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

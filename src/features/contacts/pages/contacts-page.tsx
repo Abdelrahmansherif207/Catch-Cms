@@ -1,8 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
-import { RefreshCw, Search, Trash2, MailX } from 'lucide-react';
+import { RefreshCw, Trash2, MailX, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -17,10 +22,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from '@/shared/ui/dialog';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import { ContactsTable } from '../components/contacts-table';
 import { ContactDetailDialog } from '../components/contact-detail-dialog';
 import { ContactReplyDialog } from '../components/contact-reply-dialog';
@@ -42,6 +51,8 @@ export function ContactsPage() {
   const [replyContact, setReplyContact] = useState<Contact | null>(null);
   const [openReply, setOpenReply] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllReadOpen, setDeleteAllReadOpen] = useState(false);
 
   const deleteAllMutation = useDeleteAllContacts();
   const deleteAllReadMutation = useDeleteAllReadContacts();
@@ -56,7 +67,7 @@ export function ContactsPage() {
     unread: readParam === false ? true : undefined,
   };
 
-  const { data, isLoading, refetch } = useContacts(params);
+  const { data, isLoading, isError, refetch } = useContacts(params);
 
   const contacts = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -98,87 +109,113 @@ export function ContactsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t('contacts.pageTitle')}</h1>
-        <div className="flex items-center gap-2">
-          <Dialog>
-            <DialogTrigger render={<Button variant="outline" size="sm" />}>
-              <MailX className="me-1.5 h-4 w-4" />
-              {t('contacts.deleteAllRead')}
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('contacts.deleteAllReadTitle')}</DialogTitle>
-                <DialogDescription>
-                  {t('contacts.deleteAllReadConfirm')}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose render={<Button variant="outline" />}>
-                  {t('common.cancel')}
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => deleteAllReadMutation.mutate(undefined, { onSuccess: () => refetch() })}
-                >
-                  {t('common.delete')}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      <PageHeader
+        title={t('contacts.pageTitle')}
+        description={t('contacts.subtitle')}
+        actions={
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label={t('common.actions')} />}>
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setDeleteAllReadOpen(true)}>
+                  <MailX className="me-2 h-4 w-4" />
+                  {t('contacts.deleteAllRead')}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteAllOpen(true)}>
+                  <Trash2 className="me-2 h-4 w-4" />
+                  {t('contacts.deleteAll')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="icon-sm" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </>
+        }
+      />
 
-          <Dialog>
-            <DialogTrigger render={<Button variant="destructive" size="sm" />}>
-              <Trash2 className="me-1.5 h-4 w-4" />
-              {t('contacts.deleteAll')}
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('contacts.deleteAllTitle')}</DialogTitle>
-                <DialogDescription>
-                  {t('contacts.deleteAllConfirm')}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose render={<Button variant="outline" />}>
-                  {t('common.cancel')}
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => deleteAllMutation.mutate(undefined, { onSuccess: () => refetch() })}
-                >
-                  {t('common.delete')}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      <Dialog open={deleteAllReadOpen} onOpenChange={setDeleteAllReadOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('contacts.deleteAllReadTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('contacts.deleteAllReadConfirm')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              {t('common.cancel')}
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => deleteAllReadMutation.mutate(undefined, {
+                onSuccess: () => {
+                  setDeleteAllReadOpen(false);
+                  refetch();
+                },
+              })}
+            >
+              {t('common.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          <Button variant="outline" size="icon-sm" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <Dialog open={deleteAllOpen} onOpenChange={setDeleteAllOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('contacts.deleteAllTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('contacts.deleteAllConfirm')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              {t('common.cancel')}
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => deleteAllMutation.mutate(undefined, {
+                onSuccess: () => {
+                  setDeleteAllOpen(false);
+                  refetch();
+                },
+              })}
+            >
+              {t('common.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 w-full md:max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('contacts.searchPlaceholder')}
-            value={searchInput}
-            onChange={(e) => handleSearchInput(e.target.value)}
-            className="h-8 ps-9"
-          />
-        </div>
-        <Select value={readFilter} onValueChange={(v) => { if (v) setReadFilter(v); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('contacts.readFilter')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('contacts.allReadStatuses')}</SelectItem>
-            <SelectItem value="read">{t('contacts.read')}</SelectItem>
-            <SelectItem value="unread">{t('contacts.unread')}</SelectItem>
-          </SelectContent>
-        </Select>
+      <FilterBar
+        activeCount={
+          [search || searchInput].filter(Boolean).length +
+          [readFilter].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex w-full flex-wrap items-center gap-2">
+        <SearchInput
+          value={searchInput}
+          onChange={handleSearchInput}
+          placeholder={t('contacts.searchPlaceholder')}
+        />
+        <FilterSelect
+          value={readFilter}
+          onValueChange={(v) => {
+            setReadFilter(v);
+            setPage(1);
+          }}
+          prefix={t('contacts.readFilter')}
+          allLabel={t('contacts.allReadStatuses')}
+          options={[
+            { value: 'read', label: t('contacts.read') },
+            { value: 'unread', label: t('contacts.unread') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
         <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
           <SelectTrigger className="h-8 w-full md:w-[90px]">
             <SelectValue />
@@ -191,6 +228,14 @@ export function ContactsPage() {
           </SelectContent>
         </Select>
       </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState
+          message={t('contacts.listError')}
+          onRetry={() => refetch()}
+        />
+      )}
 
       <ContactsTable
         data={contacts}

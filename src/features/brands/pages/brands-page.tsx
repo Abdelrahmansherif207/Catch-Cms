@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { Download, Plus, Search, Upload } from 'lucide-react';
+import { Download, Plus, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -46,7 +50,7 @@ export function BrandsPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, refetch } = useBrands(params);
+  const { data, isLoading, isError, refetch } = useBrands(params);
 
   const brands = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -77,93 +81,104 @@ export function BrandsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{t('brands.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('brands.subtitle')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {canImport && (
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              {t('brands.importBtn')}
+      <PageHeader
+        title={t('brands.title')}
+        description={t('brands.subtitle')}
+        actions={
+          <>
+            {canImport && (
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <Upload className="me-2 h-4 w-4" />
+                {t('brands.importBtn')}
+              </Button>
+            )}
+            {canExport && (
+              <Button variant="outline" onClick={() => setExportOpen(true)}>
+                <Download className="me-2 h-4 w-4" />
+                {t('brands.exportBtn')}
+              </Button>
+            )}
+            <Button onClick={handleCreate}>
+              <Plus className="me-2 h-4 w-4" />
+              {t('brands.addBrand')}
             </Button>
-          )}
-          {canExport && (
-            <Button variant="outline" onClick={() => setExportOpen(true)}>
-              <Download className="mr-2 h-4 w-4" />
-              {t('brands.exportBtn')}
-            </Button>
-          )}
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('brands.addBrand')}
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('brands.searchPlaceholder')}
+      <FilterBar
+        activeCount={
+          [search].filter(Boolean).length +
+          [activeFilter].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(value) => {
+              setSearch(value);
               setPage(1);
             }}
-            className="ps-9"
+            placeholder={t('brands.searchPlaceholder')}
           />
+
+          {search && (
+            <Button variant="ghost" size="sm" onClick={handleClearSearch}>
+              {t('common.clear')}
+            </Button>
+          )}
+
+          <FilterSelect
+            value={activeFilter}
+            onValueChange={(v) => {
+              setActiveFilter(v);
+              setPage(1);
+            }}
+            prefix={t('common.status')}
+            allLabel={t('brands.allStatuses')}
+            options={[
+              { value: '1', label: t('brands.active') },
+              { value: '0', label: t('brands.inactive') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
+          />
+          <Select value={order} onValueChange={(v) => v && (setOrder(v), setPage(1))}>
+            <SelectTrigger className="h-8 w-full md:w-[150px]">
+              <SelectValue placeholder={t('brands.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">{t('brands.sortName')}</SelectItem>
+              <SelectItem value="slug">Slug</SelectItem>
+              <SelectItem value="status">{t('brands.sortStatus')}</SelectItem>
+              <SelectItem value="created_at">{t('brands.sortCreatedAt')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortedBy} onValueChange={(v) => v && (setSortedBy(v), setPage(1))}>
+            <SelectTrigger className="h-8 w-full md:w-[120px]">
+              <SelectValue placeholder={t('brands.sortedBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">{t('brands.asc')}</SelectItem>
+              <SelectItem value="desc">{t('brands.desc')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
+            <SelectTrigger className="h-8 w-full md:w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+      </FilterBar>
 
-        {search && (
-          <Button variant="ghost" size="sm" onClick={handleClearSearch}>
-            {t('common.clear')}
-          </Button>
-        )}
-
-        <Select value={activeFilter} onValueChange={(v) => v && (setActiveFilter(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('brands.allStatuses')}</SelectItem>
-            <SelectItem value="1">{t('brands.active')}</SelectItem>
-            <SelectItem value="0">{t('brands.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={order} onValueChange={(v) => v && (setOrder(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('brands.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">{t('brands.sortName')}</SelectItem>
-            <SelectItem value="slug">Slug</SelectItem>
-            <SelectItem value="status">{t('brands.sortStatus')}</SelectItem>
-            <SelectItem value="created_at">{t('brands.sortCreatedAt')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortedBy} onValueChange={(v) => v && (setSortedBy(v), setPage(1))}>
-          <SelectTrigger className="h-8 w-full md:w-[120px]">
-            <SelectValue placeholder={t('brands.sortedBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">{t('brands.asc')}</SelectItem>
-            <SelectItem value="desc">{t('brands.desc')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[90px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="15">15</SelectItem>
-            <SelectItem value="25">25</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <BrandsTable
         data={brands}

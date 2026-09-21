@@ -10,9 +10,10 @@ import { Button } from '@/shared/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { StatusBadge } from '@/shared/components/status-badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { DeleteDialog } from './delete-dialog';
 import { useDeleteGovernorate } from '../hooks/use-shipping';
 import type { Governorate } from '../types/shipping.types';
@@ -35,13 +36,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
   if (isLoading) return isMobile ? <MobileSkeleton /> : <TableSkeleton />;
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   const citiesLink = (gov: Governorate) =>
@@ -54,7 +49,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
       <>
         <div className="space-y-3">
           {data.map((gov) => (
-            <div key={gov.id} className="rounded-lg border bg-card p-3 space-y-2">
+            <div key={gov.id} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-medium">{getLocalizedName(gov.name, i18n.language || 'en')}</p>
@@ -65,7 +60,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
                   )}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Badge variant={gov.status ? 'default' : 'secondary'}>{gov.status ? t('shipping.active') : t('shipping.inactive')}</Badge>
+                  <StatusBadge status={gov.status} />
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -107,7 +102,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -123,9 +118,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
               <TableRow key={gov.id}>
                 <TableCell className="font-medium">{getLocalizedName(gov.name, i18n.language || 'en')}</TableCell>
                 <TableCell>
-                  <Badge variant={gov.status ? 'default' : 'secondary'}>
-                    {gov.status ? t('shipping.active') : t('shipping.inactive')}
-                  </Badge>
+                  <StatusBadge status={gov.status} />
                 </TableCell>
                 <TableCell>
                   {gov.shipping_price ? (
@@ -177,7 +170,7 @@ export function GovernoratesTable({ data, isLoading, isNested, onEdit, onRefresh
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -205,7 +198,7 @@ function MobileSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-2">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-3 w-1/2" />
           <div className="flex gap-2">

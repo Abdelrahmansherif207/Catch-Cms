@@ -76,7 +76,7 @@ function CheckboxList({ items, selectedIds, onChange, searchPlaceholder, emptyMe
             >
               <input
                 type="checkbox"
-                className="h-4 w-4"
+                className="size-4 shrink-0 cursor-pointer accent-primary"
                 checked={selectedIds.includes(item.id)}
                 onChange={() =>
                   onChange(
@@ -465,7 +465,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute top-2 right-2 h-6 w-6 p-0"
+                    className="absolute top-2 end-2 h-6 w-6 p-0"
                     onClick={() => remove(index)}
                   >
                     <X className="h-4 w-4" />
@@ -572,7 +572,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                 })
               }
             >
-              <Plus className="mr-1 h-4 w-4" />
+              <Plus className="me-1 h-4 w-4" />
               {t('productsForm.addVariant')}
             </Button>
           </div>
@@ -913,7 +913,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1.5 -end-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -930,7 +930,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
         <Button type="submit" disabled={isPending}>
           {isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
               {t('common.loading')}
             </>
           ) : (

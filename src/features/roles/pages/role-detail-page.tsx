@@ -1,9 +1,12 @@
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Pencil, Trash2, Loader2, ShieldCheck } from 'lucide-react';
+import { Pencil, Trash2, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
 import { useRole, useDeleteRole } from '../hooks/use-roles';
 import { parseDisplayName } from '../schemas/role.schema';
 import { roleRoutes } from '../routes/role.routes';
@@ -48,7 +51,6 @@ export function RoleDetailPage() {
         <ShieldCheck className="h-12 w-12 text-muted-foreground" />
         <p className="text-lg font-medium">{t('roles.notFound')}</p>
         <Button variant="outline" onClick={() => navigate(roleRoutes.list)}>
-          <ArrowLeft className="me-2 h-4 w-4" />
           {t('roles.backToList')}
         </Button>
       </div>
@@ -61,33 +63,44 @@ export function RoleDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(roleRoutes.list)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-semibold">{label}</h1>
-            <p className="text-sm text-muted-foreground">{t('roles.roleDetail')}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(roleRoutes.list)}>
-            <Pencil className="me-2 h-4 w-4" />
-            {t('common.edit')}
-          </Button>
-          <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="me-2 h-4 w-4" />
-            {t('common.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageBackHeader
+        title={label}
+        description={t('roles.roleDetail')}
+        backTo={roleRoutes.list}
+      />
+
+      <DetailHero
+        icon={ShieldCheck}
+        title={label}
+        subtitle={
+          (lang === 'ar' ? parsed.en : parsed.ar) !== label
+            ? (lang === 'ar' ? parsed.en : parsed.ar)
+            : undefined
+        }
+        facts={[
+          { label: t('roles.id'), value: role.id },
+          { label: t('roles.guardName'), value: 'api' },
+          {
+            label: t('roles.permissionsCount', { count: permissions.length }),
+            value: permissions.length,
+          },
+        ]}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => navigate(roleRoutes.list)}>
+              <Pencil className="me-2 h-4 w-4" />
+              {t('common.edit')}
+            </Button>
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="me-2 h-4 w-4" />
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            {t('roles.roleInfo')}
-          </h2>
+        <CardSection title={t('roles.roleInfo')}>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">{t('roles.id')}</dt>
@@ -106,12 +119,9 @@ export function RoleDetailPage() {
               <dd className="font-medium">api</dd>
             </div>
           </dl>
-        </div>
+        </CardSection>
 
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            {t('roles.permissionsCount', { count: permissions.length })}
-          </h2>
+        <CardSection title={t('roles.permissionsCount', { count: permissions.length })}>
           <div className="flex flex-wrap gap-1.5">
             {permissions.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t('roles.noPermissions')}</p>
@@ -123,7 +133,7 @@ export function RoleDetailPage() {
               ))
             )}
           </div>
-        </div>
+        </CardSection>
       </div>
 
       <RoleDeleteDialog

@@ -1,4 +1,5 @@
 import { Pencil, Trash2, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { AssignmentStatusBadge } from './assignment-status-badge';
@@ -29,7 +31,7 @@ function formatDate(dateStr: string | null): string {
 
 function UsageBar({ used, maxUses }: { used: number; maxUses: number }) {
   const ratio = maxUses > 0 ? used / maxUses : 0;
-  const color = ratio > 0.8 ? "bg-red-500" : ratio > 0.5 ? "bg-yellow-500" : "bg-green-500";
+  const color = ratio > 0.8 ? "bg-destructive" : ratio > 0.5 ? "bg-warning" : "bg-success";
   return (
     <div className='w-full bg-muted rounded-full h-1.5 min-w-[60px]'>
       <div className={'h-full rounded-full transition-all ' + color}
@@ -47,6 +49,7 @@ export function AssignmentsTable({
   selectedIds,
   onSelectionChange,
 }: AssignmentsTableProps) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   if (isLoading) {
@@ -55,8 +58,8 @@ export function AssignmentsTable({
 
   if (data.length === 0) {
     return (
-      <div className='rounded-lg border bg-yellow-50 border-yellow-200 p-4'>
-        <p className='text-sm text-yellow-800'>
+      <div className='rounded-lg border border-transparent bg-warning-soft p-4'>
+        <p className='text-sm text-warning'>
           This coupon is public — no user restrictions. Add users below to make it restricted.
         </p>
       </div>
@@ -97,16 +100,16 @@ const toggleSelect = (id: number) => {
   }
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-10">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={selectedIds.length === data.length && data.length > 0}
-                onChange={toggleAll}
-                className="h-4 w-4"
+                indeterminate={selectedIds.length > 0 && selectedIds.length < data.length}
+                onCheckedChange={toggleAll}
+                aria-label={t('common.selectAll')}
               />
             </TableHead>
             <TableHead>User</TableHead>
@@ -123,11 +126,10 @@ const toggleSelect = (id: number) => {
           {data.map((assignment) => (
             <TableRow key={assignment.id}>
               <TableCell>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedIds.includes(assignment.id)}
-                  onChange={() => toggleSelect(assignment.id)}
-                  className="h-4 w-4"
+                  onCheckedChange={() => toggleSelect(assignment.id)}
+                  aria-label={assignment.user_name}
                 />
               </TableCell>
               <TableCell>
@@ -151,7 +153,7 @@ const toggleSelect = (id: number) => {
               </TableCell>
               <TableCell className="text-center">{assignment.max_uses}</TableCell>
               <TableCell className="text-center">{assignment.used}</TableCell>
-              <TableCell className={'text-center ' + (assignment.remaining === 0 ? 'text-red-500 font-medium' : '')}>
+              <TableCell className={'text-center ' + (assignment.remaining === 0 ? 'text-destructive font-medium' : '')}>
                 {assignment.remaining}
               </TableCell>
               <TableCell>
@@ -196,13 +198,13 @@ function AssignmentCard({
   onDelete: (assignment: CouponAssignment) => void;
 }) {
   return (
-    <div className={'rounded-lg border bg-card p-3 space-y-2 ' + (selected ? 'ring-2 ring-primary' : '')}>
+    <div className={'rounded-2xl border bg-card p-4 space-y-3 shadow-xs ' + (selected ? 'ring-2 ring-primary' : '')}>
       <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selected}
-          onChange={() => onToggle(assignment.id)}
-          className="mt-1 h-4 w-4"
+          onCheckedChange={() => onToggle(assignment.id)}
+          aria-label={assignment.user_name}
+          className="mt-1"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -235,7 +237,7 @@ function AssignmentCard({
             <div>
               <span className="text-muted-foreground">Used:</span> {assignment.used}
             </div>
-            <div className={assignment.remaining === 0 ? 'text-red-500 font-medium' : ''}>
+            <div className={assignment.remaining === 0 ? 'text-destructive font-medium' : ''}>
               <span className="text-muted-foreground">Remaining:</span> {assignment.remaining}
             </div>
             <div>
@@ -257,7 +259,7 @@ function AssignmentCard({
 }
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -296,7 +298,7 @@ function MobileCardSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+        <div key={i} className="rounded-2xl border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-center gap-3">
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-8 w-8 rounded-full shrink-0" />

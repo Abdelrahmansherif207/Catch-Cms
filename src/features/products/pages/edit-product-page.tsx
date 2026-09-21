@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { PageBackHeader } from '@/shared/components/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useProduct } from '../hooks/use-products';
 import { ProductForm } from '../components/product-form';
@@ -113,21 +113,13 @@ export function EditProductPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(productRoutes.detail(detail.id))}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('productsForm.editProduct')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('productsForm.editSubtitle')}
-          </p>
-        </div>
-      </div>
+      <PageBackHeader
+        title={t('productsForm.editProduct')}
+        description={t('productsForm.editSubtitle')}
+        backTo={productRoutes.detail(detail.id)}
+      />
 
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
         <ProductForm
           productId={detail.id}
           initialValues={formValues}

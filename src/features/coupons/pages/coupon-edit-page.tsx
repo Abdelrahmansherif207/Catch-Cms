@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageBackHeader } from '@/shared/components/page-header';
 import { useCoupon } from '../hooks/use-coupons';
 import { CouponFormContent } from '../components/coupon-form-dialog';
 import { AssignmentsSection } from '../components/assignments-section';
@@ -11,7 +11,7 @@ function EditPageSkeleton() {
   return (
     <div className="space-y-6">
       <Skeleton className="h-8 w-32" />
-      <div className="rounded-lg border bg-card p-6 space-y-6">
+      <div className="rounded-2xl border bg-card p-4 shadow-card sm:p-6 space-y-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-10 w-full" />
         ))}
@@ -45,21 +45,13 @@ export function CouponEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/coupons')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('coupons.editCoupon')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('coupons.subtitle')}
-          </p>
-        </div>
-      </div>
+      <PageBackHeader
+        title={t('coupons.editCoupon')}
+        description={t('coupons.subtitle')}
+        backTo="/coupons"
+      />
 
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
         <CouponFormContent
           coupon={detail}
           onSuccess={() => navigate('/coupons')}

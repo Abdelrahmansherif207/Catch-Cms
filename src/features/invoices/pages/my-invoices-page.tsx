@@ -46,7 +46,7 @@ export function MyInvoicesPage() {
           <p className="text-muted-foreground">{t('invoices.myInvoices.subtitle')}</p>
         </div>
 
-        <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-card">
           {isLoading ? (
             <div className="space-y-2 p-4">
               {Array.from({ length: 5 }).map((_, i) => (

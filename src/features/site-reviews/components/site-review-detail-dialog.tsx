@@ -84,7 +84,7 @@ export function SiteReviewDetailDialog({
                     key={i}
                     className={cn(
                       'h-4 w-4',
-                      i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                      i < review.rating ? 'fill-warning text-warning' : 'text-muted-foreground/30'
                     )}
                   />
                 ))}
@@ -145,7 +145,7 @@ export function SiteReviewDetailDialog({
             )}
             {canApprove && (
               <Button
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-success text-success-foreground hover:bg-success/90"
                 disabled={rejectMutation.isPending || approveMutation.isPending}
                 onClick={() =>
                   approveMutation.mutate(review.id, {

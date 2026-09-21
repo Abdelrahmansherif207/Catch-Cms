@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Loader2, UserRound } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { PageHeader } from '@/shared/components/page-header';
 import { useProfile } from '../hooks/use-profile';
 import { ProfileInfoCard } from '../components/profile-info-card';
 import { PermissionsTab } from '../components/permissions-tab';
@@ -31,12 +32,7 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('profile.title')}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('profile.subtitle')}</p>
-      </div>
+      <PageHeader title={t('profile.title')} description={t('profile.subtitle')} />
 
       <ProfileInfoCard profile={profile} />
 
@@ -49,10 +45,10 @@ export function ProfilePage() {
             {t('profile.changePassword')}
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="permissions" className="rounded-xl border bg-card p-6 shadow-sm">
+        <TabsContent value="permissions" className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
           <PermissionsTab permissions={profile.permissions} />
         </TabsContent>
-        <TabsContent value="changePassword" className="rounded-xl border bg-card p-6 shadow-sm">
+        <TabsContent value="changePassword" className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium">{t('auth.changePasswordTitle')}</h3>

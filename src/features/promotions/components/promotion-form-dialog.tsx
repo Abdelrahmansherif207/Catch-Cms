@@ -228,6 +228,7 @@ export function PromotionFormDialog({
               <Input
                 id="nameEn"
                 placeholder={t('promotionsForm.nameEn')}
+                aria-invalid={!!getError('nameEn')}
                 {...form.register('nameEn')}
               />
               {getError('nameEn') && (
@@ -242,6 +243,7 @@ export function PromotionFormDialog({
                 id="nameAr"
                 placeholder={t('promotionsForm.nameAr')}
                 dir="rtl"
+                aria-invalid={!!getError('nameAr')}
                 {...form.register('nameAr')}
               />
               {getError('nameAr') && (
@@ -302,6 +304,7 @@ export function PromotionFormDialog({
               id="discount"
               type="number"
               placeholder={t('promotionsForm.discount')}
+              aria-invalid={!!getError('discount')}
               {...form.register('discount')}
             />
             {getError('discount') && (
@@ -318,6 +321,7 @@ export function PromotionFormDialog({
                 id="maxDiscountAmount"
                 type="number"
                 placeholder={t('promotionsForm.maxDiscountAmount')}
+                aria-invalid={!!getError('maxDiscountAmount')}
                 {...form.register('maxDiscountAmount')}
               />
               {getError('maxDiscountAmount') && (
@@ -337,6 +341,7 @@ export function PromotionFormDialog({
                 id="minimumOrderAmount"
                 type="number"
                 placeholder={t('promotionsForm.minimumOrderAmount')}
+                aria-invalid={!!getError('minimumOrderAmount')}
                 {...form.register('minimumOrderAmount')}
               />
               {getError('minimumOrderAmount') && (
@@ -386,7 +391,7 @@ export function PromotionFormDialog({
                         {giftDropdownOpen === index && (
                           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                             <div className="relative mb-1">
-                              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                              <Search className="absolute start-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
                               <Input
                                 placeholder={t('promotionsForm.searchProducts')}
                                 value={giftSearch}
@@ -449,7 +454,7 @@ export function PromotionFormDialog({
                   append({ product_id: 0, quantity: 1 });
                 }}
               >
-                <Search className="mr-1 h-3 w-3" />
+                <Search className="me-1 h-3 w-3" />
                 {t('promotionsForm.addGiftProduct')}
               </Button>
             </div>
@@ -507,7 +512,7 @@ export function PromotionFormDialog({
                 {productsDropdownOpen && (
                   <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                     <div className="relative mb-1">
-                      <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                      <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         placeholder={t('promotionsForm.searchProducts')}
                         value={productSearch}
@@ -594,6 +599,7 @@ export function PromotionFormDialog({
               <Input
                 id="startAt"
                 type="date"
+                aria-invalid={!!getError('startAt')}
                 {...form.register('startAt')}
               />
               {getError('startAt') && (
@@ -604,7 +610,7 @@ export function PromotionFormDialog({
               <label htmlFor="endAt" className="text-sm font-medium">
                 {t('promotionsForm.endAt')} *
               </label>
-              <Input id="endAt" type="date" {...form.register('endAt')} />
+              <Input id="endAt" type="date" aria-invalid={!!getError('endAt')} {...form.register('endAt')} />
               {getError('endAt') && (
                 <p className="text-xs text-destructive">{getError('endAt')}</p>
               )}

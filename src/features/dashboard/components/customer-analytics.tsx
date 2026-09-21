@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { CustomerData } from '../types/dashboard.types';
 import { formatCurrency, formatNumber } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface CustomerAnalyticsProps {
   data: CustomerData | undefined;
@@ -63,12 +64,7 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
   const lang = i18n.language || 'en';
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.customers.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">{t('dashboard.errors.failedToLoad')}</div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.customers.title')} />;
   }
 
   const newVsReturningData = data ? [
@@ -77,36 +73,38 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
   ] : [];
 
   const activeCards = data ? [
-    { label: t('dashboard.customers.last7days'), value: data.active_customers.last_7_days, icon: Clock },
-    { label: t('dashboard.customers.last30days'), value: data.active_customers.last_30_days, icon: UserCheck },
-    { label: t('dashboard.customers.last90days'), value: data.active_customers.last_90_days, icon: Users },
+    { label: t('dashboard.customers.last7days'), value: data.active_customers.last_7_days, icon: Clock, color: 'text-info', bg: 'bg-info-soft' },
+    { label: t('dashboard.customers.last30days'), value: data.active_customers.last_30_days, icon: UserCheck, color: 'text-success', bg: 'bg-success-soft' },
+    { label: t('dashboard.customers.last90days'), value: data.active_customers.last_90_days, icon: Users, color: 'text-primary', bg: 'bg-primary/10' },
   ] : [];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.customers.title')}</h3>
-
+    <ChartCard title={t('dashboard.customers.title')}>
       {isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)}</div>
-          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-lg" /><Skeleton className="h-[200px] rounded-lg" /></div>
-          <Skeleton className="h-[200px] rounded-lg" />
+          <div className="grid grid-cols-3 gap-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
+          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-xl" /><Skeleton className="h-[200px] rounded-xl" /></div>
+          <Skeleton className="h-[200px] rounded-xl" />
         </div>
       ) : data ? (
         <>
           <div className="grid grid-cols-3 gap-3 mb-6">
             {activeCards.map((card) => (
-              <div key={card.label} className="rounded-lg border border-border p-3 text-center">
-                <card.icon className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                <p className="text-lg font-bold text-foreground tabular-nums">{formatNumber(card.value)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">{card.label}</p>
+              <div key={card.label} className="rounded-xl border bg-muted/40 p-3.5 transition-colors hover:bg-muted/60">
+                <div className="mb-2 flex items-center gap-2">
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${card.bg} ${card.color}`}>
+                    <card.icon className="h-3.5 w-3.5" strokeWidth={2} />
+                  </div>
+                  <span className="truncate text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{card.label}</span>
+                </div>
+                <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">{formatNumber(card.value)}</p>
               </div>
             ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2 mb-6">
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.customers.newVsReturning')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.customers.newVsReturning')}</h4>
               {newVsReturningData.some((d) => d.value > 0) ? (
                 <div className="h-[200px] w-full" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
@@ -122,12 +120,12 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
 
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.customers.growth')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.customers.growth')}</h4>
               {data.monthly_growth.length > 0 ? (
                 <div className="h-[200px] w-full" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
@@ -141,14 +139,14 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="flex h-[150px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[150px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.customers.byOrders')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.customers.byOrders')}</h4>
               {data.top_customers.by_orders.length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
@@ -161,7 +159,7 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                     <TableBody>
                       {data.top_customers.by_orders.map((c) => (
                         <TableRow key={c.id}>
-                          <TableCell><span className="text-sm font-medium text-foreground">{getLocalizedName(c.name, lang)}</span><span className="text-xs text-muted-foreground ml-2">{c.email}</span></TableCell>
+                          <TableCell><span className="text-sm font-medium text-foreground">{getLocalizedName(c.name, lang)}</span><span className="text-xs text-muted-foreground ms-2">{c.email}</span></TableCell>
                           <TableCell className="text-end tabular-nums font-medium">{c.orders}</TableCell>
                         </TableRow>
                       ))}
@@ -169,11 +167,11 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
             <div>
-              <h4 className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.customers.byRevenue')}</h4>
+              <h4 className="mb-3 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.customers.byRevenue')}</h4>
               {data.top_customers.by_revenue.length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
@@ -186,7 +184,7 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                     <TableBody>
                       {data.top_customers.by_revenue.map((c) => (
                         <TableRow key={c.id}>
-                          <TableCell><span className="text-sm font-medium text-foreground">{getLocalizedName(c.name, lang)}</span><span className="text-xs text-muted-foreground ml-2">{c.email}</span></TableCell>
+                          <TableCell><span className="text-sm font-medium text-foreground">{getLocalizedName(c.name, lang)}</span><span className="text-xs text-muted-foreground ms-2">{c.email}</span></TableCell>
                           <TableCell className="text-end tabular-nums font-medium">{formatCurrency(c.revenue ?? 0)}</TableCell>
                         </TableRow>
                       ))}
@@ -194,14 +192,14 @@ export function CustomerAnalytics({ data, isLoading, error }: CustomerAnalyticsP
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
           </div>
         </>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
       )}
-    </div>
+    </ChartCard>
   );
 }

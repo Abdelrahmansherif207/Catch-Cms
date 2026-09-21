@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { UserActivationDialog } from './user-activation-dialog';
 import { UserDeleteDialog } from './user-delete-dialog';
@@ -46,10 +47,10 @@ interface UsersTableProps {
 }
 
 function SortIcon({ field, orderBy, sort }: { field: string; orderBy?: string; sort?: string }) {
-  if (orderBy !== field) return <ArrowUpDown className="ml-1 h-3 w-3 inline opacity-40" />;
+  if (orderBy !== field) return <ArrowUpDown className="ms-1 h-3 w-3 inline opacity-40" />;
   return sort === 'asc'
-    ? <ArrowUp className="ml-1 h-3 w-3 inline" />
-    : <ArrowDown className="ml-1 h-3 w-3 inline" />;
+    ? <ArrowUp className="ms-1 h-3 w-3 inline" />
+    : <ArrowDown className="ms-1 h-3 w-3 inline" />;
 }
 
 export function UsersTable({
@@ -74,7 +75,7 @@ export function UsersTable({
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -107,8 +108,8 @@ export function UsersTable({
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  {t('common.noData')}
+                <TableCell colSpan={6}>
+                  <DataEmptyState className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -228,7 +229,7 @@ export function UsersTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

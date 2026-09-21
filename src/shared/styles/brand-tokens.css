@@ -20,9 +20,31 @@
   --brand-success: #2d7a4d;
   --brand-discount: #b81d24;
 
+  /* Danger — true red for destructive/error semantics */
+  --brand-danger: #dc2626;
+  --brand-danger-dark: #b91c1c;
+
+  /* Warning — deep amber, readable as text on white */
+  --brand-warning: #b45309;
+
+  /* Info — blue for informational states */
+  --brand-info: #1d4ed8;
+
+  /* Processing — burnt orange, distinct from warning amber */
+  --brand-processing: #c2410c;
+
+  /* Soft fills for badges / status pills (light tints) */
+  --brand-success-soft: #e3f2e9;
+  --brand-danger-soft: #fdecec;
+  --brand-warning-soft: #fdf1de;
+  --brand-info-soft: #e8effe;
+
   /* Backgrounds */
   --brand-background: #ffffff;
   --brand-surface: #faf6f5;
+
+  /* Page Canvas — tinted backdrop so white cards lift off the page */
+  --brand-canvas: #f4efee;
 
   /* Text */
   --brand-text-primary: #1c1a1a;

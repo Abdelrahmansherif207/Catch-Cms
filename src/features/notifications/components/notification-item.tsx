@@ -42,7 +42,7 @@ export function NotificationItem({ notification, variant = 'dropdown', onClose, 
       type="button"
       onClick={handleClick}
       className={cn(
-        'group flex w-full items-start gap-3 text-left transition-colors',
+        'group flex w-full items-start gap-3 text-start transition-colors',
         variant === 'dropdown'
           ? 'px-3 py-2.5 hover:bg-accent/50'
           : 'rounded-lg border px-4 py-3 hover:bg-accent/30',
@@ -77,7 +77,7 @@ export function NotificationItem({ notification, variant = 'dropdown', onClose, 
         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
           {notification.message}
         </p>
-        <p className="mt-1 text-[11px] text-muted-foreground/60">{timeAgo}</p>
+        <p className="mt-1 text-2xs text-muted-foreground/60">{timeAgo}</p>
       </div>
     </button>
   );

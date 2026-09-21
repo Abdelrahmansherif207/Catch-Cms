@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { PageHeader } from '@/shared/components/page-header';
 import { usePermissions } from '@/shared/auth/guards';
 import { STATIC_PAGE_PERMISSIONS } from '../permissions/static-pages.permissions';
 import { useStaticPages } from '../hooks/use-static-pages';
@@ -34,18 +35,16 @@ export function StaticPagesPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">{t('staticPages.pageTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('staticPages.pageDescription')}</p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <PageHeader
+        title={t('staticPages.pageTitle')}
+        description={t('staticPages.pageDescription')}
+        actions={
           <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {isError && (
         <div className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-3">

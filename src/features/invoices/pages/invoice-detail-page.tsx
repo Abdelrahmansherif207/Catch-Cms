@@ -14,6 +14,7 @@ import {
   MapPin,
   PencilLine,
   QrCode,
+  Receipt,
   RefreshCw,
   ShoppingCart,
   Truck,
@@ -25,6 +26,7 @@ import { Button, buttonVariants } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Separator } from '@/shared/ui/separator';
+import { DetailHero } from '@/shared/components/detail-hero';
 import {
   Table,
   TableBody,
@@ -67,13 +69,13 @@ function DetailSkeleton() {
       <Skeleton className="h-8 w-40" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <Skeleton className="h-44 rounded-xl" />
-          <Skeleton className="h-56 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-44 rounded-2xl" />
+          <Skeleton className="h-56 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
         </div>
         <div className="space-y-6">
-          <Skeleton className="h-56 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-56 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
         </div>
       </div>
     </div>
@@ -82,7 +84,7 @@ function DetailSkeleton() {
 
 function InfoSection({ title, icon, children }: { title: string; icon?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-2xl border bg-card p-5 shadow-card">
       <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         {icon}
         {title}
@@ -227,37 +229,58 @@ export function InvoiceDetailPage() {
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{invoice.invoice_number}</h1>
-            <InvoiceStatusBadge status={invoice.status} />
-          </div>
-          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <p>
-              {t('invoices.createdAt')}: {formatDate(invoice.created_at)}
-            </p>
-            {invoice.generated_at && (
-              <p>
-                {t('invoices.generatedAt')}: {formatDate(invoice.generated_at)}
-              </p>
-            )}
-            {invoice.issued_at && (
-              <p>
-                {t('invoices.issuedAt')}: {formatDate(invoice.issued_at)}
-              </p>
-            )}
-            {invoice.paid_at && (
-              <p>
-                {t('invoices.paidAt')}: {formatDate(invoice.paid_at)}
-              </p>
-            )}
-            {invoice.is_correction && (
-              <Badge variant="outline" className="border-orange-300 text-orange-600">
-                {t('invoices.correctionInvoice')}
-              </Badge>
-            )}
-          </div>
-        </div>
+        <DetailHero
+          icon={Receipt}
+          iconToneClass="bg-info-soft text-info"
+          title={invoice.invoice_number}
+          subtitle={
+            <span className="block space-y-1">
+              <span className="block">
+                {t('invoices.createdAt')}: {formatDate(invoice.created_at)}
+              </span>
+              {invoice.generated_at && (
+                <span className="block">
+                  {t('invoices.generatedAt')}: {formatDate(invoice.generated_at)}
+                </span>
+              )}
+              {invoice.issued_at && (
+                <span className="block">
+                  {t('invoices.issuedAt')}: {formatDate(invoice.issued_at)}
+                </span>
+              )}
+              {invoice.paid_at && (
+                <span className="block">
+                  {t('invoices.paidAt')}: {formatDate(invoice.paid_at)}
+                </span>
+              )}
+            </span>
+          }
+          badges={
+            <>
+              <InvoiceStatusBadge status={invoice.status} />
+              {invoice.is_correction && (
+                <Badge variant="outline" className="border-transparent bg-warning-soft font-normal text-warning">
+                  {t('invoices.correctionInvoice')}
+                </Badge>
+              )}
+            </>
+          }
+          facts={[
+            {
+              label: t('invoices.total'),
+              value: formatMoney(invoice.total, invoice.currency),
+            },
+            {
+              label: t('invoices.amountPaid'),
+              value: formatMoney(invoice.amount_paid, invoice.currency),
+            },
+            {
+              label: t('invoices.customer'),
+              value: customerName ?? '—',
+            },
+          ]}
+          className="min-w-0 flex-1"
+        />
         <div className="w-full sm:w-72">
           <InvoicePdfPanel
             invoice={invoice}
@@ -345,7 +368,7 @@ export function InvoiceDetailPage() {
                 <InfoRow
                   label={t('invoices.amountPaid')}
                   value={
-                    <span className="text-green-600">
+                    <span className="text-success">
                       {formatMoney(invoice.amount_paid, invoice.currency)}
                     </span>
                   }
@@ -392,7 +415,7 @@ export function InvoiceDetailPage() {
                 )}
                 {creditNotes.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-green-600">
+                    <h3 className="mb-2 text-sm font-semibold text-success">
                       {t('invoices.creditNotes')}
                     </h3>
                     <NoteList notes={creditNotes} currency={invoice.currency} />

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowLeft,
   Trash2,
   MapPin,
   Phone,
@@ -13,9 +12,13 @@ import {
   FileText,
   Package,
   Building2,
+  Receipt,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { PageBackHeader } from '@/shared/components/page-header';
+import { DetailHero } from '@/shared/components/detail-hero';
+import { CardSection } from '@/shared/components/card-section';
 import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
@@ -62,11 +65,11 @@ function DetailSkeleton() {
       <Skeleton className="h-8 w-32" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Skeleton className="h-40 rounded-xl" />
-          <Skeleton className="h-60 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="h-60 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
         </div>
-        <Skeleton className="h-60 rounded-xl" />
+        <Skeleton className="h-60 rounded-2xl" />
       </div>
     </div>
   );
@@ -106,39 +109,44 @@ export function OrderDetailPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => navigate(orderRoutes.list)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('common.back')}
-        </Button>
-        <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          {t('common.delete')}
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <PageBackHeader
+        title={order.order_number}
+        description={new Date(order.created_at).toLocaleString()}
+        backTo={orderRoutes.list}
+        actions={
+          <>
+            <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="me-2 h-4 w-4" />
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{order.order_number}</h1>
-          <p className="text-sm text-muted-foreground">
-            {new Date(order.created_at).toLocaleString()}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <OrderStatusBadge status={order.status} type="order" />
-          <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
-          <OrderStatusBadge status={order.payment_status} type="payment" />
-        </div>
-      </div>
+      <DetailHero
+        title={order.order_number}
+        subtitle={new Date(order.created_at).toLocaleString()}
+        badges={
+          <>
+            <OrderStatusBadge status={order.status} type="order" />
+            <OrderStatusBadge status={order.payment_status} type="payment" />
+          </>
+        }
+        icon={ShoppingCart}
+        iconToneClass="bg-info-soft text-info"
+        facts={[
+          { icon: UserRound, label: t('orders.customerInfo'), value: order.customer_name },
+          { icon: Receipt, label: t('orders.total'), value: Number(order.total_price).toFixed(2) },
+          { icon: Package, label: t('orders.orderItems'), value: order.order_items.length },
+          { icon: CreditCard, label: t('orders.paymentMethod'), value: order.transactions[0]?.payment_method ?? '—' },
+        ]}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
-              {t('orders.orderItems')}
-            </h2>
+          <CardSection title={t('orders.orderItems')} icon={Package}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -176,14 +184,10 @@ export function OrderDetailPage() {
                 ))}
               </TableBody>
             </Table>
-          </section>
+          </CardSection>
 
           {order.transactions.length > 0 && (
-            <section className="rounded-xl border bg-card p-5">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                {t('orders.transactions')}
-              </h2>
+            <CardSection title={t('orders.transactions')} icon={CreditCard}>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -210,26 +214,18 @@ export function OrderDetailPage() {
                   ))}
                 </TableBody>
               </Table>
-            </section>
+            </CardSection>
           )}
 
           {order.notes && (
-            <section className="rounded-xl border bg-card p-5">
-              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {t('orders.notes')}
-              </h2>
+            <CardSection title={t('orders.notes')} icon={FileText}>
               <p className="text-sm text-muted-foreground">{order.notes}</p>
-            </section>
+            </CardSection>
           )}
         </div>
 
         <div className="space-y-6">
-          <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <UserRound className="h-5 w-5" />
-              {t('orders.customerInfo')}
-            </h2>
+          <CardSection title={t('orders.customerInfo')} icon={UserRound}>
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <UserRound className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -244,13 +240,9 @@ export function OrderDetailPage() {
                 <span dir="ltr">{order.customer_phone}</span>
               </div>
             </div>
-          </section>
+          </CardSection>
 
-          <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              {t('orders.shippingAddress')}
-            </h2>
+          <CardSection title={t('orders.shippingAddress')} icon={MapPin}>
             <div className="space-y-1 text-sm">
               <p>{street}</p>
               <p>
@@ -264,14 +256,10 @@ export function OrderDetailPage() {
               <span className="text-muted-foreground">{t('orders.shippingMethod')}:</span>
               <span className="font-medium">{order.shipping_method}</span>
             </div>
-          </section>
+          </CardSection>
 
           {isPickupOrder && (
-            <section className="rounded-xl border bg-card p-5">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                {t('orders.pickupLocation')}
-              </h2>
+            <CardSection title={t('orders.pickupLocation')} icon={Building2}>
               {order.pickup_location ? (
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-2">
@@ -325,11 +313,10 @@ export function OrderDetailPage() {
               ) : (
                 <p className="text-sm text-muted-foreground">{t('orders.pickupOrderNote')}</p>
               )}
-            </section>
+            </CardSection>
           )}
 
-          <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold mb-4">{t('orders.priceSummary')}</h2>
+          <CardSection title={t('orders.priceSummary')} icon={Receipt}>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('orders.subtotal')}</span>
@@ -344,7 +331,7 @@ export function OrderDetailPage() {
                 </span>
               </div>
               {order.coupon_discount && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-success">
                   <span>{t('orders.discount')}</span>
                   <span>-{Number(order.coupon_discount).toFixed(2)}</span>
                 </div>
@@ -355,7 +342,7 @@ export function OrderDetailPage() {
                 <span>{Number(order.total_price).toFixed(2)}</span>
               </div>
             </div>
-          </section>
+          </CardSection>
         </div>
       </div>
 

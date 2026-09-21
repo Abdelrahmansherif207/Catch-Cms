@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import { FilterBar } from '@/shared/ui/filter-bar';
+import { FilterSelect } from '@/shared/components/filter-select';
 import {
   Select,
   SelectContent,
@@ -11,6 +12,9 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataErrorState } from '@/shared/components/data-state';
 import { BannersTable } from '../components/banners-table';
 import { BannerFormDialog } from '../components/banner-form-dialog';
 import { useBanners } from '../hooks/use-banners';
@@ -21,7 +25,6 @@ export function BannersPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
   const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [order, setOrder] = useState('created_at');
   const [sortedBy, setSortedBy] = useState('desc');
@@ -38,7 +41,7 @@ export function BannersPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, refetch } = useBanners(params);
+  const { data, isLoading, isError, refetch } = useBanners(params);
 
   const banners = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -62,85 +65,88 @@ export function BannersPage() {
     refetch();
   }, [refetch]);
 
-  const handleSearch = () => {
-    setSearch(searchInput);
-    setPage(1);
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t('banners.pageTitle')}</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="me-1.5 h-4 w-4" />
-            {t('common.create')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('banners.pageTitle')}
+        description={t('banners.subtitle')}
+        actions={
+          <>
+            <Button variant="outline" size="icon-sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="me-1.5 h-4 w-4" />
+              {t('common.create')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 w-full md:max-w-xs">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={handleSearch}
-            aria-label={t('common.search')}
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-          <Input
+      <FilterBar
+        activeCount={
+          [search].filter(Boolean).length +
+          [activeFilter].filter((v) => v !== 'all').length
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
             placeholder={t('banners.searchPlaceholder')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            className="h-8 ps-9"
           />
+          <FilterSelect
+            value={activeFilter}
+            onValueChange={(v) => {
+              setActiveFilter(v);
+              setPage(1);
+            }}
+            prefix={t('common.status')}
+            allLabel={t('banners.allStatuses')}
+            options={[
+              { value: 'active', label: t('banners.active') },
+              { value: 'inactive', label: t('banners.inactive') },
+            ]}
+            triggerClassName="w-full md:w-auto md:min-w-[190px]"
+          />
+          <Select value={order} onValueChange={(v) => { if (v) setOrder(v); setPage(1); }}>
+            <SelectTrigger className="h-8 w-full md:w-[150px]">
+              <SelectValue placeholder={t('banners.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">{t('banners.sortCreatedAt')}</SelectItem>
+              <SelectItem value="title">{t('banners.sortTitle')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortedBy} onValueChange={(v) => { if (v) setSortedBy(v); setPage(1); }}>
+            <SelectTrigger className="h-8 w-full md:w-[120px]">
+              <SelectValue placeholder={t('banners.sortedBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">{t('banners.asc')}</SelectItem>
+              <SelectItem value="desc">{t('banners.desc')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
+            <SelectTrigger className="h-8 w-full md:w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={activeFilter} onValueChange={(v) => { if (v) setActiveFilter(v); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[130px]">
-            <SelectValue placeholder={t('common.status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('banners.allStatuses')}</SelectItem>
-            <SelectItem value="active">{t('banners.active')}</SelectItem>
-            <SelectItem value="inactive">{t('banners.inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={order} onValueChange={(v) => { if (v) setOrder(v); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[150px]">
-            <SelectValue placeholder={t('banners.sortBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="created_at">{t('banners.sortCreatedAt')}</SelectItem>
-            <SelectItem value="title">{t('banners.sortTitle')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortedBy} onValueChange={(v) => { if (v) setSortedBy(v); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[120px]">
-            <SelectValue placeholder={t('banners.sortedBy')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">{t('banners.asc')}</SelectItem>
-            <SelectItem value="desc">{t('banners.desc')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
-          <SelectTrigger className="h-8 w-full md:w-[90px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="15">15</SelectItem>
-            <SelectItem value="25">25</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      </FilterBar>
+
+      {isError && (
+        <DataErrorState onRetry={() => refetch()} />
+      )}
 
       <BannersTable
         data={banners}

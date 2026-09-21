@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, UserRound, Loader2, Check, X } from 'lucide-react';
+import { UserRound, Loader2, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { fetchUserById } from '../api/roles.api';
 import { useUsers, useAssignUserRoles, useRemoveUserRoles } from '../hooks/use-roles';
 
@@ -93,15 +94,12 @@ export function RoleUserAssign({ roleId }: RoleUserAssignProps) {
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t('roles.searchUsers')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ps-9"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder={t('roles.searchUsers')}
+        className="sm:max-w-none"
+      />
 
       <div className="max-h-[300px] overflow-y-auto rounded-lg border">
         {isUsersLoading && users.length === 0 && (
@@ -111,7 +109,7 @@ export function RoleUserAssign({ roleId }: RoleUserAssignProps) {
         )}
 
         {!isUsersLoading && users.length === 0 && (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t('common.noData')}</p>
+          <DataEmptyState className="border-0" />
         )}
 
         {users.map((user) => {

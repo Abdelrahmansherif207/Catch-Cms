@@ -108,7 +108,7 @@ export function CancelInvoiceDialog({ invoice, open, onOpenChange }: CancelInvoi
           <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 accent-destructive"
+              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-destructive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               {...form.register('confirm')}
             />
             <span>{t('invoices.cancel.confirmCheckbox')}</span>

@@ -137,7 +137,7 @@ export function TagFormDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <label htmlFor="name" className="text-sm font-medium">{t('tagsForm.name')} *</label>
-              <Input id="name" placeholder={t('tagsForm.name')} {...form.register('name')} />
+              <Input id="name" placeholder={t('tagsForm.name')} aria-invalid={!!getError('name')} {...form.register('name')} />
               {getError('name') && <p className="text-xs text-destructive">{getError('name')}</p>}
             </div>
 
@@ -147,6 +147,7 @@ export function TagFormDialog({
                 id="slug"
                 dir="ltr"
                 placeholder={t('tagsForm.slugPlaceholder')}
+                aria-invalid={!!getError('slug')}
                 {...form.register('slug')}
               />
               {getError('slug') && <p className="text-xs text-destructive">{getError('slug')}</p>}

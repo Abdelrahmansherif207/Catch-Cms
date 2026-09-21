@@ -225,7 +225,7 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
                 {isFailed || isCancelled || hasErrors ? (
                   <AlertCircle className="h-10 w-10 text-destructive" />
                 ) : (
-                  <CheckCircle2 className="h-10 w-10 text-green-500" />
+                  <CheckCircle2 className="h-10 w-10 text-success" />
                 )}
                 <p className="text-center text-sm font-medium">
                   {isFailed
@@ -248,7 +248,7 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
                   </div>
                   <div className="rounded-lg border bg-card p-2.5 text-center">
                     <p className="text-xs text-muted-foreground">{t(`${ns}.successRows`)}</p>
-                    <p className="mt-0.5 text-lg font-semibold text-green-600 tabular-nums">
+                    <p className="mt-0.5 text-lg font-semibold text-success tabular-nums">
                       {api.status.successful_rows ?? api.status.success_rows ?? 0}
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
 
               {hasErrors && (
                 <Button variant="outline" className="w-full" onClick={api.downloadErrors}>
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="me-2 h-4 w-4" />
                   {t(`${ns}.downloadErrors`)}
                 </Button>
               )}
@@ -381,7 +381,7 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
                 onClick={handleImport}
                 disabled={!selectedFile || api.isUploading}
               >
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="me-2 h-4 w-4" />
                 {t(`${ns}.importBtn`)}
               </Button>
             </>
@@ -397,19 +397,19 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
                 >
                   {api.isCancelling || isCancellingStatus ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="me-2 h-4 w-4 animate-spin" />
                       {t(`${ns}.cancelling`)}
                     </>
                   ) : (
                     <>
-                      <Ban className="mr-2 h-4 w-4" />
+                      <Ban className="me-2 h-4 w-4" />
                       {t(`${ns}.cancelImport`)}
                     </>
                   )}
                 </Button>
               )}
               <Button variant="outline" disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 {t(`${ns}.importing`)}
               </Button>
             </>
@@ -418,7 +418,7 @@ export function FileImportDialog({ ns, api, open, onOpenChange }: FileImportDial
           {showResult && (
             <>
               <Button variant="outline" onClick={handleStartNew}>
-                <RotateCcw className="mr-2 h-4 w-4" />
+                <RotateCcw className="me-2 h-4 w-4" />
                 {t('common.startNew')}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>

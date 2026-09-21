@@ -27,7 +27,7 @@ export function PermissionsTab({ permissions }: PermissionsTabProps) {
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t('profile.searchPermissions')}
           value={search}
@@ -35,7 +35,7 @@ export function PermissionsTab({ permissions }: PermissionsTabProps) {
             setSearch(e.target.value);
             setShowAll(false);
           }}
-          className="h-9 pl-8"
+          className="h-9 ps-8"
         />
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">

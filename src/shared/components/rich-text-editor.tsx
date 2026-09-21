@@ -121,8 +121,9 @@ export function RichTextEditor({
         relative_urls: false,
         remove_script_host: false,
         content_style: [
-          'body { font-family: inherit; font-size: 14px; line-height: 1.6; }',
+          "body { font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #1c1a1a; background: #ffffff; }",
           'img { max-width: 100%; height: auto; }',
+          'a { color: #b81d24; }',
           dir === 'rtl' ? 'body { direction: rtl; text-align: right; }' : '',
         ]
           .filter(Boolean)

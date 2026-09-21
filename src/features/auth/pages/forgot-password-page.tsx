@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { AuthCard } from '../components/auth-card';
 import { useForgotPassword } from '../hooks/use-auth';
 import {
   forgotPasswordSchema,
@@ -31,20 +32,20 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/5 to-primary/10 p-4">
-      <div className="w-full max-w-md">
-        <div className="rounded-xl border bg-card p-8 shadow-lg">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <img src="/catch-logo.png" alt="Catch Beauty" className="mb-6 h-12 w-auto rounded-lg" />
-            <h1 className="text-xl font-bold tracking-tight text-foreground">
-              {t('auth.forgotPasswordTitle')}
-            </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {t('auth.forgotPasswordSubtitle')}
-            </p>
-          </div>
-
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <AuthCard
+      title={t('auth.forgotPasswordTitle')}
+      subtitle={t('auth.forgotPasswordSubtitle')}
+      footer={
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+          {t('auth.backToLogin')}
+        </Link>
+      }
+    >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 {t('auth.email')}
@@ -69,31 +70,20 @@ export function ForgotPasswordPage() {
 
             <Button
               type="submit"
+              size="lg"
               className="w-full"
               disabled={forgotMutation.isPending}
             >
               {forgotMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t('auth.sending')}
                 </>
               ) : (
                 t('auth.sendResetLink')
               )}
             </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t('auth.backToLogin')}
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+      </form>
+    </AuthCard>
   );
 }

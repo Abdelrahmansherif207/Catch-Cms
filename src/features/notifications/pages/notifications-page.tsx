@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Inbox,
   RefreshCw,
   CheckCheck,
   Trash2,
@@ -11,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Pagination } from '@/shared/components/pagination';
+import { PageHeader } from '@/shared/components/page-header';
+import { DataEmptyState, DataErrorState } from '@/shared/components/data-state';
 import {
   Dialog,
   DialogTrigger,
@@ -58,85 +59,83 @@ export function NotificationsPage() {
   return (
     <>
       <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('notifications.pageTitle', 'Notifications')}
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            {unreadCount > 0
-              ? t('notifications.unreadSummary', '{{count}} unread notification', {
-                  count: unreadCount,
-                })
-              : t('notifications.allCaughtUp', "You're all caught up!")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => markAllAsReadMutation.mutate()}
-            disabled={markAllAsReadMutation.isPending || unreadCount === 0}
-          >
-            {markAllAsReadMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <CheckCheck className="size-4" />
-            )}
-            {t('notifications.markAllRead', 'Mark all read')}
-          </Button>
+      <PageHeader
+        title={t('notifications.pageTitle', 'Notifications')}
+        description={
+          unreadCount > 0
+            ? t('notifications.unreadSummary', '{{count}} unread notification', {
+                count: unreadCount,
+              })
+            : t('notifications.allCaughtUp', "You're all caught up!")
+        }
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending || unreadCount === 0}
+            >
+              {markAllAsReadMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <CheckCheck className="size-4" />
+              )}
+              {t('notifications.markAllRead', 'Mark all read')}
+            </Button>
 
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogTrigger render={<Button variant="outline" size="sm" />}>
-              <Trash2 className="size-4" />
-              {t('notifications.deleteAll', 'Delete all')}
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {t('notifications.deleteConfirmTitle', 'Delete all notifications?')}
-                </DialogTitle>
-                <DialogDescription>
-                  {t(
-                    'notifications.deleteConfirmDesc',
-                    'This action cannot be undone. All notifications will be permanently removed.',
-                  )}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose render={<Button variant="outline" />}>
-                  {t('common.cancel', 'Cancel')}
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    deleteAllMutation.mutate();
-                    setDeleteDialogOpen(false);
-                  }}
-                  disabled={deleteAllMutation.isPending}
-                >
-                  {deleteAllMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    t('notifications.deleteAll', 'Delete all')
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <DialogTrigger render={<Button variant="outline" size="sm" />}>
+                <Trash2 className="size-4" />
+                {t('notifications.deleteAll', 'Delete all')}
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {t('notifications.deleteConfirmTitle', 'Delete all notifications?')}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t(
+                      'notifications.deleteConfirmDesc',
+                      'This action cannot be undone. All notifications will be permanently removed.',
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose render={<Button variant="outline" />}>
+                    {t('common.cancel', 'Cancel')}
+                  </DialogClose>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      deleteAllMutation.mutate();
+                      setDeleteDialogOpen(false);
+                    }}
+                    disabled={deleteAllMutation.isPending}
+                  >
+                    {deleteAllMutation.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      t('notifications.deleteAll', 'Delete all')
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => currentQuery.refetch()}
-            disabled={currentQuery.isFetching}
-          >
-            <RefreshCw
-              className={`size-4 ${currentQuery.isFetching ? 'animate-spin' : ''}`}
-            />
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => currentQuery.refetch()}
+              disabled={currentQuery.isFetching}
+            >
+              <RefreshCw
+                className={`size-4 ${currentQuery.isFetching ? 'animate-spin' : ''}`}
+              />
+            </Button>
+          </>
+        }
+      />
 
       <Tabs
         value={tab}
@@ -149,7 +148,7 @@ export function NotificationsPage() {
           <TabsTrigger value="unread">
             {t('notifications.unread', 'Unread')}
             {unreadCount > 0 && (
-              <span className="ml-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              <span className="ms-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-2xs font-semibold text-primary-foreground">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -218,40 +217,19 @@ function NotificationListContent({ query, page, onPageChange, onSelect }: Notifi
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed px-4 py-12 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
-          <RefreshCw className="size-6 text-destructive" />
-        </div>
-        <div>
-          <p className="text-base font-medium text-foreground">
-            {t('notifications.loadError', 'Failed to load notifications')}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('notifications.tryAgain', 'Please try again')}
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => refetch()}>
-          {t('notifications.retry', 'Try again')}
-        </Button>
-      </div>
+      <DataErrorState
+        message={t('notifications.loadError', 'Failed to load notifications')}
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed px-4 py-16 text-center">
-        <div className="flex size-14 items-center justify-center rounded-full bg-muted">
-          <Inbox className="size-7 text-muted-foreground" />
-        </div>
-        <div>
-          <p className="text-base font-medium text-foreground">
-            {t('notifications.noNotifications', 'No notifications')}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('notifications.emptyDesc', "You're all caught up!")}
-          </p>
-        </div>
-      </div>
+      <DataEmptyState
+        title={t('notifications.noNotifications', 'No notifications')}
+        description={t('notifications.emptyDesc', "You're all caught up!")}
+      />
     );
   }
 

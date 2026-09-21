@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { DashboardProductsData } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface ProductAnalyticsProps {
   data: DashboardProductsData | undefined;
@@ -17,35 +18,28 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
   const lang = i18n.language || 'en';
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.products.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">{t('dashboard.errors.failedToLoad')}</div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.products.title')} />;
   }
 
   const nameFn = (item: { name: string | { en: string; ar: string } }) => getLocalizedName(item.name, lang);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.products.title')}</h3>
-
+    <ChartCard title={t('dashboard.products.title')}>
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-20 w-full rounded-lg" />
-          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-lg" /><Skeleton className="h-[200px] rounded-lg" /></div>
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[200px] rounded-xl" /><Skeleton className="h-[200px] rounded-xl" /></div>
         </div>
       ) : data ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <div className="rounded-lg border border-border p-3 col-span-2 sm:col-span-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/50">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 p-2.5 text-amber-600 dark:text-amber-400">
+                <div className="rounded-lg bg-warning-soft p-2.5 text-warning">
                   <DollarSign className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300 uppercase tracking-wider">{t('dashboard.products.inventoryValue')}</p>
+                  <p className="text-xs font-medium text-warning uppercase tracking-wider">{t('dashboard.products.inventoryValue')}</p>
                   <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">{formatCurrency(data.inventory_value)}</p>
                 </div>
               </div>
@@ -56,7 +50,7 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="h-3.5 w-3.5 text-success" />
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.products.bestSelling')}</h4>
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.products.bestSelling')}</h4>
               </div>
               {data.best_selling.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -80,14 +74,14 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.products.worstSelling')}</h4>
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.products.worstSelling')}</h4>
               </div>
               {data.worst_selling.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -111,7 +105,7 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
           </div>
@@ -120,7 +114,7 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.products.neverSold')}</h4>
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.products.neverSold')}</h4>
               </div>
               {data.never_sold.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -142,14 +136,14 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('dashboard.products.outOfStock')}</h4>
+                <h4 className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">{t('dashboard.products.outOfStock')}</h4>
               </div>
               {data.out_of_stock.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -173,14 +167,14 @@ export function ProductAnalytics({ data, isLoading, error }: ProductAnalyticsPro
                   </Table>
                 </div>
               ) : (
-                <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
+                <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">{t('dashboard.errors.noData')}</div>
               )}
             </div>
           </div>
         </>
       ) : (
-        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
+        <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">{t('dashboard.errors.noData')}</div>
       )}
-    </div>
+    </ChartCard>
   );
 }

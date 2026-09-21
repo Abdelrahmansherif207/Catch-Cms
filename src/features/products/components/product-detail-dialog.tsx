@@ -100,14 +100,14 @@ export function ProductDetailDialog({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('products.stock')}</p>
-                <p className={detail.in_stock ? 'text-green-600' : 'text-red-600'}>
+                <p className={detail.in_stock ? 'text-success' : 'text-destructive'}>
                   {detail.available_stock} ({t('products.sold')}: {detail.sold_quantity})
                 </p>
               </div>
               {detail.price_after_discount && (
                 <div>
                   <p className="text-sm text-muted-foreground">{t('products.priceAfterDiscount')}</p>
-                  <p className="font-medium text-green-600">
+                  <p className="font-medium text-discount">
                     {Number(detail.price_after_discount).toFixed(2)}
                   </p>
                 </div>
@@ -115,7 +115,7 @@ export function ProductDetailDialog({
               {detail.price_after_flash_sale && (
                 <div>
                   <p className="text-sm text-muted-foreground">{t('products.priceAfterFlashSale')}</p>
-                  <p className="font-medium text-orange-600">
+                  <p className="font-medium text-discount">
                     {Number(detail.price_after_flash_sale).toFixed(2)}
                   </p>
                 </div>

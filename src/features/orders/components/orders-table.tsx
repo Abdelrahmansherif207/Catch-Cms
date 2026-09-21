@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { OrderStatusBadge } from './order-status-badge';
 import { OrderDeleteDialog } from './order-delete-dialog';
 import { orderRoutes } from '../routes/order.routes';
@@ -40,7 +41,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -56,8 +57,8 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  {t('common.noData')}
+                <TableCell colSpan={7}>
+                  <DataEmptyState title={t('common.noData')} className="border-0" />
                 </TableCell>
               </TableRow>
             ) : (
@@ -136,7 +137,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

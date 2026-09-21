@@ -49,11 +49,11 @@ export function NavMain({ groups }: NavMainProps) {
                   aria-expanded={!hideContent}
                 />
               }
-              className="group/header w-full cursor-pointer select-none gap-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              className="group/header w-full cursor-pointer select-none gap-1.5 rounded-md text-2xs font-semibold uppercase tracking-wider transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
             >
               <span className="truncate">{group.title}</span>
               {hideContent && (
-                <span className="ms-auto rounded-full bg-sidebar-accent px-1.5 py-px text-[10px] font-medium leading-4 text-sidebar-foreground/70 group-hover/header:bg-background">
+                <span className="ms-auto rounded-full bg-sidebar-accent px-1.5 py-px text-2xs font-medium leading-4 text-sidebar-foreground/70 group-hover/header:bg-background">
                   {group.items.length}
                 </span>
               )}
@@ -72,6 +72,7 @@ export function NavMain({ groups }: NavMainProps) {
                         render={<NavLink to={item.url} />}
                         tooltip={item.title}
                         isActive={item.url === activeUrl}
+                        className="relative h-9 gap-2.5 rounded-lg px-2.5 text-sm font-medium text-sidebar-foreground/75 transition-all duration-150 hover:bg-sidebar-accent hover:text-sidebar-foreground data-active:bg-primary/[0.08] data-active:font-semibold data-active:text-primary data-active:shadow-xs data-active:before:absolute data-active:before:start-0 data-active:before:top-1/2 data-active:before:h-5 data-active:before:w-1 data-active:before:-translate-y-1/2 data-active:before:rounded-full data-active:before:bg-primary"
                       >
                         <item.icon />
                         <span>{item.title}</span>

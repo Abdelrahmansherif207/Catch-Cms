@@ -8,17 +8,18 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { cn } from '@/shared/lib/utils';
+import { Badge } from '@/shared/ui/badge';
+import { DataEmptyState } from '@/shared/components/data-state';
 import type { ActivityLog } from '../types/activity-log.types';
 
 const EVENT_COLORS: Record<string, string> = {
-  created: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
-  updated: 'bg-blue-500/10 text-blue-600 border-blue-200',
-  deleted: 'bg-red-500/10 text-red-600 border-red-200',
-  restored: 'bg-purple-500/10 text-purple-600 border-purple-200',
-  forceDeleted: 'bg-rose-500/10 text-rose-600 border-rose-200',
-  statusChanged: 'bg-amber-500/10 text-amber-600 border-amber-200',
-  roleUpdated: 'bg-violet-500/10 text-violet-600 border-violet-200',
+  created: 'border-transparent bg-success-soft text-success',
+  updated: 'border-transparent bg-info-soft text-info',
+  deleted: 'border-transparent bg-destructive-soft text-destructive',
+  restored: 'border-transparent bg-info-soft text-info',
+  forceDeleted: 'border-transparent bg-destructive-soft text-destructive',
+  statusChanged: 'border-transparent bg-warning-soft text-warning',
+  roleUpdated: 'border-transparent bg-info-soft text-info',
 };
 
 function formatEvent(event: string): string {
@@ -52,7 +53,7 @@ export function ActivityLogsTable({ data, isLoading }: ActivityLogsTableProps) {
   }
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -67,8 +68,8 @@ export function ActivityLogsTable({ data, isLoading }: ActivityLogsTableProps) {
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                {t('common.noData')}
+              <TableCell colSpan={6}>
+                <DataEmptyState className="border-0" />
               </TableCell>
             </TableRow>
           ) : (
@@ -78,14 +79,12 @@ export function ActivityLogsTable({ data, isLoading }: ActivityLogsTableProps) {
                   {log.id}
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={cn(
-                      'inline-block rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                      EVENT_COLORS[log.event] || 'bg-muted text-muted-foreground border-border'
-                    )}
+                  <Badge
+                    variant="outline"
+                    className={EVENT_COLORS[log.event] || 'border-transparent bg-muted text-muted-foreground'}
                   >
                     {formatEvent(log.event)}
-                  </span>
+                  </Badge>
                 </TableCell>
                 <TableCell className="max-w-[300px]">
                   <p className="truncate text-sm">{log.description}</p>
@@ -116,7 +115,7 @@ export function ActivityLogsTable({ data, isLoading }: ActivityLogsTableProps) {
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

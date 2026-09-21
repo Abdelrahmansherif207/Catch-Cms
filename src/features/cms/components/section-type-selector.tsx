@@ -77,7 +77,7 @@ export function SectionTypeSelector({
               {formatTypeName(type)}
             </span>
             {isSelected && (
-              <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+              <span className="absolute end-2 top-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                 <Check className="size-3" />
               </span>
             )}

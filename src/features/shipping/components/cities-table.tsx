@@ -11,6 +11,7 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { DeleteDialog } from './delete-dialog';
 import { useDeleteCity } from '../hooks/use-shipping';
 import type { City } from '../types/shipping.types';
@@ -31,13 +32,7 @@ export function CitiesTable({ data, isLoading, onEdit, onRefresh }: CitiesTableP
   if (isLoading) return isMobile ? <MobileSkeleton /> : <TableSkeleton />;
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-lg border">
-        <div className="flex h-24 items-center justify-center">
-          <p className="text-muted-foreground">{t('common.noData')}</p>
-        </div>
-      </div>
-    );
+    return <DataEmptyState />;
   }
 
   if (isMobile) {
@@ -45,7 +40,7 @@ export function CitiesTable({ data, isLoading, onEdit, onRefresh }: CitiesTableP
       <>
         <div className="space-y-3">
           {data.map((city) => (
-            <div key={city.id} className="rounded-lg border bg-card p-3 flex items-center justify-between">
+            <div key={city.id} className="rounded-2xl border bg-card p-4 flex items-center justify-between shadow-xs">
               <p className="font-medium">{getLocalizedName(city.name, i18n.language || 'en')}</p>
               <DropdownMenu>
                 <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
@@ -81,7 +76,7 @@ export function CitiesTable({ data, isLoading, onEdit, onRefresh }: CitiesTableP
 
   return (
     <>
-      <div className="rounded-lg border">
+      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -133,7 +128,7 @@ export function CitiesTable({ data, isLoading, onEdit, onRefresh }: CitiesTableP
 
 function TableSkeleton() {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -158,7 +153,7 @@ function MobileSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-3 flex items-center justify-between">
+        <div key={i} className="rounded-2xl border bg-card p-4 flex items-center justify-between shadow-xs">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-8 w-8" />
         </div>

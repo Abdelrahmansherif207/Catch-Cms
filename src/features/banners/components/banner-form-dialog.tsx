@@ -215,12 +215,12 @@ export function BannerFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="titleEn" className="text-sm font-medium">{t('bannersForm.titleEn')} *</label>
-              <Input id="titleEn" placeholder={t('bannersForm.titleEn')} {...form.register('titleEn')} />
+              <Input id="titleEn" placeholder={t('bannersForm.titleEn')} aria-invalid={!!getError('titleEn')} {...form.register('titleEn')} />
               {getError('titleEn') && <p className="text-xs text-destructive">{getError('titleEn')}</p>}
             </div>
             <div className="space-y-1.5">
               <label htmlFor="titleAr" className="text-sm font-medium">{t('bannersForm.titleAr')} *</label>
-              <Input id="titleAr" placeholder={t('bannersForm.titleAr')} dir="rtl" {...form.register('titleAr')} />
+              <Input id="titleAr" placeholder={t('bannersForm.titleAr')} dir="rtl" aria-invalid={!!getError('titleAr')} {...form.register('titleAr')} />
               {getError('titleAr') && <p className="text-xs text-destructive">{getError('titleAr')}</p>}
             </div>
           </div>
@@ -228,12 +228,12 @@ export function BannerFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="descriptionEn" className="text-sm font-medium">{t('bannersForm.descriptionEn')} *</label>
-              <Textarea id="descriptionEn" placeholder={t('bannersForm.descriptionEn')} {...form.register('descriptionEn')} />
+              <Textarea id="descriptionEn" placeholder={t('bannersForm.descriptionEn')} aria-invalid={!!getError('descriptionEn')} {...form.register('descriptionEn')} />
               {getError('descriptionEn') && <p className="text-xs text-destructive">{getError('descriptionEn')}</p>}
             </div>
             <div className="space-y-1.5">
               <label htmlFor="descriptionAr" className="text-sm font-medium">{t('bannersForm.descriptionAr')} *</label>
-              <Textarea id="descriptionAr" placeholder={t('bannersForm.descriptionAr')} dir="rtl" {...form.register('descriptionAr')} />
+              <Textarea id="descriptionAr" placeholder={t('bannersForm.descriptionAr')} dir="rtl" aria-invalid={!!getError('descriptionAr')} {...form.register('descriptionAr')} />
               {getError('descriptionAr') && <p className="text-xs text-destructive">{getError('descriptionAr')}</p>}
             </div>
           </div>
@@ -276,7 +276,7 @@ export function BannerFormDialog({
               {productsDropdownOpen && (
                 <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
                   <div className="relative mb-1">
-                    <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder={t('bannersForm.searchProducts')}
                       value={productSearch}

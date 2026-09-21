@@ -175,7 +175,7 @@ export function SearchableMultiSelect({
             }}
           >
             <div className="relative mb-1">
-              <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('common.search')}
                 value={searchTerm}

@@ -21,9 +21,9 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
 
   if (isPdfPending(status)) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/50">
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-info/30 bg-info-soft p-3">
         <div className="flex items-center gap-2 text-sm">
-          <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-info" />
           <span>{t('invoices.pdf.generating')}</span>
         </div>
       </div>
@@ -75,9 +75,9 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
   // pending statuses earlier; everything else with a PDF shows the ready panel.
   if (canDownloadPdf(invoice)) {
     return (
-      <div className="flex flex-col gap-1 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/50">
+      <div className="flex flex-col gap-1 rounded-lg border border-success/30 bg-success-soft p-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
+          <div className="flex items-center gap-2 text-sm text-success">
             <CheckCircle2 className="h-4 w-4" />
             <span>{t('invoices.pdf.ready')}</span>
           </div>
@@ -135,7 +135,7 @@ export function InvoicePdfPanel({ invoice, canDownload, canRegenerate }: Invoice
           </div>
         </div>
         {invoice.pdf_generated_at && (
-          <p className="text-xs text-green-600/80 dark:text-green-400/80">
+          <p className="text-xs text-success/80">
             {t('invoices.pdf.generatedAt')}: {formatDate(invoice.pdf_generated_at)}
           </p>
         )}

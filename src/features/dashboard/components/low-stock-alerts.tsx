@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Package } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { getLocalizedName } from '@/shared/lib/localize';
 import type { LowStockProduct } from '../types/dashboard.types';
 import { formatCurrency } from '../lib/dashboard-utils';
+import { ChartCard, ChartCardError } from './chart-card';
 
 interface LowStockAlertsProps {
   data: LowStockProduct[] | undefined;
@@ -16,30 +17,16 @@ export function LowStockAlerts({ data, isLoading, error }: LowStockAlertsProps) 
   const lang = i18n.language || 'en';
 
   if (error) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">{t('dashboard.lowStock.title')}</h3>
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive text-sm">
-          {t('dashboard.errors.failedToLoad')}
-        </div>
-      </div>
-    );
+    return <ChartCardError title={t('dashboard.lowStock.title')} />;
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-foreground">
-          {t('dashboard.lowStock.title')}
-        </h3>
-      </div>
-
+    <ChartCard title={t('dashboard.lowStock.title')}>
       {isLoading ? (
         <div className="space-y-2">
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
         </div>
       ) : data && data.length > 0 ? (
         <div className="space-y-2">
@@ -50,15 +37,15 @@ export function LowStockAlerts({ data, isLoading, error }: LowStockAlertsProps) 
                 key={product.id}
                 className={`flex items-center gap-3 rounded-lg border p-3 transition-colors ${
                   isCritical
-                    ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20'
-                    : 'border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20'
+                    ? 'border-destructive/30 bg-destructive-soft'
+                    : 'border-warning/30 bg-warning-soft'
                 }`}
               >
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                     isCritical
-                      ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-                      : 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400'
+                      ? 'bg-destructive-soft text-destructive'
+                      : 'bg-warning-soft text-warning'
                   }`}
                 >
                   <Package className="h-4 w-4" />
@@ -74,12 +61,12 @@ export function LowStockAlerts({ data, isLoading, error }: LowStockAlertsProps) 
                 <div className="text-end shrink-0">
                   <p
                     className={`text-sm font-bold tabular-nums ${
-                      isCritical ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
+                      isCritical ? 'text-destructive' : 'text-warning'
                     }`}
                   >
                     {product.quantity}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {t('dashboard.lowStock.remaining')}
                   </p>
                 </div>
@@ -88,10 +75,10 @@ export function LowStockAlerts({ data, isLoading, error }: LowStockAlertsProps) 
           })}
         </div>
       ) : (
-        <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+        <div className="flex h-[120px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
           {t('dashboard.errors.noData')}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

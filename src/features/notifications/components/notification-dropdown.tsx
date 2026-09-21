@@ -63,7 +63,7 @@ export function NotificationDropdown() {
 
         {isError && (
           <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
-            <div className="flex size-10 items-center justify-center rounded-full bg-destructive/10">
+            <div className="flex size-10 items-center justify-center rounded-full bg-destructive-soft">
               <RefreshCw className="size-5 text-destructive" />
             </div>
             <div>

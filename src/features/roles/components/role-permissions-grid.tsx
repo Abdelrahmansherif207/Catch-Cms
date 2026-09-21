@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Search, ShieldX } from 'lucide-react';
+import { ShieldX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { SearchInput } from '@/shared/components/search-input';
+import { DataEmptyState } from '@/shared/components/data-state';
 import { usePermissions } from '../hooks/use-roles';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -71,19 +73,16 @@ export function RolePermissionsGrid({ selectedIds, onToggle }: RolePermissionsGr
         ))}
       </div>
 
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t('roles.searchPermissions')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ps-9"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder={t('roles.searchPermissions')}
+        className="sm:max-w-none"
+      />
 
       <div className="max-h-[300px] overflow-y-auto rounded-lg border">
         {filtered.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t('common.noData')}</p>
+          <DataEmptyState className="border-0" />
         ) : (
           <div className="divide-y">
             {filtered.map((permission) => (
@@ -91,11 +90,10 @@ export function RolePermissionsGrid({ selectedIds, onToggle }: RolePermissionsGr
                 key={permission.id}
                 className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-accent"
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedIds.includes(permission.id)}
-                  onChange={() => onToggle(permission.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  onCheckedChange={() => onToggle(permission.id)}
+                  aria-label={permission.label}
                 />
                 <span>{permission.label}</span>
               </label>
