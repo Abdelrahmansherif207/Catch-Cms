@@ -10,6 +10,11 @@ import type {
   CouponAssignment,
   CreateAssignmentPayload,
   UpdateAssignmentPayload,
+  ValidateConfigurationPayload,
+  ValidateConfigurationResponse,
+  CouponUsageInfoResponse,
+  SuggestFixPayload,
+  SuggestFixResponse,
 } from '../types/coupon.types';
 
 export interface FetchCouponsParams {
@@ -153,6 +158,38 @@ export async function deleteAssignment(
 ): Promise<ApiResponse<null>> {
   const { data } = await axiosClient.delete<ApiResponse<null>>(
     '/coupons/' + couponId + '/assignments/' + assignmentId
+  );
+  return data;
+}
+
+/* ------------------------------------------------------------------ */
+/* Coupon Helper endpoints (read-only advisors + usage dashboard) */
+/* ------------------------------------------------------------------ */
+
+export async function validateCouponConfiguration(
+  payload: ValidateConfigurationPayload
+): Promise<ValidateConfigurationResponse> {
+  const { data } = await axiosClient.post<ValidateConfigurationResponse>(
+    '/coupons/validate-configuration',
+    payload
+  );
+  return data;
+}
+
+export async function fetchCouponUsageInfo(couponId: number): Promise<CouponUsageInfoResponse> {
+  const { data } = await axiosClient.get<CouponUsageInfoResponse>(
+    '/coupons/' + couponId + '/usage-info'
+  );
+  return data;
+}
+
+export async function suggestCouponFix(
+  couponId: number,
+  payload: SuggestFixPayload
+): Promise<SuggestFixResponse> {
+  const { data } = await axiosClient.post<SuggestFixResponse>(
+    '/coupons/' + couponId + '/suggest-fix',
+    payload
   );
   return data;
 }

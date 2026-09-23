@@ -30,6 +30,7 @@ import {
   type CouponFormValues,
 } from '../schemas/coupon.schema';
 import { useCreateCoupon, useUpdateCoupon, useCoupon } from '../hooks/use-coupons';
+import { CouponConfigChecker } from './coupon-config-checker';
 import type { Coupon } from '../types/coupon.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -270,13 +271,15 @@ export function CouponFormDialog({
                     {form.watch('status') === '1' ? t('couponsForm.active') : t('couponsForm.inactive')}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">{t('couponsForm.active')}</SelectItem>
-                  <SelectItem value="0">{t('couponsForm.inactive')}</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectContent>
+                <SelectItem value="1">{t('couponsForm.active')}</SelectItem>
+                <SelectItem value="0">{t('couponsForm.inactive')}</SelectItem>
+              </SelectContent>
+            </Select>
             </div>
           </div>
+
+          <CouponConfigChecker limiter={form.watch('limiter') ?? null} />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -576,6 +579,8 @@ export function CouponFormContent({
           </Select>
         </div>
       </div>
+
+      <CouponConfigChecker limiter={form.watch('limiter') ?? null} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">

@@ -132,3 +132,81 @@ export interface UpdateAssignmentPayload {
   max_uses: number;
   expires_at?: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Coupon Helper: validate-configuration (POST /coupons/validate-configuration) */
+/* ------------------------------------------------------------------ */
+
+export type CouponUsageModel = 'public' | 'assigned';
+
+export interface ValidateConfigurationPayload {
+  coupon_type: CouponUsageModel;
+  limiter?: number | null;
+  max_uses_per_user?: number | null;
+}
+
+export interface ConfigurationIssue {
+  field: string;
+  message: string;
+  explanation?: string;
+}
+
+export interface ConfigurationRecommendation {
+  title: string;
+  description: string;
+}
+
+export interface ValidateConfigurationData {
+  valid: boolean;
+  errors: ConfigurationIssue[];
+  warnings: ConfigurationIssue[];
+  recommendations: ConfigurationRecommendation[];
+}
+
+export type ValidateConfigurationResponse = ApiResponse<ValidateConfigurationData>;
+
+/* ------------------------------------------------------------------ */
+/* Coupon Helper: usage-info (GET /coupons/{id}/usage-info) */
+/* ------------------------------------------------------------------ */
+
+export interface CouponAssignmentInfo {
+  total_assignments: number;
+  assignments_with_usage: number;
+  max_uses_per_user: number;
+  total_possible_redemptions: number;
+}
+
+export interface CouponUsageInfo {
+  coupon_code: string;
+  coupon_type: CouponUsageModel;
+  usage_model: string;
+  current_usage: number;
+  global_limit: number | null;
+  remaining_capacity: number | 'unlimited';
+  is_multi_use_per_user: boolean;
+  assignment_info: CouponAssignmentInfo | null;
+  public_usage_count: number;
+}
+
+export type CouponUsageInfoResponse = ApiResponse<CouponUsageInfo>;
+
+/* ------------------------------------------------------------------ */
+/* Coupon Helper: suggest-fix (POST /coupons/{id}/suggest-fix) */
+/* ------------------------------------------------------------------ */
+
+export type DesiredCouponBehavior = 'multi_use_per_user' | 'single_use_per_user';
+
+export interface SuggestFixPayload {
+  desired_behavior: DesiredCouponBehavior;
+}
+
+export interface SuggestFixData {
+  recommended_action: string;
+  current_config?: string;
+  current_issue?: string;
+  message?: string;
+  steps?: string[];
+  example_code?: string;
+}
+
+export type SuggestFixResponse = ApiResponse<SuggestFixData>;

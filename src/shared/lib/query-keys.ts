@@ -110,6 +110,7 @@ export const queryKeys = {
     list: <P extends object>(params: P) => ['coupons', 'list', params] as const,
     details: () => ['coupons', 'detail'] as const,
     detail: (id: number | string) => ['coupons', 'detail', id] as const,
+    usageInfo: (id: number | string) => ['coupons', id, 'usage-info'] as const,
     assignments: {
       all: (couponId: number) => ['coupons', couponId, 'assignments'] as const,
       list: <P extends object>(couponId: number, params: P) => ['coupons', couponId, 'assignments', params] as const,
