@@ -6,6 +6,8 @@ import { PageBackHeader } from '@/shared/components/page-header';
 import { useCoupon } from '../hooks/use-coupons';
 import { CouponFormContent } from '../components/coupon-form-dialog';
 import { AssignmentsSection } from '../components/assignments-section';
+import { CouponUsageCard } from '../components/coupon-usage-card';
+import { SuggestFixPanel } from '../components/suggest-fix-panel';
 
 function EditPageSkeleton() {
   return (
@@ -51,6 +53,8 @@ export function CouponEditPage() {
         backTo="/coupons"
       />
 
+      <CouponUsageCard couponId={detail.id} />
+
       <div className="rounded-2xl border bg-card p-4 shadow-card sm:p-6">
         <CouponFormContent
           coupon={detail}
@@ -60,6 +64,8 @@ export function CouponEditPage() {
       </div>
 
       <AssignmentsSection couponId={detail.id} />
+
+      <SuggestFixPanel couponId={detail.id} />
     </div>
   );
 }

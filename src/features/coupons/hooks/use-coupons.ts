@@ -11,6 +11,9 @@ import {
   createAssignment,
   updateAssignment,
   deleteAssignment,
+  validateCouponConfiguration,
+  fetchCouponUsageInfo,
+  suggestCouponFix,
   type FetchCouponsParams,
   type FetchAssignmentsParams,
 } from '../api/coupons.api';
@@ -19,6 +22,8 @@ import type {
   UpdateCouponData,
   CreateAssignmentPayload,
   UpdateAssignmentPayload,
+  ValidateConfigurationPayload,
+  SuggestFixPayload,
 } from '../types/coupon.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -144,6 +149,46 @@ export function useDeleteCoupon() {
     },
     onError: (error: unknown) => {
       handleApiError(error, 'Failed to delete coupon');
+    },
+  });
+}
+
+/**
+ * Coupon Helper: usage-info dashboard (point-in-time, read-only).
+ * Short staleTime because usage numbers move on every redemption.
+ */
+export function useCouponUsageInfo(couponId: number) {
+  return useQuery({
+    queryKey: queryKeys.coupons.usageInfo(couponId),
+    queryFn: () => fetchCouponUsageInfo(couponId),
+    enabled: !!couponId,
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Coupon Helper: pre-save capacity-model sanity check.
+ * Note: the API returns HTTP 200 even when `valid: false`, so callers must
+ * branch on `response.data.valid` inside onSuccess — not onError.
+ */
+export function useValidateConfiguration() {
+  return useMutation({
+    mutationFn: (payload: ValidateConfigurationPayload) => validateCouponConfiguration(payload),
+    onError: (error: unknown) => {
+      handleApiError(error, 'Failed to validate configuration');
+    },
+  });
+}
+
+/**
+ * Coupon Helper: single<->multi-use diagnostic advisor (read-only).
+ * 400 responses (invalid desired_behavior) surface through onError.
+ */
+export function useSuggestFix(couponId: number) {
+  return useMutation({
+    mutationFn: (payload: SuggestFixPayload) => suggestCouponFix(couponId, payload),
+    onError: (error: unknown) => {
+      handleApiError(error, 'Failed to get suggestion');
     },
   });
 }
