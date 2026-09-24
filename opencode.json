@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "apidog": {
+      "type": "local",
+      "command": ["cmd", "/c", "npx", "-y", "apidog-mcp-server@latest", "--project-id=1307610", "--no-tool-suffix"],
+      "enabled": true,
+      "timeout": 60000
+    }
+  }
+}
