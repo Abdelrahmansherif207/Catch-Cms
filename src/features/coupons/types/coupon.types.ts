@@ -210,3 +210,90 @@ export interface SuggestFixData {
 }
 
 export type SuggestFixResponse = ApiResponse<SuggestFixData>;
+
+export type TargetingMode =
+  | 'assignment'
+  | 'dynamic'
+  | 'assignment_and_dynamic'
+  | 'assignment_or_dynamic';
+
+export type RuleValueType =
+  | 'integer'
+  | 'decimal'
+  | 'datetime'
+  | 'none'
+  | 'boolean_or_null'
+  | 'area_list';
+
+export interface LocalizedText {
+  en: string;
+  ar: string;
+}
+
+export interface RuleDefinition {
+  type: string;
+  label: LocalizedText;
+  description: LocalizedText;
+  value_type: RuleValueType;
+  value_required: boolean;
+  value_example: unknown;
+  min: number | null;
+  max: number | null;
+  allowed_values: unknown[] | null;
+  date_format: string | null;
+  context: string;
+}
+
+export interface RuleCatalog {
+  rules: RuleDefinition[];
+  rule_tree: {
+    supported: boolean;
+    operators: string[];
+    max_depth: number;
+    nested_groups_allowed: boolean;
+  };
+}
+
+export interface RuleCatalogResponse {
+  status: number;
+  message: string;
+  success: boolean;
+  data: RuleCatalog;
+}
+
+export interface TargetingRule {
+  type: string;
+  value: unknown;
+}
+
+export interface RuleTree {
+  operator: 'AND' | 'OR';
+  rules: TargetingRule[];
+}
+
+export interface CouponTargeting {
+  id: number;
+  coupon_id: number;
+  mode: TargetingMode;
+  require_claim: boolean;
+  max_claims: number | null;
+  claim_ttl_hours: number | null;
+  rule_tree: RuleTree | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CouponTargetingResponse {
+  status: number;
+  message: string;
+  success: boolean;
+  data: CouponTargeting;
+}
+
+export interface UpsertTargetingPayload {
+  mode: TargetingMode;
+  require_claim: boolean;
+  max_claims?: number | null;
+  claim_ttl_hours?: number | null;
+  rule_tree?: RuleTree | null;
+}

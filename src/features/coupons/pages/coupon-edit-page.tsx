@@ -5,6 +5,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { PageBackHeader } from '@/shared/components/page-header';
 import { useCoupon } from '../hooks/use-coupons';
 import { CouponFormContent } from '../components/coupon-form-dialog';
+import { TargetingSection } from '../components/targeting-section';
 import { AssignmentsSection } from '../components/assignments-section';
 import { CouponUsageCard } from '../components/coupon-usage-card';
 import { SuggestFixPanel } from '../components/suggest-fix-panel';
@@ -62,6 +63,8 @@ export function CouponEditPage() {
           onCancel={() => navigate('/coupons')}
         />
       </div>
+
+      <TargetingSection couponId={detail.id} />
 
       <AssignmentsSection couponId={detail.id} />
 

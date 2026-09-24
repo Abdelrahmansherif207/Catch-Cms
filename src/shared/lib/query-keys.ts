@@ -115,6 +115,11 @@ export const queryKeys = {
       all: (couponId: number) => ['coupons', couponId, 'assignments'] as const,
       list: <P extends object>(couponId: number, params: P) => ['coupons', couponId, 'assignments', params] as const,
     },
+    targeting: {
+      all: (couponId: number) => ['coupons', couponId, 'targeting'] as const,
+      detail: (couponId: number) => ['coupons', couponId, 'targeting', 'detail'] as const,
+    },
+    rules: () => ['coupons', 'rules'] as const,
   },
   reviews: {
     all: ['reviews'] as const,
