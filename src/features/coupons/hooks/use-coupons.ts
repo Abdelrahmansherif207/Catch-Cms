@@ -14,6 +14,9 @@ import {
   validateCouponConfiguration,
   fetchCouponUsageInfo,
   suggestCouponFix,
+  fetchCouponTargeting,
+  upsertCouponTargeting,
+  deleteCouponTargeting,
   type FetchCouponsParams,
   type FetchAssignmentsParams,
 } from '../api/coupons.api';
@@ -24,6 +27,7 @@ import type {
   UpdateAssignmentPayload,
   ValidateConfigurationPayload,
   SuggestFixPayload,
+  UpsertTargetingPayload,
 } from '../types/coupon.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
@@ -189,6 +193,47 @@ export function useSuggestFix(couponId: number) {
     mutationFn: (payload: SuggestFixPayload) => suggestCouponFix(couponId, payload),
     onError: (error: unknown) => {
       handleApiError(error, 'Failed to get suggestion');
+    },
+  });
+}
+
+export function useCouponTargeting(couponId: number) {
+  return useQuery({
+    queryKey: queryKeys.coupons.targeting.detail(couponId),
+    queryFn: () => fetchCouponTargeting(couponId),
+    enabled: !!couponId,
+    staleTime: 3 * 60 * 1000,
+  });
+}
+
+export function useUpsertTargeting(couponId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpsertTargetingPayload) => upsertCouponTargeting(couponId, data),
+    onSuccess: (response) => {
+      toast.success(response.message || 'Targeting saved successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.coupons.targeting.all(couponId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.coupons.detail(couponId) });
+    },
+    onError: (error: unknown) => {
+      handleApiError(error, 'Failed to save targeting');
+    },
+  });
+}
+
+export function useDeleteTargeting(couponId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteCouponTargeting(couponId),
+    onSuccess: (response) => {
+      toast.success(response.message || 'Targeting removed successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.coupons.targeting.all(couponId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.coupons.detail(couponId) });
+    },
+    onError: (error: unknown) => {
+      handleApiError(error, 'Failed to remove targeting');
     },
   });
 }

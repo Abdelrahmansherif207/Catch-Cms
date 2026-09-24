@@ -2,7 +2,9 @@ import { useState } from 'react';
 import {
   MoreHorizontal,
   Pencil,
+  SlidersHorizontal,
   Trash2,
+  UserPlus,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -33,6 +35,10 @@ interface CouponsTableProps {
   isLoading: boolean;
   onEdit: (coupon: Coupon) => void;
   onRefresh: () => void;
+  /** Omit when the user lacks permission — hides the row action. */
+  onTargeting?: (coupon: Coupon) => void;
+  /** Omit when the user lacks permission — hides the row action. */
+  onAssign?: (coupon: Coupon) => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -44,6 +50,8 @@ export function CouponsTable({
   isLoading,
   onEdit,
   onRefresh,
+  onTargeting,
+  onAssign,
 }: CouponsTableProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -67,6 +75,8 @@ export function CouponsTable({
               coupon={coupon}
               onEdit={onEdit}
               onDelete={setDeleteTarget}
+              onTargeting={onTargeting}
+              onAssign={onAssign}
             />
           ))}
         </div>
@@ -149,24 +159,46 @@ export function CouponsTable({
                     <StatusBadge status={coupon.status} />
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(coupon)}>
-                          <Pencil className="me-2 h-4 w-4" />
-                          {t('common.edit')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => setDeleteTarget(coupon)}
+                    <div className="flex items-center justify-end gap-1">
+                      {onTargeting && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title={t('coupons.rowTargeting')}
+                          onClick={() => onTargeting(coupon)}
                         >
-                          <Trash2 className="me-2 h-4 w-4" />
-                          {t('common.delete')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <SlidersHorizontal className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {onAssign && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title={t('coupons.rowAssign')}
+                          onClick={() => onAssign(coupon)}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(coupon)}>
+                            <Pencil className="me-2 h-4 w-4" />
+                            {t('common.edit')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setDeleteTarget(coupon)}
+                          >
+                            <Trash2 className="me-2 h-4 w-4" />
+                            {t('common.delete')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -190,7 +222,19 @@ export function CouponsTable({
   );
 }
 
-function CouponCard({ coupon, onEdit, onDelete }: { coupon: Coupon; onEdit: (coupon: Coupon) => void; onDelete: (coupon: Coupon) => void }) {
+function CouponCard({
+  coupon,
+  onEdit,
+  onDelete,
+  onTargeting,
+  onAssign,
+}: {
+  coupon: Coupon;
+  onEdit: (coupon: Coupon) => void;
+  onDelete: (coupon: Coupon) => void;
+  onTargeting?: (coupon: Coupon) => void;
+  onAssign?: (coupon: Coupon) => void;
+}) {
   const { t } = useTranslation();
   const parsedName: Record<string, string> = (() => {
     try {
@@ -219,6 +263,18 @@ function CouponCard({ coupon, onEdit, onDelete }: { coupon: Coupon; onEdit: (cou
                 <MoreHorizontal className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {onTargeting && (
+                  <DropdownMenuItem onClick={() => { onTargeting(coupon); setMenuOpen(false); }}>
+                    <SlidersHorizontal className="me-2 h-4 w-4" />
+                    {t('coupons.rowTargeting')}
+                  </DropdownMenuItem>
+                )}
+                {onAssign && (
+                  <DropdownMenuItem onClick={() => { onAssign(coupon); setMenuOpen(false); }}>
+                    <UserPlus className="me-2 h-4 w-4" />
+                    {t('coupons.rowAssign')}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => { onEdit(coupon); setMenuOpen(false); }}>
                   <Pencil className="me-2 h-4 w-4" />
                   {t('common.edit')}

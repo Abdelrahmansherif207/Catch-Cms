@@ -10,6 +10,15 @@ export interface ApiErrorResponse {
   errors?: Record<string, string[]>;
 }
 
+export function isApiError(error: unknown): error is ApiErrorResponse {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    typeof (error as ApiErrorResponse).status === 'number' &&
+    typeof (error as ApiErrorResponse).message === 'string'
+  );
+}
+
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,

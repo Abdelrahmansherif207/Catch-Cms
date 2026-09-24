@@ -18,6 +18,10 @@ import {
 } from '@/shared/ui/select';
 import { CouponsTable } from '../components/coupons-table';
 import { CouponFormDialog } from '../components/coupon-form-dialog';
+import { TargetingFormDialog } from '../components/targeting-form-dialog';
+import { AddAssignmentDialog } from '../components/add-assignment-dialog';
+import { usePermissions } from '@/shared/auth/guards';
+import { COUPON_PERMISSIONS } from '../permissions/coupon.permissions';
 import { useCoupons } from '../hooks/use-coupons';
 import type { Coupon } from '../types/coupon.types';
 
@@ -32,6 +36,11 @@ export function CouponsPage() {
   const [sortedBy, setSortedBy] = useState('');
   const [openForm, setOpenForm] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [targetingCoupon, setTargetingCoupon] = useState<Coupon | null>(null);
+  const [assignCoupon, setAssignCoupon] = useState<Coupon | null>(null);
+
+  const { canAny, isSuperAdmin } = usePermissions();
+  const canManageTargeting = canAny([COUPON_PERMISSIONS.UPDATE, COUPON_PERMISSIONS.CREATE]);
 
   const params = {
     page,
@@ -56,6 +65,14 @@ export function CouponsPage() {
   const handleEdit = useCallback((coupon: Coupon) => {
     navigate('/coupons/' + coupon.id + '/edit');
   }, [navigate]);
+
+  const handleTargeting = useCallback((coupon: Coupon) => {
+    setTargetingCoupon(coupon);
+  }, []);
+
+  const handleAssign = useCallback((coupon: Coupon) => {
+    setAssignCoupon(coupon);
+  }, []);
 
   const handleCreate = useCallback(() => {
     setEditingCoupon(null);
@@ -175,6 +192,8 @@ export function CouponsPage() {
         isLoading={isLoading}
         onEdit={handleEdit}
         onRefresh={() => refetch()}
+        onTargeting={canManageTargeting ? handleTargeting : undefined}
+        onAssign={isSuperAdmin ? handleAssign : undefined}
       />
 
       <Pagination
@@ -193,6 +212,27 @@ export function CouponsPage() {
         onOpenChange={setOpenForm}
         onSuccess={handleFormSuccess}
       />
+
+      {targetingCoupon && (
+        <TargetingFormDialog
+          couponId={targetingCoupon.id}
+          open
+          onOpenChange={(open) => {
+            if (!open) setTargetingCoupon(null);
+          }}
+        />
+      )}
+
+      {assignCoupon && (
+        <AddAssignmentDialog
+          couponId={assignCoupon.id}
+          open
+          onOpenChange={(open) => {
+            if (!open) setAssignCoupon(null);
+          }}
+          onSuccess={() => setAssignCoupon(null)}
+        />
+      )}
     </div>
   );
 }

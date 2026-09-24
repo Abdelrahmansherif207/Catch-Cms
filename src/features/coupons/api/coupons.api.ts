@@ -1,4 +1,4 @@
-import { axiosClient } from '@/shared/api';
+import { axiosClient, isApiError } from '@/shared/api';
 import type {
   CouponListResponse,
   CouponDetailResponse,
@@ -15,6 +15,10 @@ import type {
   CouponUsageInfoResponse,
   SuggestFixPayload,
   SuggestFixResponse,
+  CouponTargeting,
+  CouponTargetingResponse,
+  UpsertTargetingPayload,
+  RuleCatalogResponse,
 } from '../types/coupon.types';
 
 export interface FetchCouponsParams {
@@ -191,5 +195,42 @@ export async function suggestCouponFix(
     '/coupons/' + couponId + '/suggest-fix',
     payload
   );
+  return data;
+}
+
+export async function fetchCouponTargeting(couponId: number): Promise<CouponTargeting | null> {
+  try {
+    const { data } = await axiosClient.get<CouponTargetingResponse>(
+      '/coupons/' + couponId + '/targeting'
+    );
+    return data.data;
+  } catch (error) {
+    if (isApiError(error) && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function upsertCouponTargeting(
+  couponId: number,
+  payload: UpsertTargetingPayload
+): Promise<ApiResponse<CouponTargeting>> {
+  const { data } = await axiosClient.put<ApiResponse<CouponTargeting>>(
+    '/coupons/' + couponId + '/targeting',
+    payload
+  );
+  return data;
+}
+
+export async function deleteCouponTargeting(couponId: number): Promise<ApiResponse<null>> {
+  const { data } = await axiosClient.delete<ApiResponse<null>>(
+    '/coupons/' + couponId + '/targeting'
+  );
+  return data;
+}
+
+export async function fetchCouponRuleCatalog(): Promise<RuleCatalogResponse> {
+  const { data } = await axiosClient.get<RuleCatalogResponse>('/coupons/rules');
   return data;
 }
