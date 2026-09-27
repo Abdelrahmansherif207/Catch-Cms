@@ -6,6 +6,7 @@ import type {
   CreateCouponData,
   UpdateCouponData,
   Coupon,
+  CouponAudienceType,
   AssignmentListResponse,
   CouponAssignment,
   CreateAssignmentPayload,
@@ -17,6 +18,7 @@ import type {
   SuggestFixResponse,
   CouponTargeting,
   CouponTargetingResponse,
+  TargetingMode,
   UpsertTargetingPayload,
   RuleCatalogResponse,
 } from '../types/coupon.types';
@@ -27,6 +29,17 @@ export interface FetchCouponsParams {
   search?: string;
   active?: boolean;
   inactive?: boolean;
+  audienceType?: CouponAudienceType;
+  targetingMode?: TargetingMode;
+  discountType?: string;
+  isAssigned?: boolean;
+  isValid?: boolean;
+  status?: boolean;
+  startDate?: string;
+  endDate?: string;
+  discount?: string;
+  limiter?: number;
+  used?: number;
   order?: string;
   sortedBy?: string;
 }
@@ -37,6 +50,17 @@ export async function fetchCoupons({
   search,
   active,
   inactive,
+  audienceType,
+  targetingMode,
+  discountType,
+  isAssigned,
+  isValid,
+  status,
+  startDate,
+  endDate,
+  discount,
+  limiter,
+  used,
   order,
   sortedBy,
 }: FetchCouponsParams = {}): Promise<CouponListResponse> {
@@ -47,6 +71,17 @@ export async function fetchCoupons({
   if (search) params.append('search', search);
   if (active !== undefined) params.append('active', active ? '1' : '0');
   if (inactive !== undefined) params.append('inactive', inactive ? '1' : '0');
+  if (audienceType) params.append('audience_type', audienceType);
+  if (targetingMode) params.append('targeting_mode', targetingMode);
+  if (discountType) params.append('discount_type', discountType);
+  if (isAssigned !== undefined) params.append('is_assigned', isAssigned ? '1' : '0');
+  if (isValid !== undefined) params.append('is_valid', isValid ? '1' : '0');
+  if (status !== undefined) params.append('status', status ? '1' : '0');
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+  if (discount) params.append('discount', discount);
+  if (limiter !== undefined) params.append('limiter', limiter.toString());
+  if (used !== undefined) params.append('used', used.toString());
   if (order) params.append('order', order);
   if (sortedBy) params.append('sortedBy', sortedBy);
 

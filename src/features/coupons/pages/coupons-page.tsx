@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import { Pagination } from '@/shared/components/pagination';
 import { PageHeader } from '@/shared/components/page-header';
 import { SearchInput } from '@/shared/components/search-input';
@@ -23,7 +24,7 @@ import { AddAssignmentDialog } from '../components/add-assignment-dialog';
 import { usePermissions } from '@/shared/auth/guards';
 import { COUPON_PERMISSIONS } from '../permissions/coupon.permissions';
 import { useCoupons } from '../hooks/use-coupons';
-import type { Coupon } from '../types/coupon.types';
+import type { Coupon, CouponAudienceType, TargetingMode } from '../types/coupon.types';
 
 export function CouponsPage() {
   const navigate = useNavigate();
@@ -34,6 +35,17 @@ export function CouponsPage() {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [order, setOrder] = useState('');
   const [sortedBy, setSortedBy] = useState('');
+  const [audienceFilter, setAudienceFilter] = useState('all');
+  const [targetingFilter, setTargetingFilter] = useState('all');
+  const [discountTypeFilter, setDiscountTypeFilter] = useState('all');
+  const [assignedFilter, setAssignedFilter] = useState('all');
+  const [validFilter, setValidFilter] = useState('all');
+  const [enabledFilter, setEnabledFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [discountInput, setDiscountInput] = useState('');
+  const [limiterInput, setLimiterInput] = useState('');
+  const [usedInput, setUsedInput] = useState('');
   const [openForm, setOpenForm] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [targetingCoupon, setTargetingCoupon] = useState<Coupon | null>(null);
@@ -48,6 +60,17 @@ export function CouponsPage() {
     search: search || undefined,
     active: activeFilter === 'active' ? true : undefined,
     inactive: activeFilter === 'inactive' ? true : undefined,
+    audienceType: audienceFilter === 'all' ? undefined : (audienceFilter as CouponAudienceType),
+    targetingMode: targetingFilter === 'all' ? undefined : (targetingFilter as TargetingMode),
+    discountType: discountTypeFilter === 'all' ? undefined : discountTypeFilter,
+    isAssigned: assignedFilter === 'all' ? undefined : assignedFilter === 'yes',
+    isValid: validFilter === 'all' ? undefined : validFilter === 'yes',
+    status: enabledFilter === 'all' ? undefined : enabledFilter === 'yes',
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+    discount: discountInput || undefined,
+    limiter: limiterInput === '' ? undefined : Number(limiterInput),
+    used: usedInput === '' ? undefined : Number(usedInput),
     // No ordering on initial load — pagination only (?page=1&limit=15).
     // order/sortedBy are sent only after the user explicitly picks them.
     order: order || undefined,
@@ -106,8 +129,10 @@ export function CouponsPage() {
 
       <FilterBar
         activeCount={
-          [search].filter(Boolean).length +
-          [activeFilter].filter((v) => v !== 'all').length +
+          [search, startDate, endDate, discountInput, limiterInput, usedInput]
+            .filter(Boolean).length +
+          [activeFilter, audienceFilter, targetingFilter, discountTypeFilter, assignedFilter, validFilter, enabledFilter]
+            .filter((v) => v !== 'all').length +
           [order, sortedBy].filter((v) => v !== '').length
         }
       >
@@ -133,6 +158,145 @@ export function CouponsPage() {
             { value: 'inactive', label: t('coupons.inactive') },
           ]}
           triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={audienceFilter}
+          onValueChange={(v) => {
+            setAudienceFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterAudience')}
+          allLabel={t('coupons.allAudiences')}
+          options={[
+            { value: 'PUBLIC', label: t('coupons.audiencePublic') },
+            { value: 'TARGETED', label: t('coupons.audienceTargeted') },
+            { value: 'ASSIGNED', label: t('coupons.audienceAssigned') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={targetingFilter}
+          onValueChange={(v) => {
+            setTargetingFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterTargeting')}
+          allLabel={t('coupons.allTargeting')}
+          options={[{ value: 'dynamic', label: t('coupons.targetingDynamic') }]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={discountTypeFilter}
+          onValueChange={(v) => {
+            setDiscountTypeFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterDiscountType')}
+          allLabel={t('coupons.allDiscountTypes')}
+          options={[
+            { value: 'percentage', label: t('coupons.dtPercentage') },
+            { value: 'fixed_rate', label: t('coupons.dtFixed') },
+            { value: 'free_shipping', label: t('coupons.dtFreeShipping') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={assignedFilter}
+          onValueChange={(v) => {
+            setAssignedFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterAssigned')}
+          allLabel={t('coupons.allAssigned')}
+          options={[
+            { value: 'yes', label: t('coupons.assignedYes') },
+            { value: 'no', label: t('coupons.assignedNo') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={validFilter}
+          onValueChange={(v) => {
+            setValidFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterValid')}
+          allLabel={t('coupons.allValidity')}
+          options={[
+            { value: 'yes', label: t('coupons.valid') },
+            { value: 'no', label: t('coupons.invalid') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <FilterSelect
+          value={enabledFilter}
+          onValueChange={(v) => {
+            setEnabledFilter(v);
+            setPage(1);
+          }}
+          prefix={t('coupons.filterEnabled')}
+          allLabel={t('coupons.allEnabled')}
+          options={[
+            { value: 'yes', label: t('coupons.enabledYes') },
+            { value: 'no', label: t('coupons.enabledNo') },
+          ]}
+          triggerClassName="w-full md:w-auto md:min-w-[190px]"
+        />
+        <Input
+          type="date"
+          value={startDate}
+          onChange={(e) => {
+            setStartDate(e.target.value);
+            setPage(1);
+          }}
+          aria-label={t('coupons.filterStartDate')}
+          className="h-8 w-full md:w-[150px]"
+        />
+        <Input
+          type="date"
+          value={endDate}
+          onChange={(e) => {
+            setEndDate(e.target.value);
+            setPage(1);
+          }}
+          aria-label={t('coupons.filterEndDate')}
+          className="h-8 w-full md:w-[150px]"
+        />
+        <Input
+          type="number"
+          min={0}
+          value={discountInput}
+          onChange={(e) => {
+            setDiscountInput(e.target.value);
+            setPage(1);
+          }}
+          placeholder={t('coupons.filterDiscount')}
+          aria-label={t('coupons.filterDiscount')}
+          className="h-8 w-full md:w-[110px]"
+        />
+        <Input
+          type="number"
+          min={0}
+          value={limiterInput}
+          onChange={(e) => {
+            setLimiterInput(e.target.value);
+            setPage(1);
+          }}
+          placeholder={t('coupons.filterLimiter')}
+          aria-label={t('coupons.filterLimiter')}
+          className="h-8 w-full md:w-[110px]"
+        />
+        <Input
+          type="number"
+          min={0}
+          value={usedInput}
+          onChange={(e) => {
+            setUsedInput(e.target.value);
+            setPage(1);
+          }}
+          placeholder={t('coupons.filterUsed')}
+          aria-label={t('coupons.filterUsed')}
+          className="h-8 w-full md:w-[110px]"
         />
         <FilterSelect
           value={order}

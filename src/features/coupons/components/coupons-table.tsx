@@ -23,6 +23,8 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { Badge } from '@/shared/ui/badge';
+import { cn } from '@/shared/lib/utils';
 import { DataEmptyState } from '@/shared/components/data-state';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { CouponImageCell } from './coupon-image-cell';
@@ -43,6 +45,45 @@ interface CouponsTableProps {
 
 function formatDate(dateStr: string): string {
   return dateStr ? dateStr.split('T')[0] : '';
+}
+
+const AUDIENCE_BADGE_CLASS: Record<string, string> = {
+  PUBLIC: 'bg-success-soft text-success',
+  TARGETED: 'bg-primary/10 text-primary',
+  ASSIGNED: 'bg-secondary text-secondary-foreground',
+};
+
+function AudienceBadge({ type }: { type: Coupon['audience_type'] }) {
+  const { t } = useTranslation();
+  const label =
+    type === 'PUBLIC'
+      ? t('coupons.audiencePublic')
+      : type === 'TARGETED'
+        ? t('coupons.audienceTargeted')
+        : t('coupons.audienceAssigned');
+  return (
+    <Badge
+      variant="outline"
+      className={cn('border-transparent font-normal', AUDIENCE_BADGE_CLASS[type])}
+    >
+      {label}
+    </Badge>
+  );
+}
+
+function ValidBadge({ isValid }: { isValid: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        'border-transparent font-normal',
+        isValid ? 'bg-success-soft text-success' : 'bg-destructive-soft text-destructive'
+      )}
+    >
+      {isValid ? t('coupons.valid') : t('coupons.invalid')}
+    </Badge>
+  );
 }
 
 export function CouponsTable({
@@ -107,6 +148,8 @@ export function CouponsTable({
               <TableHead>{t('coupons.discount')}</TableHead>
               <TableHead>{t('coupons.dates')}</TableHead>
               <TableHead>{t('coupons.usage')}</TableHead>
+              <TableHead>{t('coupons.filterAudience')}</TableHead>
+              <TableHead>{t('coupons.filterTargeting')}</TableHead>
               <TableHead>{t('common.status')}</TableHead>
               <TableHead />
             </TableRow>
@@ -156,7 +199,32 @@ export function CouponsTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={coupon.status} />
+                    <div className="space-y-1">
+                      <AudienceBadge type={coupon.audience_type} />
+                      {coupon.assignments.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('coupons.assignmentsShort', { count: coupon.assignments.length })}
+                        </p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {coupon.targeting_mode ? (
+                      <Badge
+                        variant="outline"
+                        className="border-transparent bg-primary/10 font-normal text-primary"
+                      >
+                        {t('coupons.targetingDynamic')}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">&mdash;</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <StatusBadge status={coupon.status} />
+                      <ValidBadge isValid={coupon.is_valid} />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
@@ -293,12 +361,24 @@ function CouponCard({
           <span className="font-medium">{Number(coupon.discount).toFixed(1)}</span>
           <span className="text-xs text-muted-foreground ms-1">{coupon.discount_type}</span>
         </div>
-        <StatusBadge status={coupon.status} />
+        <div className="flex items-center gap-1.5">
+          <AudienceBadge type={coupon.audience_type} />
+          <ValidBadge isValid={coupon.is_valid} />
+          <StatusBadge status={coupon.status} />
+        </div>
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatDate(coupon.start_date)} &rarr; {formatDate(coupon.end_date)}</span>
         <span>{t('coupons.usedCount', { used: coupon.used, total: coupon.limiter ?? '\u221E' })}</span>
       </div>
+      {coupon.targeting_mode && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>{t('coupons.filterTargeting')}</span>
+          <Badge variant="outline" className="border-transparent bg-primary/10 font-normal text-primary">
+            {t('coupons.targetingDynamic')}
+          </Badge>
+        </div>
+      )}
     </div>
   );
 }
@@ -315,6 +395,8 @@ function TableSkeleton() {
             <TableHead>Discount</TableHead>
             <TableHead>Dates</TableHead>
             <TableHead>Usage</TableHead>
+            <TableHead>Audience</TableHead>
+            <TableHead>Targeting</TableHead>
             <TableHead>Status</TableHead>
             <TableHead />
           </TableRow>
@@ -328,6 +410,8 @@ function TableSkeleton() {
               <TableCell><Skeleton className="h-4 w-16" /></TableCell>
               <TableCell><Skeleton className="h-4 w-20" /></TableCell>
               <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
               <TableCell><Skeleton className="h-5 w-16" /></TableCell>
               <TableCell><Skeleton className="h-8 w-20" /></TableCell>
             </TableRow>

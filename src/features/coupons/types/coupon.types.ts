@@ -3,6 +3,28 @@ export interface CouponImage {
   mobile: string | null;
 }
 
+export type CouponAudienceType = 'PUBLIC' | 'TARGETED' | 'ASSIGNED';
+
+export interface CouponAudience {
+  type: CouponAudienceType;
+  is_public: boolean;
+  has_assignments: boolean;
+  has_targeting: boolean;
+}
+
+/** Assignment shape embedded in the coupon list/detail resource
+ *  (differs from the richer /coupons/{id}/assignments resource). */
+export interface CouponListAssignment {
+  id: number;
+  coupon_id: number;
+  user_id: number;
+  max_uses: number;
+  used: number;
+  remaining: number;
+  expires_at: string | null;
+  assigned_at: string;
+}
+
 export interface Coupon {
   id: number;
   code: string;
@@ -19,6 +41,12 @@ export interface Coupon {
   used: number;
   status: boolean;
   is_valid: boolean;
+  audience: CouponAudience;
+  is_assigned: boolean;
+  audience_type: CouponAudienceType;
+  targeting_mode: TargetingMode | null;
+  targeting: CouponTargeting | null;
+  assignments: CouponListAssignment[];
   created_at: string;
 }
 
