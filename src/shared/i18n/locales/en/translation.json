@@ -122,7 +122,9 @@
     "governorates": "Governorates",
     "cities": "Cities",
     "currencies": "Currencies",
-    "exchangeRates": "Exchange Rates"
+    "exchangeRates": "Exchange Rates",
+    "orderFlows": "Order Flows",
+    "orderStatuses": "Order Statuses"
   },
   "orders": {
     "title": "Orders",
@@ -205,6 +207,36 @@
       "verification": "Verification",
       "verificationHint": "Verify this invoice is authentic by scanning the QR code or opening the verification page.",
       "verifyButton": "Verify Invoice"
+    },
+    "noPermission": "You don't have permission to change order status",
+    "reasons": {
+      "forbidden_transition": "Not allowed in this flow",
+      "missing_permission": "Missing permission",
+      "inactive_status": "Status inactive"
+    },
+    "transitionDialogTitle": "Move to {{status}}",
+    "transitionDialogDescription": "This step requires additional details before the order can be advanced.",
+    "selectedCount": "{{count}} orders selected",
+    "selectRow": "Select order {{id}}",
+    "selectAll": "Select all",
+    "bulkStatus": "Advance status",
+    "bulkStatusTitle": "Advance status for {{count}} orders",
+    "bulkStatusDescription": "Each order is processed independently; failures never block the rest.",
+    "newStatus": "New status",
+    "selectStatus": "Select status",
+    "batchNote": "Orders failing a transition are reported individually and remain unchanged.",
+    "batchSummary": "{{succeeded}} of {{total}} orders updated",
+    "applyTo": "Apply to {{count}} orders",
+    "retryFailed": "Retry failed",
+    "batchErrors": {
+      "order_not_found": "Order not found",
+      "missing_permission": "Missing permission for this status",
+      "forbidden_transition": "Transition not allowed in its flow",
+      "missing_flow_input": "Missing required details",
+      "unknown_flow_input": "Unknown input value",
+      "invalid_flow_input": "Invalid input value",
+      "payment_permission_required": "Payment must be marked paid first (missing permission)",
+      "internal_error": "Internal error"
     }
   },
   "pickupLocations": {
@@ -935,9 +967,9 @@
       "steps": "Recommended steps",
       "exampleCode": "Example"
     },
-      "rowTargeting": "Targeting",
-      "rowAssign": "Assign users",
-      "targeting": {
+    "rowTargeting": "Targeting",
+    "rowAssign": "Assign users",
+    "targeting": {
       "sectionTitle": "Coupon Targeting",
       "sectionDesc": "Control who is eligible for this coupon — assignments, dynamic rules, or both.",
       "configure": "Configure Targeting",
@@ -2278,5 +2310,77 @@
       "authenticHint": "The QR signature matches the original invoice data.",
       "qrContent": "Verification payload"
     }
+  },
+  "orderFlows": {
+    "title": "Order Flows",
+    "subtitle": "Define lifecycle status flows and dynamic input schemas per shipping type",
+    "create": "Create flow",
+    "createTitle": "Create order flow",
+    "createSubtitle": "A flow defines the ordered lifecycle and checkout inputs for a shipping type",
+    "searchPlaceholder": "Search flows...",
+    "shippingType": "Shipping type",
+    "shippingTypes": {
+      "local": "Local",
+      "international": "International"
+    },
+    "allShippingTypes": "All shipping types",
+    "state": "State",
+    "allStates": "All states",
+    "listError": "Failed to load order flows",
+    "emptyTitle": "No order flows yet",
+    "emptyDescription": "Create a flow to define the order lifecycle for a shipping type",
+    "default": "Default",
+    "steps": "{{count}} steps",
+    "code": "Code",
+    "codeImmutable": "The code is the stable identity and cannot change after creation",
+    "name": "Name",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
+    "settings": "Flow settings",
+    "lifecycle": "Status lifecycle",
+    "lifecycleHint": "The order from top to bottom is the allowed transition map, saved with the flow",
+    "shippingTypeImmutable": "Shipping type cannot change after creation",
+    "active": "Active",
+    "defaultFlow": "Default",
+    "addStatus": "Add status",
+    "addStatusDescription": "Pick a status from the global catalog to append to the lifecycle",
+    "noStatuses": "No statuses in this flow yet — add at least one",
+    "inputs": "Flow inputs",
+    "inputsDescription": "Dynamic fields collected at checkout or before a specific transition",
+    "noInputs": "No inputs defined for this flow",
+    "addInputs": "Add inputs",
+    "addInputsDescription": "Inputs are created atomically — all rows persist together or none do",
+    "addRow": "Add row",
+    "inputIndex": "Input {{index}}",
+    "inputKey": "Key",
+    "inputKeyInvalid": "Lowercase letters, digits and underscores; starts with a letter",
+    "inputKeyDuplicate": "Key must be unique",
+    "inputKeyImmutable": "The key is the frontend contract and cannot be renamed",
+    "inputLabel": "Label",
+    "inputLabelRequired": "English label is required",
+    "labelEn": "Label (English)",
+    "labelAr": "Label (Arabic)",
+    "inputType": "Type",
+    "inputSource": "Options source",
+    "whenRequired": "Required at",
+    "atCheckout": "At checkout",
+    "atTransition": "At transition",
+    "pickStatus": "Pick status code",
+    "inputStatusRequired": "Pick a status code",
+    "required": "Required",
+    "editInput": "Edit input",
+    "editInputDescription": "Label, requirement and activation are editable; the key is immutable",
+    "deleteInput": "Delete input",
+    "deleteInputDescription": "Delete input \"{{key}}\"? Inputs required by in-flight orders cannot be deleted.",
+    "inputSortInvalid": "Sort must be a number between 1 and 1000"
+  },
+  "orderStatuses": {
+    "title": "Order Statuses",
+    "subtitle": "Global status catalog — the vocabulary every order flow is built from",
+    "searchPlaceholder": "Search statuses...",
+    "description": "Description",
+    "listError": "Failed to load statuses",
+    "editDescription": "Only the display name, description and activation are editable — codes are permanent",
+    "codeImmutable": "Codes are permanent vocabulary and never change"
   }
 }

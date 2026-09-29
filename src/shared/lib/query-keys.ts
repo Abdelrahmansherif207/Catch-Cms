@@ -78,6 +78,22 @@ export const queryKeys = {
       all: ['orders', 'my'] as const,
       list: <P extends object>(params: P) => ['orders', 'my', 'list', params] as const,
     },
+    statusOptions: (id: number | string) => ['orders', 'status-options', id] as const,
+  },
+  orderFlows: {
+    all: ['order-flows'] as const,
+    lists: () => ['order-flows', 'list'] as const,
+    list: <P extends object>(params: P) => ['order-flows', 'list', params] as const,
+    details: () => ['order-flows', 'detail'] as const,
+    detail: (id: number | string) => ['order-flows', 'detail', id] as const,
+    inputs: (flowId: number | string) => ['order-flows', 'inputs', flowId] as const,
+  },
+  orderStatuses: {
+    all: ['order-statuses'] as const,
+    lists: () => ['order-statuses', 'list'] as const,
+    list: <P extends object>(params: P) => ['order-statuses', 'list', params] as const,
+    details: () => ['order-statuses', 'detail'] as const,
+    detail: (id: number | string) => ['order-statuses', 'detail', id] as const,
   },
   invoices: {
     all: ['invoices'] as const,

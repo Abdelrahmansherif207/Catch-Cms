@@ -122,7 +122,9 @@
     "governorates": "المحافظات",
     "cities": "المدن",
     "currencies": "العملات",
-    "exchangeRates": "أسعار الصرف"
+    "exchangeRates": "أسعار الصرف",
+    "orderFlows": "مسارات الطلبات",
+    "orderStatuses": "حالات الطلبات"
   },
   "orders": {
     "title": "الطلبات",
@@ -205,6 +207,36 @@
       "verification": "التحقق",
       "verificationHint": "تحقق من أن هذه الفاتورة أصلية بمسح رمز QR أو فتح صفحة التحقق.",
       "verifyButton": "التحقق من الفاتورة"
+    },
+    "noPermission": "ليس لديك صلاحية لتغيير حالة الطلب",
+    "reasons": {
+      "forbidden_transition": "غير مسموح في هذا المسار",
+      "missing_permission": "صلاحية مفقودة",
+      "inactive_status": "الحالة غير مفعلة"
+    },
+    "transitionDialogTitle": "الانتقال إلى {{status}}",
+    "transitionDialogDescription": "هذه الخطوة تتطلب تفاصيل إضافية قبل الانتقال.",
+    "selectedCount": "تم اختيار {{count}} طلب",
+    "selectRow": "اختيار الطلب {{id}}",
+    "selectAll": "تحديد الكل",
+    "bulkStatus": "تغيير الحالة",
+    "bulkStatusTitle": "تغيير حالة {{count}} طلب",
+    "bulkStatusDescription": "كل طلب يُعالج بشكل مستقل؛ الفشل لا يوقف الباقي.",
+    "newStatus": "الحالة الجديدة",
+    "selectStatus": "اختر الحالة",
+    "batchNote": "الطلبات التي تفشل في الانتقال تُعرض فرديًا ولن تتغير.",
+    "batchSummary": "تم تحديث {{succeeded}} من {{total}} طلب",
+    "applyTo": "تطبيق على {{count}} طلب",
+    "retryFailed": "إعادة المحاولة للفاشل",
+    "batchErrors": {
+      "order_not_found": "الطلب غير موجود",
+      "missing_permission": "صلاحية مفقودة لهذه الحالة",
+      "forbidden_transition": "الانتقال غير مسموح في مساره",
+      "missing_flow_input": "تفاصيل مطلوبة ناقصة",
+      "unknown_flow_input": "قيمة إدخال غير معروفة",
+      "invalid_flow_input": "قيمة إدخال غير صالحة",
+      "payment_permission_required": "يجب تسجيل الدفع أولًا (صلاحية مفقودة)",
+      "internal_error": "خطأ داخلي"
     }
   },
   "categories": {
@@ -839,9 +871,9 @@
       "steps": "الخطوات المقترحة",
       "exampleCode": "مثال"
     },
-      "rowTargeting": "الاستهداف",
-      "rowAssign": "تعيين مستخدمين",
-      "targeting": {
+    "rowTargeting": "الاستهداف",
+    "rowAssign": "تعيين مستخدمين",
+    "targeting": {
       "sectionTitle": "استهداف القسيمة",
       "sectionDesc": "تحكم في من هو مؤهل لهذه القسيمة — التعيينات أو القواعد الديناميكية أو كليهما.",
       "configure": "إعداد الاستهداف",
@@ -2278,5 +2310,77 @@
       "authenticHint": "توقيع QR يطابق بيانات الفاتورة الأصلية.",
       "qrContent": "بيانات التحقق"
     }
+  },
+  "orderFlows": {
+    "title": "مسارات الطلبات",
+    "subtitle": "تعريف دورة حالة الطلبات ومخططات الحقول الديناميكية لكل نوع شحن",
+    "create": "إنشاء مسار",
+    "createTitle": "إنشاء مسار طلبات",
+    "createSubtitle": "المسار يحدد دورة الحياة وحقول الدفع لكل نوع شحن",
+    "searchPlaceholder": "بحث في المسارات...",
+    "shippingType": "نوع الشحن",
+    "shippingTypes": {
+      "local": "محلي",
+      "international": "دولي"
+    },
+    "allShippingTypes": "كل الأنواع",
+    "state": "الحالة",
+    "allStates": "الكل",
+    "listError": "فشل تحميل المسارات",
+    "emptyTitle": "لا توجد مسارات بعد",
+    "emptyDescription": "أنشئ مسارًا لتحديد دورة حياة الطلبات لنوع شحن معين",
+    "default": "افتراضي",
+    "steps": "{{count}} خطوة",
+    "code": "الرمز",
+    "codeImmutable": "الرمز هو الهوية الثابتة ولا يمكن تغييره بعد الإنشاء",
+    "name": "الاسم",
+    "nameEn": "الاسم (إنجليزي)",
+    "nameAr": "الاسم (عربي)",
+    "settings": "إعدادات المسار",
+    "lifecycle": "دورة الحالة",
+    "lifecycleHint": "الترتيب من الأعلى للأسفل هو خريطة الانتقال المسموحة، ويُحفظ مع المسار",
+    "shippingTypeImmutable": "لا يمكن تغيير نوع الشحن بعد الإنشاء",
+    "active": "مفعل",
+    "defaultFlow": "افتراضي",
+    "addStatus": "إضافة حالة",
+    "addStatusDescription": "اختر حالة من الكتالوج العام لإضافتها إلى دورة الحياة",
+    "noStatuses": "لا توجد حالات في هذا المسار — أضف واحدة على الأقل",
+    "inputs": "حقول المسار",
+    "inputsDescription": "حقول ديناميكية تُجمع عند الدفع أو قبل انتقال محدد",
+    "noInputs": "لا توجد حقول معرفة لهذا المسار",
+    "addInputs": "إضافة حقول",
+    "addInputsDescription": "تُنشأ الحقول دفعة واحدة — إما تُحفظ جميعها معًا أو لا شيء",
+    "addRow": "إضافة صف",
+    "inputIndex": "حقل {{index}}",
+    "inputKey": "المفتاح",
+    "inputKeyInvalid": "أحرف صغيرة وأرقام وشرطات سفلية؛ يبدأ بحرف",
+    "inputKeyDuplicate": "يجب أن يكون المفتاح فريدًا",
+    "inputKeyImmutable": "المفتاح هو عقد الواجهة ولا يمكن تغيير اسمه",
+    "inputLabel": "التسمية",
+    "inputLabelRequired": "التسمية الإنجليزية مطلوبة",
+    "labelEn": "التسمية (إنجليزي)",
+    "labelAr": "التسمية (عربي)",
+    "inputType": "النوع",
+    "inputSource": "مصدر الخيارات",
+    "whenRequired": "مطلوب عند",
+    "atCheckout": "عند الدفع",
+    "atTransition": "عند الانتقال",
+    "pickStatus": "اختر رمز الحالة",
+    "inputStatusRequired": "اختر رمز الحالة",
+    "required": "إلزامي",
+    "editInput": "تعديل الحقل",
+    "editInputDescription": "التسمية والإلزام والتفعيل قابلة للتعديل — المفتاح ثابت",
+    "deleteInput": "حذف الحقل",
+    "deleteInputDescription": "حذف الحقل \"{{key}}\"؟ لا يمكن حذف الحقول الإلزامية للطلبات الجارية.",
+    "inputSortInvalid": "الترتيب يجب أن يكون رقمًا بين 1 و1000"
+  },
+  "orderStatuses": {
+    "title": "حالات الطلبات",
+    "subtitle": "كتالوج الحالات العام — المفردات التي تُبنى منها كل مسارات الطلبات",
+    "searchPlaceholder": "بحث في الحالات...",
+    "description": "الوصف",
+    "listError": "فشل تحميل الحالات",
+    "editDescription": "الاسم والوصف والتفعيل فقط قابلة للتعديل — الرموز دائمة",
+    "codeImmutable": "الرموز مفردات دائمة ولا تتغير"
   }
 }
