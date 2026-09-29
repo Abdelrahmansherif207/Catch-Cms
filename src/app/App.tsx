@@ -40,6 +40,9 @@ const EditProductPage = lazy(() => import("@/features/products/pages/edit-produc
 const OrdersPage = lazy(() => import("@/features/orders/pages/orders-page").then(m => ({ default: m.OrdersPage })));
 const OrderDetailPage = lazy(() => import("@/features/orders/pages/order-detail-page").then(m => ({ default: m.OrderDetailPage })));
 const MyOrdersPage = lazy(() => import("@/features/orders/pages/my-orders-page").then(m => ({ default: m.MyOrdersPage })));
+const OrderFlowsPage = lazy(() => import("@/features/order-flows/pages/order-flows-page").then(m => ({ default: m.OrderFlowsPage })));
+const OrderFlowDetailPage = lazy(() => import("@/features/order-flows/pages/order-flow-detail-page").then(m => ({ default: m.OrderFlowDetailPage })));
+const OrderStatusesPage = lazy(() => import("@/features/order-flows/pages/order-statuses-page").then(m => ({ default: m.OrderStatusesPage })));
 const InvoicesPage = lazy(() => import("@/features/invoices/pages/invoices-page").then(m => ({ default: m.InvoicesPage })));
 const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-detail-page").then(m => ({ default: m.InvoiceDetailPage })));
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
@@ -124,6 +127,18 @@ export default function App() {
               <Route element={<PermissionRoute permission={PERMISSIONS.orders.view} />}>
                 <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/orders/:id" element={<OrderDetailPage />} />
+              </Route>
+              <Route
+                element={
+                  <PermissionRoute
+                    anyOf={[PERMISSIONS.orderFlows.view, PERMISSIONS.orders.view]}
+                  />
+                }
+              >
+                <Route path="/order-flows/create" element={<OrderFlowDetailPage mode="create" />} />
+                <Route path="/order-flows/:id" element={<OrderFlowDetailPage />} />
+                <Route path="/order-flows" element={<OrderFlowsPage />} />
+                <Route path="/order-statuses" element={<OrderStatusesPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />

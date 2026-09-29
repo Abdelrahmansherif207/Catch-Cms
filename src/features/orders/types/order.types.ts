@@ -128,10 +128,67 @@ export type OrdersListResponse = ApiResponse<PaginatedResponse<OrderListItem>>;
 export type OrderDetailResponse = ApiResponse<OrderDetail>;
 export type MyOrdersListResponse = ApiResponse<PaginatedResponse<MyOrderListItem>>;
 export type UpdateOrderStatusResponse = ApiResponse<OrderDetail>;
+export type StatusOptionsResponse = ApiResponse<StatusOptionsData>;
+export type BatchStatusResponse = ApiResponse<BatchStatusData>;
+export type FlowValues = Record<string, unknown>;
 
-export type OrderStatus =
-  | 'pending'
-  | 'processing'
-  | 'completed'
-  | 'delivered'
-  | 'cancelled';
+export type OrderStatus = string;
+
+export interface LocalizedLabel {
+  code: string;
+  name: LocalizedName | string;
+  sort_order?: number;
+}
+
+export type ShippingTypeName = 'local' | 'international';
+
+export type StatusOptionReason =
+  | 'forbidden_transition'
+  | 'missing_permission'
+  | 'inactive_status'
+  | null;
+
+export interface FlowStatusOption {
+  code: string;
+  name: LocalizedName;
+  sort_order: number;
+  transition_allowed: boolean;
+  permitted: boolean;
+  allowed: boolean;
+  permission: string | null;
+  reason: StatusOptionReason;
+  requires_inputs: string[];
+}
+
+export interface StatusOptionsData {
+  current_status: LocalizedLabel;
+  flow: { code: string; shipping_type: 'local' | 'international' };
+  statuses: FlowStatusOption[];
+}
+
+export type BatchErrorCode =
+  | 'order_not_found'
+  | 'missing_permission'
+  | 'forbidden_transition'
+  | 'missing_flow_input'
+  | 'unknown_flow_input'
+  | 'invalid_flow_input'
+  | 'payment_permission_required'
+  | 'internal_error';
+
+export interface BatchOrderResult {
+  order_id: number;
+  success: boolean;
+  status?: string;
+  current_status?: { code: string; sort_order: number };
+  error?: {
+    code: BatchErrorCode;
+    message: string;
+    details?: { errors: Record<string, string[]> };
+  };
+}
+
+export interface BatchStatusData {
+  summary: { total: number; succeeded: number; failed: number };
+  results: BatchOrderResult[];
+}

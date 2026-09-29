@@ -4,9 +4,13 @@ import type {
   OrderDetailResponse,
   MyOrdersListResponse,
   UpdateOrderStatusResponse,
+  StatusOptionsResponse,
+  BatchStatusResponse,
+  FlowValues,
   ApiResponse,
   OrderStatus,
 } from '../types/order.types';
+import type { LocalizedName } from '@/shared/lib/localize';
 
 export interface FetchOrdersParams {
   page?: number;
@@ -56,12 +60,51 @@ export async function deleteOrder(id: number): Promise<ApiResponse<null>> {
 
 export async function updateOrderStatus(
   id: number,
-  status: OrderStatus
+  status: OrderStatus,
+  flowValues?: FlowValues
 ): Promise<UpdateOrderStatusResponse> {
   const { data } = await axiosClient.patch<UpdateOrderStatusResponse>(
     `/orders/${id}/status`,
-    { status }
+    { status, ...(flowValues ? { flow_values: flowValues } : {}) }
   );
+  return data;
+}
+
+export async function updateOrdersStatusBatch(
+  orderIds: number[],
+  status: OrderStatus,
+  flowValues?: FlowValues
+): Promise<BatchStatusResponse> {
+  const { data } = await axiosClient.patch<BatchStatusResponse>(`/orders/status`, {
+    order_ids: orderIds,
+    status,
+    ...(flowValues ? { flow_values: flowValues } : {}),
+  });
+  return data;
+}
+
+export async function fetchOrderStatusOptions(id: number): Promise<StatusOptionsResponse> {
+  const { data } = await axiosClient.get<StatusOptionsResponse>(`/orders/${id}/statuses`);
+  return data;
+}
+
+export interface AdminOrderStatusItem {
+  id: number;
+  code: string;
+  name: LocalizedName;
+  is_active: boolean;
+}
+
+export async function fetchAdminOrderStatuses(params?: {
+  search?: string;
+  is_active?: boolean;
+  per_page?: number;
+}): Promise<ApiResponse<{ data: AdminOrderStatusItem[] }>> {
+  const search = new URLSearchParams();
+  if (params?.search) search.append('search', params.search);
+  if (params?.is_active !== undefined) search.append('is_active', String(params.is_active));
+  search.append('per_page', String(params?.per_page ?? 200));
+  const { data } = await axiosClient.get(`/admin/order-statuses?${search.toString()}`);
   return data;
 }
 

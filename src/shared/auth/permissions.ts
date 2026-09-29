@@ -184,6 +184,15 @@ export const PERMISSIONS = {
     viewDetail: 'view-order',
     updateStatus: 'update-order-status',
   },
+  orderFlows: {
+    view: 'view-order-flows',
+    create: 'create-order-flows',
+    update: 'update-order-flows',
+    manageInputs: 'manage-order-flow-inputs',
+  },
+  payments: {
+    markPaid: 'payments.mark_paid',
+  },
   attributes: {
     view: 'view-attributes',
     create: 'create-attribute',

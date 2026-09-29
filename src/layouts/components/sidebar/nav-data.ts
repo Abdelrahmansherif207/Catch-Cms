@@ -27,6 +27,7 @@ import {
   Activity,
   Newspaper,
   Receipt,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -70,6 +71,18 @@ export function useNavGroups(): NavGroup[] {
           url: '/orders',
           icon: ShoppingCart,
           permissions: [PERMISSIONS.orders.view],
+        },
+        {
+          title: t('sidebar.orderFlows'),
+          url: '/order-flows',
+          icon: Workflow,
+          permissions: [PERMISSIONS.orderFlows.view, PERMISSIONS.orders.view],
+        },
+        {
+          title: t('sidebar.orderStatuses'),
+          url: '/order-statuses',
+          icon: List,
+          permissions: [PERMISSIONS.orderFlows.view, PERMISSIONS.orders.view],
         },
         {
           title: t('sidebar.invoices'),
