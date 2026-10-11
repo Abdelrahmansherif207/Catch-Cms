@@ -21,12 +21,15 @@ import {
   TabsTrigger,
 } from '@/shared/ui/tabs';
 import { useUsers } from '../hooks/use-users';
+import { usePermissions } from '@/shared/auth/guards';
+import { PERMISSIONS } from '@/shared/auth/permissions';
 import { UsersTable } from '../components/users-table';
 import { UserFormDialog } from '../components/user-form-dialog';
 
 
 export function UsersPage() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
@@ -85,7 +88,7 @@ export function UsersPage() {
         title={t('users.title')}
         description={t('users.subtitle')}
         actions={
-          !showTrash && (
+          !showTrash && can(PERMISSIONS.users.create) && (
             <Button onClick={() => setFormOpen(true)}>
               <Plus className="me-2 h-4 w-4" />
               {t('users.addUser')}

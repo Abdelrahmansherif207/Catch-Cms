@@ -4,7 +4,7 @@ export const userFormSchema = z
   .object({
     name: z.string().min(1, 'validation.nameRequired'),
     email: z.string().min(1, 'validation.emailRequired').email('validation.emailInvalid'),
-    password: z.string().min(8, 'validation.passwordMin'),
+    password: z.string().min(8, 'validation.passwordMin').max(50, 'validation.passwordMax'),
     passwordConfirmation: z.string().min(1, 'validation.passwordConfirmationRequired'),
     phoneNumber: z.string().min(8, 'validation.phoneNumberMin'),
     roleIds: z.array(z.number()).min(1, 'validation.rolesRequired'),

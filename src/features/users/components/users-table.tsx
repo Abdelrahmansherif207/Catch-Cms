@@ -30,6 +30,9 @@ import {
 import { Skeleton } from '@/shared/ui/skeleton';
 import { DataEmptyState } from '@/shared/components/data-state';
 import { StatusBadge } from '@/shared/components/status-badge';
+import { usePermissions } from '@/shared/auth/guards';
+import { PERMISSIONS } from '@/shared/auth/permissions';
+import { useProfile } from '@/features/profile';
 import { UserActivationDialog } from './user-activation-dialog';
 import { UserDeleteDialog } from './user-delete-dialog';
 import { UserForceDeleteDialog } from './user-force-delete-dialog';
@@ -64,6 +67,9 @@ export function UsersTable({
 }: UsersTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { can } = usePermissions();
+  const { data: profileData } = useProfile();
+  const currentUserId = profileData?.data?.id;
   const [activationTarget, setActivationTarget] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [forceDeleteTarget, setForceDeleteTarget] = useState<User | null>(null);
@@ -142,17 +148,21 @@ export function UsersTable({
                       <DropdownMenuContent align="end">
                         {isTrash ? (
                           <>
-                            <DropdownMenuItem onClick={() => setRestoreTarget(user)}>
-                              <RefreshCcw className="me-2 h-4 w-4" />
-                              {t('users.restore')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => setForceDeleteTarget(user)}
-                            >
-                              <Trash className="me-2 h-4 w-4" />
-                              {t('users.forceDelete')}
-                            </DropdownMenuItem>
+                            {can(PERMISSIONS.users.restore) && (
+                              <DropdownMenuItem onClick={() => setRestoreTarget(user)}>
+                                <RefreshCcw className="me-2 h-4 w-4" />
+                                {t('users.restore')}
+                              </DropdownMenuItem>
+                            )}
+                            {can(PERMISSIONS.users.delete) && currentUserId !== user.id && (
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => setForceDeleteTarget(user)}
+                              >
+                                <Trash className="me-2 h-4 w-4" />
+                                {t('users.forceDelete')}
+                              </DropdownMenuItem>
+                            )}
                           </>
                         ) : (
                           <>
@@ -160,17 +170,21 @@ export function UsersTable({
                               <Eye className="me-2 h-4 w-4" />
                               {t('common.view')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setActivationTarget(user)}>
-                              <Pencil className="me-2 h-4 w-4" />
-                              {user.is_active ? t('users.deactivate') : t('users.activate')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => setDeleteTarget(user)}
-                            >
-                              <Trash2 className="me-2 h-4 w-4" />
-                              {t('common.delete')}
-                            </DropdownMenuItem>
+                            {can(PERMISSIONS.users.activate) && currentUserId !== user.id && (
+                              <DropdownMenuItem onClick={() => setActivationTarget(user)}>
+                                <Pencil className="me-2 h-4 w-4" />
+                                {user.is_active ? t('users.deactivate') : t('users.activate')}
+                              </DropdownMenuItem>
+                            )}
+                            {can(PERMISSIONS.users.delete) && currentUserId !== user.id && (
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => setDeleteTarget(user)}
+                              >
+                                <Trash2 className="me-2 h-4 w-4" />
+                                {t('common.delete')}
+                              </DropdownMenuItem>
+                            )}
                           </>
                         )}
                       </DropdownMenuContent>

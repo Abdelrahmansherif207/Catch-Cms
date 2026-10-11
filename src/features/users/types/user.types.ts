@@ -40,8 +40,12 @@ export interface CreateUserResponseData {
   name: string;
   email: string;
   email_verified_at: string;
-  is_active: boolean;
+  is_active: number | boolean;
   image: string | null;
+  type: string;
+  phone_number: string;
+  created_at: string;
+  updated_at: string;
   roles: UserRole[];
   permissions: UserPermission[];
 }
@@ -93,7 +97,13 @@ export interface RolesResponse {
   status: number;
   message: string;
   success: boolean;
-  data: Role[];
+  data: {
+    data: Role[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
 }
 
 export interface CreateUserData {

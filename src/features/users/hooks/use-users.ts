@@ -1,18 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchUsers,
   fetchRoles,
   fetchUser,
   createUser,
-  toggleActivation,
+  blockUser,
+  unblockUser,
   deleteUser,
   forceDeleteUser,
   restoreUser,
   type FetchUsersParams,
 } from '../api/users.api';
-import type { CreateUserData, UsersListResponse } from '../types/user.types';
+import type { CreateUserData, UsersListResponse, ApiActionResponse } from '../types/user.types';
 import type { ApiErrorResponse } from '@/shared/api';
 
 function handleApiError(error: unknown, fallbackMessage: string) {
@@ -61,12 +63,16 @@ export function useCreateUser() {
   });
 }
 
-export function useToggleActivation() {
+function useActivationMutation(
+  action: (id: number) => Promise<ApiActionResponse>,
+  nextActive: boolean,
+  fallbackError: string
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userId: number) => toggleActivation(userId),
-    onMutate: async (userId) => {
+    mutationFn: (id: number) => action(id),
+    onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.users.lists() });
       const queries = queryClient.getQueriesData<UsersListResponse>({ queryKey: queryKeys.users.lists() });
       const previousData = queries.map(([key, data]) => ({ key, data }));
@@ -78,7 +84,7 @@ export function useToggleActivation() {
           data: {
             ...old.data,
             data: old.data.data.map((item) =>
-              item.id === userId ? { ...item, is_active: !item.is_active } : item
+              item.id === id ? { ...item, is_active: nextActive } : item
             ),
           },
         };
@@ -87,29 +93,55 @@ export function useToggleActivation() {
       return { previousData };
     },
     onSuccess: (response) => {
-      toast.success(response.message || 'User updated successfully');
+      toast.success(
+        response.message ||
+          (nextActive ? 'User activated successfully' : 'User deactivated successfully')
+      );
     },
-    onError: (error, _userId, context) => {
+    onError: (error, _id, context) => {
       if (context?.previousData) {
         context.previousData.forEach(({ key, data }) => {
           if (data) queryClient.setQueryData(key, data);
         });
       }
-      handleApiError(error, 'Failed to update user');
+      handleApiError(error, fallbackError);
     },
-    onSettled: () => {
+    onSettled: (_data, _error, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(id) });
     },
   });
 }
 
+export function useBlockUser() {
+  return useActivationMutation(blockUser, false, 'Failed to deactivate user');
+}
+
+export function useUnblockUser() {
+  return useActivationMutation(unblockUser, true, 'Failed to activate user');
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (id: number) => deleteUser(id),
-    onSuccess: (response) => {
-      toast.success(response.message || 'User deleted successfully');
+    onSuccess: (_response, id) => {
+      toast.success(t('users.movedToTrash'), {
+        duration: 8000,
+        action: {
+          label: t('common.undo'),
+          onClick: () => {
+            restoreUser(id)
+              .then((restoreResponse) => {
+                toast.success(restoreResponse.message || t('users.restore'));
+                queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+              })
+              .catch((error) => handleApiError(error, 'Failed to restore user'));
+          },
+        },
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
     },
     onError: (error: unknown) => {
@@ -120,11 +152,12 @@ export function useDeleteUser() {
 
 export function useForceDeleteUser() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (id: number) => forceDeleteUser(id),
-    onSuccess: (response) => {
-      toast.success(response.message || 'User deleted permanently');
+    onSuccess: () => {
+      toast.success(t('users.permanentlyDeleted'));
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
     },
     onError: (error: unknown) => {

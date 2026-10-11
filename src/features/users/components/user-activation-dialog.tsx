@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
-import { useToggleActivation } from '../hooks/use-users';
+import { useBlockUser, useUnblockUser } from '../hooks/use-users';
 
 interface UserActivationDialogProps {
   userId: number;
@@ -28,11 +28,13 @@ export function UserActivationDialog({
   onActivated,
 }: UserActivationDialogProps) {
   const { t } = useTranslation();
-  const toggleMutation = useToggleActivation();
+  const blockMutation = useBlockUser();
+  const unblockMutation = useUnblockUser();
   const isActive = Boolean(currentStatus);
+  const mutation = isActive ? blockMutation : unblockMutation;
 
   const handleToggle = () => {
-    toggleMutation.mutate(userId, {
+    mutation.mutate(userId, {
       onSuccess: () => {
         onActivated();
         onOpenChange(false);
@@ -57,16 +59,16 @@ export function UserActivationDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={toggleMutation.isPending}
+            disabled={mutation.isPending}
           >
             {t('common.cancel')}
           </Button>
           <Button
             variant={isActive ? 'destructive' : 'default'}
             onClick={handleToggle}
-            disabled={toggleMutation.isPending}
+            disabled={mutation.isPending}
           >
-            {toggleMutation.isPending ? t('common.loading') : isActive ? t('users.deactivate') : t('users.activate')}
+            {mutation.isPending ? t('common.loading') : isActive ? t('users.deactivate') : t('users.activate')}
           </Button>
         </DialogFooter>
       </DialogContent>

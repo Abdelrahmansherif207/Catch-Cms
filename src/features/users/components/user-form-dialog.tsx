@@ -106,7 +106,7 @@ export function UserFormDialog({
     }
   };
 
-  const roles = rolesData?.data || [];
+  const roles = rolesData?.data?.data || [];
 
   const onSubmit = (values: UserFormValues) => {
     setServerErrors({});
@@ -119,7 +119,17 @@ export function UserFormDialog({
       onError: (error: unknown) => {
         const apiError = error as ApiErrorResponse;
         if (apiError?.status === 422 && apiError.errors) {
-          setServerErrors(apiError.errors);
+          const fieldMap: Record<string, string> = {
+            phone_number: 'phoneNumber',
+            roles: 'roleIds',
+          };
+          const normalized: Record<string, string[]> = {};
+          Object.entries(apiError.errors).forEach(([key, messages]) => {
+            const base = key.split('.')[0];
+            const field = fieldMap[base] ?? base;
+            (normalized[field] ??= []).push(...messages);
+          });
+          setServerErrors(normalized);
         }
       },
     });
@@ -167,7 +177,7 @@ export function UserFormDialog({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 className="hidden"
                 onChange={handleImageChange}
               />
