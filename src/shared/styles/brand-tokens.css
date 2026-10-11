@@ -5,20 +5,20 @@
  */
 
 :root {
-  /* Primary — Brand Crimson */
-  --brand-primary: #b81d24;
-  --brand-primary-dark: #8c1217;
+  /* Primary — Brand Blue */
+  --brand-primary: #124e91;
+  --brand-primary-dark: #0b3a6b;
 
-  /* Secondary — Brand Dark */
-  --brand-secondary: #1c1a1a;
-  --brand-secondary-dark: #0b0a0a;
+  /* Secondary — Brand Red */
+  --brand-secondary: #da2128;
+  --brand-secondary-dark: #b01a20;
 
-  /* Accent — Brand Rose */
-  --brand-accent: #e0b0b0;
+  /* Accent — Brand Deep Red */
+  --brand-accent: #d20025;
 
   /* Semantic Brand Colors */
-  --brand-success: #2d7a4d;
-  --brand-discount: #b81d24;
+  --brand-success: #237f52;
+  --brand-discount: #bc1e20;
 
   /* Danger — true red for destructive/error semantics */
   --brand-danger: #dc2626;
@@ -41,16 +41,16 @@
 
   /* Backgrounds */
   --brand-background: #ffffff;
-  --brand-surface: #faf6f5;
+  --brand-surface: #f5f5f5;
 
   /* Page Canvas — tinted backdrop so white cards lift off the page */
-  --brand-canvas: #f4efee;
+  --brand-canvas: #f4f6f8;
 
   /* Text */
-  --brand-text-primary: #1c1a1a;
-  --brand-text-secondary: #706565;
+  --brand-text-primary: #222222;
+  --brand-text-secondary: #666666;
 
   /* Borders */
-  --brand-border: #ede4e2;
-  --brand-border-subtle: #f5eeed;
+  --brand-border: #e5e5e5;
+  --brand-border-subtle: #dce4ed;
 }
