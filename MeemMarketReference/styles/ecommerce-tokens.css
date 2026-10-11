@@ -1,0 +1,43 @@
+/*
+ * Ecommerce Tokens
+ * Domain-specific tokens for ecommerce features.
+ * All map to semantic tokens — never use raw hex.
+ */
+
+:root {
+  /* Order Status */
+  --order-pending: #cf9e36;
+  --order-confirmed: var(--brand-primary);
+  --order-processing: #e67e22;
+  --order-shipped: var(--brand-primary-dark);
+  --order-delivered: var(--brand-success);
+  --order-cancelled: var(--brand-secondary);
+  --order-refunded: var(--brand-text-secondary);
+
+  /* Product Status */
+  --product-draft: var(--brand-text-secondary);
+  --product-active: var(--brand-success);
+  --product-archived: var(--brand-text-secondary);
+
+  /* Inventory Status */
+  --inventory-in-stock: var(--brand-success);
+  --inventory-low-stock: #e67e22;
+  --inventory-out-of-stock: var(--brand-secondary);
+
+  /* Payment Status */
+  --payment-pending: #cf9e36;
+  --payment-paid: var(--brand-success);
+  --payment-failed: var(--brand-secondary);
+  --payment-refunded: var(--brand-text-secondary);
+
+  /* Customer Status */
+  --customer-active: var(--brand-success);
+  --customer-inactive: var(--brand-text-secondary);
+  --customer-vip: var(--brand-accent);
+
+  /* Notification Severity */
+  --notification-info: var(--brand-primary);
+  --notification-success: var(--brand-success);
+  --notification-warning: #e67e22;
+  --notification-error: var(--brand-secondary);
+}
