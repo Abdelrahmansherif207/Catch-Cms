@@ -24,7 +24,7 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
         <div className="rounded-2xl border bg-card p-8 shadow-pop sm:p-10">
           <div className="mb-8 flex flex-col items-center text-center">
             <span className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/[0.07] p-2.5 ring-1 ring-border">
-              <img src="/catch-logo.png" alt={t('sidebar.brand')} className="h-full w-auto rounded-lg object-contain" />
+              <img src="/meem-logo.svg" alt={t('sidebar.brand')} className="h-full w-auto rounded-lg object-contain" />
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-balance text-foreground">
               {title}

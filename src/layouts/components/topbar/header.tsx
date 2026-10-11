@@ -24,11 +24,14 @@ import { GlobalSearch } from "@/layouts/components/topbar/global-search";
 
 export function Header() {
   usePusher();
+  const { t } = useTranslation();
 
   return (
     <header className="fixed top-0 z-20 flex h-16 w-full items-center gap-3 border-b border-border/60 bg-background/85 px-4 backdrop-blur-md sm:px-5">
       <div className="flex min-w-fit items-center gap-2 me-2">
-        <img src="/catch-logo.png" alt="Catch Beauty" className="h-8 w-auto shrink-0 rounded-lg object-contain md:h-10" />
+        <Link to="/" aria-label={t('sidebar.brand')}>
+          <img src="/meem-logo.svg" alt={t('sidebar.brand')} className="h-8 w-auto shrink-0 rounded-lg object-contain md:h-10" />
+        </Link>
       </div>
 
       <div className="flex items-center gap-2">
