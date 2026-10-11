@@ -26,6 +26,9 @@ import {
   TabsTrigger,
 } from '@/shared/ui/tabs';
 import { useUser } from '../hooks/use-users';
+import { usePermissions } from '@/shared/auth/guards';
+import { PERMISSIONS } from '@/shared/auth/permissions';
+import { useProfile } from '@/features/profile';
 import { UserActivationDialog } from '../components/user-activation-dialog';
 import { UserDeleteDialog } from '../components/user-delete-dialog';
 import { userRoutes } from '../routes/user.routes';
@@ -39,6 +42,10 @@ export function UserDetailPage() {
 
   const { data, isLoading, isError, refetch } = useUser(Number(id));
   const user = data?.data;
+  const { can } = usePermissions();
+  const { data: profileData } = useProfile();
+  const canActivate = can(PERMISSIONS.users.activate) && profileData?.data?.id !== user?.id;
+  const canDelete = can(PERMISSIONS.users.delete) && profileData?.data?.id !== user?.id;
 
   const initials = user?.name
     ?.split(' ')
@@ -84,12 +91,16 @@ export function UserDetailPage() {
         backTo={userRoutes.list}
         actions={
           <>
-            <Button variant="outline" size="sm" onClick={() => setActivationOpen(true)}>
-              {user.is_active ? t('users.deactivate') : t('users.activate')}
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-              {t('common.delete')}
-            </Button>
+            {canActivate && (
+              <Button variant="outline" size="sm" onClick={() => setActivationOpen(true)}>
+                {user.is_active ? t('users.deactivate') : t('users.activate')}
+              </Button>
+            )}
+            {canDelete && (
+              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+                {t('common.delete')}
+              </Button>
+            )}
           </>
         }
       />

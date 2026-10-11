@@ -79,10 +79,13 @@ export async function createUser(payload: CreateUserData): Promise<CreateUserRes
   return data;
 }
 
-export async function toggleActivation(userId: number): Promise<ApiActionResponse> {
-  const { data } = await axiosClient.put<ApiActionResponse>('/admin-users/update-activation', {
-    user_id: userId,
-  });
+export async function blockUser(id: number): Promise<ApiActionResponse> {
+  const { data } = await axiosClient.patch<ApiActionResponse>('/users/block-user', { id });
+  return data;
+}
+
+export async function unblockUser(id: number): Promise<ApiActionResponse> {
+  const { data } = await axiosClient.patch<ApiActionResponse>('/users/unblock-user', { id });
   return data;
 }
 
