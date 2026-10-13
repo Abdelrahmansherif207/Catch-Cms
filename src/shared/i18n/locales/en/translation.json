@@ -128,7 +128,8 @@
     "orderStatuses": "Order Statuses",
     "fulfillment": "Fulfillment",
     "warehouses": "Warehouses",
-    "locations": "Location Bins"
+    "locations": "Location Bins",
+    "packingStations": "Packing Stations"
   },
   "orders": {
     "title": "Orders",
@@ -468,6 +469,7 @@
     "claimTtlMin": "Claim validity must be at least 1 hour",
     "claimTtlMax": "Claim validity cannot exceed 8760 hours (1 year)",
     "codeMaxLength": "Code must be 50 characters or less",
+    "nameMaxLength100": "Name must be 100 characters or less",
     "cityMaxLength": "City must be 100 characters or less",
     "countryMaxLength": "Country must be 100 characters or less"
   },
@@ -2653,5 +2655,42 @@
     "activateError": "Failed to activate the location bin",
     "deactivateError": "Failed to deactivate the location bin",
     "deleteError": "Failed to delete the location bin"
+  },
+  "packingStations": {
+    "pageTitle": "Packing Stations",
+    "pageDescription": "Manage fulfillment packing stations, operators and daily throughput.",
+    "code": "Code",
+    "codePlaceholder": "ST-A1",
+    "name": "Name",
+    "namePlaceholder": "Station A1",
+    "dailyCapacity": "Daily Capacity",
+    "warehouse": "Warehouse",
+    "warehouseImmutable": "The warehouse cannot be changed after creation.",
+    "defaultWarehouse": "Default warehouse",
+    "defaultWarehouseHint": "Leave on default to create the station in the default warehouse.",
+    "warehouseNotFound": "Unknown warehouse",
+    "assignedTo": "Assigned Operator",
+    "unassigned": "Unassigned",
+    "assignedToNoPermission": "Administrator list unavailable",
+    "allStatuses": "All statuses",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "maintenance": "Maintenance"
+    },
+    "createTitle": "Create Packing Station",
+    "editTitle": "Edit Packing Station",
+    "formDescription": "Fill in the packing station details.",
+    "saving": "Saving...",
+    "created": "Packing station created successfully",
+    "updated": "Packing station updated successfully",
+    "deleted": "Packing station deleted successfully",
+    "createError": "Failed to create packing station",
+    "updateError": "Failed to update packing station",
+    "deleteError": "Failed to delete packing station",
+    "deleteTitle": "Delete Packing Station",
+    "deleteConfirm": "Permanently delete",
+    "deleteWarning": "This action cannot be undone. Stations with live packing tasks cannot be deleted.",
+    "deleting": "Deleting..."
   }
 }

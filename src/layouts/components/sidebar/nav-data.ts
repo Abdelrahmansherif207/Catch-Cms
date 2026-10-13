@@ -29,6 +29,7 @@ import {
   Receipt,
   Workflow,
   Warehouse,
+  PackageCheck,
   KeyRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -259,6 +260,12 @@ export function useNavGroups(): NavGroup[] {
           url: '/locations',
           icon: MapPin,
           permissions: [PERMISSIONS.locations.view],
+        },
+        {
+          title: t('sidebar.packingStations'),
+          url: '/packing-stations',
+          icon: PackageCheck,
+          permissions: [PERMISSIONS.packingStations.view],
         },
       ],
     },

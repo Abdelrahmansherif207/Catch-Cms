@@ -274,6 +274,10 @@ export const PERMISSIONS = {
     view: 'view-location',
     manage: 'manage-location',
   },
+  packingStations: {
+    view: 'view-fulfillment',
+    manage: 'manage-warehouse',
+  },
   profile: {
     view: 'view-profile',
     update: 'update-profile',

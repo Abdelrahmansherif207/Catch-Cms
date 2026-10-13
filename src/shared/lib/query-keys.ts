@@ -260,6 +260,13 @@ export const queryKeys = {
     details: () => ['locations', 'detail'] as const,
     detail: (id?: number | string) => ['locations', 'detail', id] as const,
   },
+  packingStations: {
+    all: ['packing-stations'] as const,
+    lists: () => ['packing-stations', 'list'] as const,
+    list: <P extends object>(params: P) => ['packing-stations', 'list', params] as const,
+    details: () => ['packing-stations', 'detail'] as const,
+    detail: (id?: number | string) => ['packing-stations', 'detail', id] as const,
+  },
   shipping: {
     countries: {
       all: ['shipping', 'countries'] as const,

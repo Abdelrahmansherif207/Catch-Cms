@@ -51,6 +51,7 @@ const WarehousesPage = lazy(() => import("@/features/warehouses/pages/warehouses
 const WarehouseDetailPage = lazy(() => import("@/features/warehouses/pages/warehouse-detail-page").then(m => ({ default: m.WarehouseDetailPage })));
 const LocationsPage = lazy(() => import("@/features/locations/pages/locations-page").then(m => ({ default: m.LocationsPage })));
 const WarehouseLocationDetailPage = lazy(() => import("@/features/locations/pages/location-detail-page").then(m => ({ default: m.LocationDetailPage })));
+const PackingStationsPage = lazy(() => import("@/features/packing-stations/pages/packing-stations-page").then(m => ({ default: m.PackingStationsPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
 const StaticPageDetailPage = lazy(() => import("@/features/static-pages/pages/static-page-detail-page").then(m => ({ default: m.StaticPageDetailPage })));
@@ -152,6 +153,9 @@ export default function App() {
               <Route element={<PermissionRoute permission={PERMISSIONS.locations.view} />}>
                 <Route path="/locations/:id" element={<WarehouseLocationDetailPage />} />
                 <Route path="/locations" element={<LocationsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.packingStations.view} />}>
+                <Route path="/packing-stations" element={<PackingStationsPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />

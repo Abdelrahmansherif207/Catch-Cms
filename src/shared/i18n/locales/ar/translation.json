@@ -128,7 +128,8 @@
     "orderStatuses": "حالات الطلبات",
     "fulfillment": "التنفيذ",
     "warehouses": "المستودعات",
-    "locations": "مواقع التخزين"
+    "locations": "مواقع التخزين",
+    "packingStations": "طاولات التغليف"
   },
   "orders": {
     "title": "الطلبات",
@@ -418,6 +419,7 @@
     "claimTtlMin": "يجب أن تكون صلاحية الاستلام ساعة واحدة على الأقل",
     "claimTtlMax": "لا يمكن أن تتجاوز صلاحية الاستلام 8760 ساعة (سنة واحدة)",
     "codeMaxLength": "يجب ألا يزيد الرمز عن 50 حرفًا",
+    "nameMaxLength100": "يجب ألا يزيد الاسم عن 100 حرف",
     "cityMaxLength": "يجب ألا تزيد المدينة عن 100 حرف",
     "countryMaxLength": "يجب ألا تزيد الدولة عن 100 حرف"
   },
@@ -2653,5 +2655,42 @@
     "activateError": "فشل تنشيط موقع التخزين",
     "deactivateError": "فشل إلغاء تنشيط موقع التخزين",
     "deleteError": "فشل حذف موقع التخزين"
+  },
+  "packingStations": {
+    "pageTitle": "طاولات التغليف",
+    "pageDescription": "إدارة طاولات التغليف والمشغلين والطاقة اليومية.",
+    "code": "الرمز",
+    "codePlaceholder": "ST-A1",
+    "name": "الاسم",
+    "namePlaceholder": "طاولة التغليف 1",
+    "dailyCapacity": "الطاقة اليومية",
+    "warehouse": "المستودع",
+    "warehouseImmutable": "لا يمكن تغيير المستودع بعد الإنشاء.",
+    "defaultWarehouse": "المستودع الافتراضي",
+    "defaultWarehouseHint": "اتركه على الافتراضي لإنشاء الطاولة داخل المستودع الافتراضي.",
+    "warehouseNotFound": "مستودع غير معروف",
+    "assignedTo": "المشغل المسؤول",
+    "unassigned": "غير مسند",
+    "assignedToNoPermission": "قائمة المسؤولين غير متاحة",
+    "allStatuses": "جميع الحالات",
+    "status": {
+      "active": "نشطة",
+      "inactive": "غير نشطة",
+      "maintenance": "صيانة"
+    },
+    "createTitle": "إنشاء طاولة تغليف",
+    "editTitle": "تعديل طاولة التغليف",
+    "formDescription": "املأ تفاصيل طاولة التغليف.",
+    "saving": "جارٍ الحفظ...",
+    "created": "تم إنشاء طاولة التغليف بنجاح",
+    "updated": "تم تحديث طاولة التغليف بنجاح",
+    "deleted": "تم حذف طاولة التغليف بنجاح",
+    "createError": "فشل إنشاء طاولة التغليف",
+    "updateError": "فشل تحديث طاولة التغليف",
+    "deleteError": "فشل حذف طاولة التغليف",
+    "deleteTitle": "حذف طاولة التغليف",
+    "deleteConfirm": "حذف نهائي لـ",
+    "deleteWarning": "لا يمكن التراجع عن هذا الإجراء. لا يمكن حذف الطاولات التي بها مهام تغليف جارية.",
+    "deleting": "جارٍ الحذف..."
   }
 }
