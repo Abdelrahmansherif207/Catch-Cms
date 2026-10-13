@@ -270,6 +270,10 @@ export const PERMISSIONS = {
     view: 'view-warehouse',
     manage: 'manage-warehouse',
   },
+  locations: {
+    view: 'view-location',
+    manage: 'manage-location',
+  },
   profile: {
     view: 'view-profile',
     update: 'update-profile',
