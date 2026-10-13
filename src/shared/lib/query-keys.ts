@@ -253,6 +253,13 @@ export const queryKeys = {
     details: () => ['warehouses', 'detail'] as const,
     detail: (id?: number | string) => ['warehouses', 'detail', id] as const,
   },
+  locations: {
+    all: ['locations'] as const,
+    lists: () => ['locations', 'list'] as const,
+    list: <P extends object>(params: P) => ['locations', 'list', params] as const,
+    details: () => ['locations', 'detail'] as const,
+    detail: (id?: number | string) => ['locations', 'detail', id] as const,
+  },
   shipping: {
     countries: {
       all: ['shipping', 'countries'] as const,

@@ -254,6 +254,12 @@ export function useNavGroups(): NavGroup[] {
           icon: Warehouse,
           permissions: [PERMISSIONS.warehouses.view],
         },
+        {
+          title: t('sidebar.locations'),
+          url: '/locations',
+          icon: MapPin,
+          permissions: [PERMISSIONS.locations.view],
+        },
       ],
     },
     {
