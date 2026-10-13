@@ -31,6 +31,7 @@ import {
 } from '@/shared/ui/table';
 import { useOrder } from '../hooks/use-orders';
 import { getLocalizedName } from '@/shared/lib/localize';
+import { KeyRound } from 'lucide-react';
 import { OrderStatusBadge } from '../components/order-status-badge';
 import { OrderStatusSelect } from '../components/order-status-select';
 import { OrderDeleteDialog } from '../components/order-delete-dialog';
@@ -117,6 +118,10 @@ export function OrderDetailPage() {
         actions={
           <>
             <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+            <Button variant="outline" size="sm" onClick={() => navigate(`/digital-entitlements?order_id=${order.id}`)}>
+              <KeyRound className="me-2 h-4 w-4" />
+              {t('orders.viewEntitlements')}
+            </Button>
             <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
               <Trash2 className="me-2 h-4 w-4" />
               {t('common.delete')}

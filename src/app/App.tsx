@@ -47,6 +47,8 @@ const InvoicesPage = lazy(() => import("@/features/invoices/pages/invoices-page"
 const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-detail-page").then(m => ({ default: m.InvoiceDetailPage })));
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
 const InvoiceVerifyPage = lazy(() => import("@/features/invoices/pages/invoice-verify-page").then(m => ({ default: m.InvoiceVerifyPage })));
+const WarehousesPage = lazy(() => import("@/features/warehouses/pages/warehouses-page").then(m => ({ default: m.WarehousesPage })));
+const WarehouseDetailPage = lazy(() => import("@/features/warehouses/pages/warehouse-detail-page").then(m => ({ default: m.WarehouseDetailPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
 const StaticPageDetailPage = lazy(() => import("@/features/static-pages/pages/static-page-detail-page").then(m => ({ default: m.StaticPageDetailPage })));
@@ -60,6 +62,7 @@ const PickupLocationsPage = lazy(() => import("@/features/pickup-locations/pages
 const CountriesPage = lazy(() => import("@/features/shipping/pages/countries-page").then(m => ({ default: m.CountriesPage })));
 const GovernoratesPage = lazy(() => import("@/features/shipping/pages/governorates-page").then(m => ({ default: m.GovernoratesPage })));
 const CitiesPage = lazy(() => import("@/features/shipping/pages/cities-page").then(m => ({ default: m.CitiesPage })));
+const EntitlementsPage = lazy(() => import("@/features/digital-entitlements/pages/entitlements-page").then(m => ({ default: m.EntitlementsPage })));
 
 function Spinner() {
   return (
@@ -140,6 +143,10 @@ export default function App() {
                 <Route path="/order-flows" element={<OrderFlowsPage />} />
                 <Route path="/order-statuses" element={<OrderStatusesPage />} />
               </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.warehouses.view} />}>
+                <Route path="/warehouses/:id" element={<WarehouseDetailPage />} />
+                <Route path="/warehouses" element={<WarehousesPage />} />
+              </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />
               </Route>
@@ -206,6 +213,9 @@ export default function App() {
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.exchangeRates.view} />}>
                 <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.digitalEntitlements.manage} />}>
+                <Route path="/digital-entitlements" element={<EntitlementsPage />} />
               </Route>
             </Route>
           </Route>

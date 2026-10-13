@@ -28,6 +28,8 @@ import {
   Newspaper,
   Receipt,
   Workflow,
+  Warehouse,
+  KeyRound,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -89,6 +91,12 @@ export function useNavGroups(): NavGroup[] {
           url: '/invoices',
           icon: Receipt,
           permissions: [PERMISSIONS.invoices.view],
+        },
+        {
+          title: t('sidebar.digitalEntitlements'),
+          url: '/digital-entitlements',
+          icon: KeyRound,
+          permissions: [PERMISSIONS.digitalEntitlements.manage],
         },
         {
           title: t('sidebar.pickupLocations'),
@@ -234,6 +242,17 @@ export function useNavGroups(): NavGroup[] {
           url: '/shipping/cities',
           icon: MapPinned,
           permissions: [PERMISSIONS.shipping.citiesView],
+        },
+      ],
+    },
+    {
+      title: t('sidebar.fulfillment'),
+      items: [
+        {
+          title: t('sidebar.warehouses'),
+          url: '/warehouses',
+          icon: Warehouse,
+          permissions: [PERMISSIONS.warehouses.view],
         },
       ],
     },
