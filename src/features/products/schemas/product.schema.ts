@@ -11,7 +11,11 @@ export const variantFormSchema = z.object({
   weight: z.coerce.number().optional(),
 });
 
-export const productFormSchema = z.object({
+/**
+ * Backbone of the product form. Every field set is ambiguous-free: the
+ * conditional rules live in buildProductFormSchema below (create vs edit).
+ */
+const productFormSchemaBase = z.object({
   productType: z.enum(['simple', 'variable']),
   itemType: z.enum(['PHYSICAL', 'DIGITAL']).default('PHYSICAL'),
   taxEnabled: z.boolean().default(false),
@@ -51,17 +55,64 @@ export const productFormSchema = z.object({
       ctx.addIssue({ code: 'custom', path: ['quantity'], message: 'validation.quantityPositive' });
     }
   }
-  if (data.productType === 'variable') {
-    if (!data.variants || data.variants.length === 0) {
-      ctx.addIssue({ code: 'custom', path: ['variants'], message: 'validation.atLeastOneVariant' });
-    }
-  }
-  if (data.taxEnabled) {
-    if (data.taxRate === undefined || data.taxRate === null || Number.isNaN(data.taxRate)) {
-      ctx.addIssue({ code: 'custom', path: ['taxRate'], message: 'validation.taxRateRequired' });
-    }
-  }
 });
+
+export const productFormSchema = productFormSchemaBase;
+
+/**
+ * Field rules mirrored from the backend validation contract, verified via
+ * live 422 captures:
+ *  - always required: name.en/.ar (max 255), description, product_type,
+ *    categories, images (create only), in_stock, has_discount,
+ *    has_flash_sale
+ *  - required_if has_discount=1: discount_type, discount_amount (min 1),
+ *    discount_status; dates are optional
+ *  - required_if has_flash_sale=1: flash_sale_id
+ *  - tax_rate is NOT demanded by the backend (kept client-side per product
+ *    decision); price/quantity (simple) and >=1 variant (variable) are also
+ *    kept client-side requirements.
+ * Update (PUT) accepts everything as "present-only" — name, description,
+ * categories and images become optional, hence the create/edit factory.
+ */
+export function buildProductFormSchema(isCreate: boolean) {
+  return productFormSchema.superRefine((data, ctx) => {
+    if (isCreate) {
+      if (!data.categoryIds || data.categoryIds.length === 0) {
+        ctx.addIssue({ code: 'custom', path: ['categoryIds'], message: 'validation.categoryRequired' });
+      }
+      if (!data.images || data.images.length === 0) {
+        ctx.addIssue({ code: 'custom', path: ['images'], message: 'validation.imagesRequired' });
+      }
+    }
+
+    if (data.productType === 'variable') {
+      if (!data.variants || data.variants.length === 0) {
+        ctx.addIssue({ code: 'custom', path: ['variants'], message: 'validation.atLeastOneVariant' });
+      }
+    }
+
+    if (data.hasDiscount) {
+      if (!data.discountType) {
+        ctx.addIssue({ code: 'custom', path: ['discountType'], message: 'validation.discountTypeRequired' });
+      }
+      if (data.discountAmount === undefined || data.discountAmount === null || Number.isNaN(data.discountAmount)) {
+        ctx.addIssue({ code: 'custom', path: ['discountAmount'], message: 'validation.discountAmountRequired' });
+      } else if (data.discountAmount < 1) {
+        ctx.addIssue({ code: 'custom', path: ['discountAmount'], message: 'validation.discountAmountMin' });
+      }
+    }
+
+    if (data.hasFlashSale && !data.flashSaleId) {
+      ctx.addIssue({ code: 'custom', path: ['flashSaleId'], message: 'validation.flashSaleRequired' });
+    }
+
+    if (data.taxEnabled) {
+      if (data.taxRate === undefined || data.taxRate === null || Number.isNaN(data.taxRate)) {
+        ctx.addIssue({ code: 'custom', path: ['taxRate'], message: 'validation.taxRateRequired' });
+      }
+    }
+  });
+}
 
 export type ProductFormInput = z.input<typeof productFormSchema>;
 export type ProductFormValues = z.output<typeof productFormSchema>;

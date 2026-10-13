@@ -28,6 +28,7 @@ import { ImagePreview } from '@/shared/components/image-preview';
 import { SafeHtml } from '@/shared/components/safe-html';
 import { useProduct } from '../hooks/use-products';
 import { ProductDeleteDialog } from '../components/product-delete-dialog';
+import { DigitalAssetsCard } from '../components/digital-assets-card';
 import { productRoutes } from '../routes/product.routes';
 import { useLanguage } from '@/shared/hooks/use-language';
 
@@ -245,6 +246,10 @@ export function ProductDetailPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
+          {detail.item_type === 'DIGITAL' && (
+            <DigitalAssetsCard productId={detail.id} />
+          )}
+
           <CardSection title={t('products.description')} icon={FileText}>
             <SafeHtml
               html={productDescription}

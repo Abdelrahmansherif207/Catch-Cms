@@ -39,6 +39,7 @@ export const PERMISSIONS = {
     delete: 'delete-product',
     viewDraft: 'view-draft-products',
     viewLowStock: 'view-low-stock-products',
+    manageDigitalLicenses: 'manage-digital-licenses',
   },
   categories: {
     view: 'view-categories',
@@ -184,6 +185,9 @@ export const PERMISSIONS = {
     viewDetail: 'view-order',
     updateStatus: 'update-order-status',
   },
+  digitalEntitlements: {
+    manage: 'manage-digital-access',
+  },
   orderFlows: {
     view: 'view-order-flows',
     create: 'create-order-flows',
@@ -261,6 +265,10 @@ export const PERMISSIONS = {
   },
   analytics: {
     view: 'view-analytics',
+  },
+  warehouses: {
+    view: 'view-warehouse',
+    manage: 'manage-warehouse',
   },
   profile: {
     view: 'view-profile',

@@ -8,6 +8,10 @@ export const queryKeys = {
     search: (q: string) => ['products', 'search', q] as const,
     importStatus: (id: number | string) => ['products', 'import-status', id] as const,
     exportStatus: (id: number | string) => ['products', 'export-status', id] as const,
+    digitalAssets: {
+      all: ['products', 'digital-assets'] as const,
+      list: (productId: number | string) => ['products', 'digital-assets', 'list', productId] as const,
+    },
   },
   categories: {
     all: ['categories'] as const,
@@ -242,6 +246,13 @@ export const queryKeys = {
     details: () => ['pickup-locations', 'detail'] as const,
     detail: (id?: number | string) => ['pickup-locations', 'detail', id] as const,
   },
+  warehouses: {
+    all: ['warehouses'] as const,
+    lists: () => ['warehouses', 'list'] as const,
+    list: <P extends object>(params: P) => ['warehouses', 'list', params] as const,
+    details: () => ['warehouses', 'detail'] as const,
+    detail: (id?: number | string) => ['warehouses', 'detail', id] as const,
+  },
   shipping: {
     countries: {
       all: ['shipping', 'countries'] as const,
@@ -289,5 +300,11 @@ export const queryKeys = {
     list: <P extends object>(params: P) => ['currency-rates', 'list', params] as const,
     details: () => ['currency-rates', 'detail'] as const,
     detail: (id: number | string) => ['currency-rates', 'detail', id] as const,
+  },
+  digitalEntitlements: {
+    all: ['digital-entitlements'] as const,
+    list: <P extends object>(params: P) =>
+      ['digital-entitlements', 'list', params] as const,
+    detail: (uuid: string) => ['digital-entitlements', 'detail', uuid] as const,
   },
 }

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Loader2, X, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -15,13 +16,16 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import {
-  productFormSchema,
+  buildProductFormSchema,
   productFormDefaults,
   toApiFormat,
   type ProductFormInput,
   type ProductFormValues,
 } from '../schemas/product.schema';
 import { useCreateProduct, useUpdateProduct } from '../hooks/use-products';
+import { createDigitalAsset, addDigitalLicenseKeys } from '../api/digital-assets.api';
+import { DigitalAssetsSection } from './digital-assets-section';
+import type { PendingDigitalAsset } from '../types/digital-asset.types';
 import { useAllCategories } from '@/features/categories/hooks/use-categories';
 import { useAllBrands } from '@/features/brands/hooks/use-brands';
 import { useAllSliders } from '@/features/sliders/hooks/use-sliders';
@@ -45,6 +49,53 @@ interface CheckboxListProps {
   emptyMessage: string;
   isLoading?: boolean;
 }
+
+/**
+ * Live 422 keys (curl-verified) do not match form field names — this map
+ * reroutes each backend error key to the form field whose label it belongs
+ * under, so server-side messages render beneath the field they describe.
+ */
+const SERVER_ERROR_TO_FIELD: Record<string, readonly string[]> = {
+  name: ['nameEn', 'nameAr'],
+  'name.en': ['nameEn'],
+  'name[en]': ['nameEn'],
+  'name.ar': ['nameAr'],
+  'name[ar]': ['nameAr'],
+  description: ['descriptionEn', 'descriptionAr'],
+  'description.en': ['descriptionEn'],
+  'description[en]': ['descriptionEn'],
+  'description.ar': ['descriptionAr'],
+  'description[ar]': ['descriptionAr'],
+  product_type: ['productType'],
+  item_type: ['itemType'],
+  in_stock: ['inStock'],
+  status: ['status'],
+  'has discount': ['hasDiscount'],
+  has_discount: ['hasDiscount'],
+  'has flash sale': ['hasFlashSale'],
+  has_flash_sale: ['hasFlashSale'],
+  discount_status: ['discountStatus'],
+  discount_type: ['discountType'],
+  discount_amount: ['discountAmount'],
+  start_date: ['startDate'],
+  end_date: ['endDate'],
+  flash_sale_id: ['flashSaleId'],
+  tax_enabled: ['taxEnabled'],
+  tax_rate: ['taxRate'],
+  price: ['price'],
+  quantity: ['quantity'],
+};
+
+/** Server keys that arrive as bare parent keys or numbered per element
+ *  (`categories`, `categories.0` → the categories checkbox field). */
+const PREFIX_ERROR_TO_FIELD: ReadonlyArray<readonly [string, readonly string[]]> = [
+  ['categories', ['categoryIds']],
+  ['brands', ['brandIds']],
+  ['banners', ['bannerIds']],
+  ['sliders', ['sliderIds']],
+  ['images', ['images']],
+  ['variants', ['variants']],
+];
 
 function CheckboxList({ items, selectedIds, onChange, searchPlaceholder, emptyMessage, isLoading }: CheckboxListProps) {
   const { t } = useTranslation();
@@ -116,6 +167,8 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   const updateMutation = useUpdateProduct();
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [assetFlushPending, setAssetFlushPending] = useState(false);
+  const [digitalAssets, setDigitalAssets] = useState<PendingDigitalAsset[]>([]);
   const isEditMode = !!productId;
 
   const { data: categoriesData, isLoading: categoriesLoading } = useAllCategories();
@@ -125,8 +178,13 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   const { data: flashSalesData, isLoading: flashSalesLoading } = useAllFlashSales();
   const { data: attributesData, isLoading: attributesLoading } = useAllAttributes();
 
+  // Create mode enforces the backend create contract (categories/images
+  // required); edit mode matches the looser update contract where both are
+  // "present-only" (verified via live PUT probes).
+  const formSchema = useMemo(() => buildProductFormSchema(!isEditMode), [isEditMode]);
+
   const form = useForm<ProductFormInput, unknown, ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: productFormDefaults,
   });
 
@@ -213,6 +271,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
   const onSubmit = (values: ProductFormValues) => {
     setServerErrors({});
     const apiData = toApiFormat(values);
+    const flushableAssets = isEditMode ? [] : digitalAssets;
 
     if (isEditMode && productId) {
       updateMutation.mutate({ id: productId, data: { ...apiData, _method: 'PUT' } }, {
@@ -228,7 +287,75 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
       });
     } else {
       createMutation.mutate(apiData, {
-        onSuccess: () => {
+        onSuccess: async (created) => {
+          const newProductId: number | undefined = created?.data?.id;
+          if (newProductId && flushableAssets.length > 0) {
+            try {
+              setAssetFlushPending(true);
+              let attached = 0;
+              let licensePools = 0;
+              let licenseKeyIssues = false;
+              for (const draft of flushableAssets) {
+                try {
+                  const createdAsset = await createDigitalAsset(newProductId, {
+                    type: draft.type,
+                    file: draft.file,
+                    external_url: draft.external_url,
+                    secret: draft.secret,
+                  });
+                  attached += 1;
+                  if (draft.type === 'LICENSE') {
+                    licensePools += 1;
+                    if (draft.keys && draft.keys.length > 0) {
+                      // The create call never carries keys (backend contract):
+                      // provision right after the pool uuid exists.
+                      try {
+                        const provisioned = await addDigitalLicenseKeys(
+                          createdAsset.data.uuid,
+                          draft.keys,
+                        );
+                        toast.success(
+                          t('digitalAssets.toast.keysImported', {
+                            created: provisioned.data.created,
+                            duplicates: provisioned.data.skipped_duplicate,
+                            blanks: provisioned.data.skipped_blank,
+                          }),
+                        );
+                      } catch (keysError) {
+                        licenseKeyIssues = true;
+                        const keysApiError = keysError as ApiErrorResponse;
+                        toast.error(keysApiError?.message || t('digitalAssets.toast.keysFailed'));
+                      }
+                    } else {
+                      // Pool created without keys — provisioning stays
+                      // available on the product's edit page.
+                      licenseKeyIssues = true;
+                    }
+                  }
+                } catch (assetError) {
+                  const assetApiError = assetError as ApiErrorResponse;
+                  toast.error(
+                    assetApiError?.message ||
+                      t('digitalAssets.toast.addFailed'),
+                  );
+                }
+              }
+              setDigitalAssets([]);
+              if (licensePools > 0 && licenseKeyIssues) {
+                toast.info(t('digitalAssets.toast.licensePoolsHint', { count: licensePools }));
+              }
+              if (attached < flushableAssets.length) {
+                toast.warning(
+                  t('digitalAssets.toast.partialAttach', {
+                    attached,
+                    total: flushableAssets.length,
+                  }),
+                );
+              }
+            } finally {
+              setAssetFlushPending(false);
+            }
+          }
           onSuccess();
         },
         onError: (error: unknown) => {
@@ -241,11 +368,27 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
     }
   };
 
-  const isPending = isEditMode ? updateMutation.isPending : createMutation.isPending;
+  const isPending = (isEditMode ? updateMutation.isPending : createMutation.isPending) || assetFlushPending;
   const errors = form.formState.errors;
 
+  /** Resolves both direct-key hits and reroutes every curl-verified server
+   *  key (name.en, categories, discount_amount, …) to its form field. */
   const getServerError = (field: string): string | undefined => {
     if (serverErrors[field]?.[0]) return serverErrors[field][0];
+
+    for (const [key, fields] of Object.entries(SERVER_ERROR_TO_FIELD)) {
+      if (fields.includes(field) && serverErrors[key]?.[0]) return serverErrors[key][0];
+    }
+
+    for (const [prefix, fields] of PREFIX_ERROR_TO_FIELD) {
+      if (fields.includes(field)) {
+        const hit = Object.keys(serverErrors).find(
+          (k) => k === prefix || k.startsWith(prefix + '.'),
+        );
+        if (hit && serverErrors[hit]?.[0]) return serverErrors[hit][0];
+      }
+    }
+
     const bracketized = field.replace(/\.(\w+)/g, '[$1]');
     if (bracketized !== field && serverErrors[bracketized]?.[0]) return serverErrors[bracketized][0];
     const dotted = field.replace(/\[(\w+)\]/g, '.$1');
@@ -879,6 +1022,18 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
               </div>
             </div>
           </div>
+        </>
+      )}
+
+      {itemType === 'DIGITAL' && (
+        <>
+          <hr className="border-t" />
+
+          <DigitalAssetsSection
+            productId={isEditMode && productId ? productId : undefined}
+            value={isEditMode ? undefined : digitalAssets}
+            onChange={isEditMode ? undefined : setDigitalAssets}
+          />
         </>
       )}
 
