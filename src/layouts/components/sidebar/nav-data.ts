@@ -28,7 +28,6 @@ import {
   Newspaper,
   Receipt,
   Workflow,
-  Warehouse,
   KeyRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -247,14 +246,7 @@ export function useNavGroups(): NavGroup[] {
     },
     {
       title: t('sidebar.fulfillment'),
-      items: [
-        {
-          title: t('sidebar.warehouses'),
-          url: '/warehouses',
-          icon: Warehouse,
-          permissions: [PERMISSIONS.warehouses.view],
-        },
-      ],
+      items: [],
     },
     {
       title: t('sidebar.system'),

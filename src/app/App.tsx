@@ -47,8 +47,6 @@ const InvoicesPage = lazy(() => import("@/features/invoices/pages/invoices-page"
 const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-detail-page").then(m => ({ default: m.InvoiceDetailPage })));
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
 const InvoiceVerifyPage = lazy(() => import("@/features/invoices/pages/invoice-verify-page").then(m => ({ default: m.InvoiceVerifyPage })));
-const WarehousesPage = lazy(() => import("@/features/warehouses/pages/warehouses-page").then(m => ({ default: m.WarehousesPage })));
-const WarehouseDetailPage = lazy(() => import("@/features/warehouses/pages/warehouse-detail-page").then(m => ({ default: m.WarehouseDetailPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
 const StaticPageDetailPage = lazy(() => import("@/features/static-pages/pages/static-page-detail-page").then(m => ({ default: m.StaticPageDetailPage })));
@@ -142,10 +140,6 @@ export default function App() {
                 <Route path="/order-flows/:id" element={<OrderFlowDetailPage />} />
                 <Route path="/order-flows" element={<OrderFlowsPage />} />
                 <Route path="/order-statuses" element={<OrderStatusesPage />} />
-              </Route>
-              <Route element={<PermissionRoute permission={PERMISSIONS.warehouses.view} />}>
-                <Route path="/warehouses/:id" element={<WarehouseDetailPage />} />
-                <Route path="/warehouses" element={<WarehousesPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />
