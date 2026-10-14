@@ -33,6 +33,7 @@ import {
   Boxes,
   ListChecks,
   KeyRound,
+  Archive,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -280,6 +281,12 @@ export function useNavGroups(): NavGroup[] {
           url: '/picking-tasks',
           icon: ListChecks,
           permissions: [PERMISSIONS.fulfillments.picking],
+        },
+        {
+          title: t('sidebar.inventory'),
+          url: '/inventory',
+          icon: Archive,
+          permissions: [PERMISSIONS.inventory.adjust],
         },
       ],
     },

@@ -282,6 +282,9 @@ export const queryKeys = {
     detail: (id?: number | string) => ['fulfillments', 'detail', id] as const,
     releaseSelection: () => ['fulfillments', 'release-selection'] as const,
   },
+  inventory: {
+    all: ['inventory'] as const,
+  },
   shipping: {
     countries: {
       all: ['shipping', 'countries'] as const,

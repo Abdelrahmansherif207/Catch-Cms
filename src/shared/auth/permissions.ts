@@ -286,6 +286,9 @@ export const PERMISSIONS = {
     picking: 'picking-execute',
     shipment: 'create-shipment',
   },
+  inventory: {
+    adjust: 'inventory-adjust',
+  },
   profile: {
     view: 'view-profile',
     update: 'update-profile',
