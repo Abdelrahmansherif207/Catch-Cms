@@ -260,6 +260,9 @@ export const queryKeys = {
     details: () => ['locations', 'detail'] as const,
     detail: (id?: number | string) => ['locations', 'detail', id] as const,
   },
+  inventory: {
+    all: ['inventory'] as const,
+  },
   shipping: {
     countries: {
       all: ['shipping', 'countries'] as const,

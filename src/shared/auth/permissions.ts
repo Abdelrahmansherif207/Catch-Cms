@@ -274,6 +274,9 @@ export const PERMISSIONS = {
     view: 'view-location',
     manage: 'manage-location',
   },
+  inventory: {
+    adjust: 'inventory-adjust',
+  },
   profile: {
     view: 'view-profile',
     update: 'update-profile',

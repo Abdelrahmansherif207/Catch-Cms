@@ -10,6 +10,7 @@ import {
   Power,
   Tags,
   Trash2,
+  PackagePlus,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/components/page-header';
@@ -27,6 +28,7 @@ import {
   useActivateLocation,
   useDeactivateLocation,
 } from '../hooks/use-locations';
+import { ReceiveStockModal } from '@/features/inventory/components/receive-stock-modal';
 import { LocationFormDialog } from '../components/location-form-dialog';
 import { LocationDeleteDialog } from '../components/location-delete-dialog';
 
@@ -56,11 +58,13 @@ export function LocationDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [receiveOpen, setReceiveOpen] = useState(false);
 
   const activateMutation = useActivateLocation();
   const deactivateMutation = useDeactivateLocation();
 
   const canManage = can(PERMISSIONS.locations.manage);
+  const canAdjustStock = can(PERMISSIONS.inventory.adjust);
 
   if (isError) {
     return (
@@ -130,8 +134,15 @@ export function LocationDetailPage() {
           { label: t('sidebar.locations'), to: locationRoutes.list },
           { label: location.code },
         ]}
-        actions={
-          <Can permission={PERMISSIONS.locations.manage}>
+                actions={
+          <>
+            <Can permission={PERMISSIONS.inventory.adjust}>
+              <Button onClick={() => setReceiveOpen(true)}>
+                <PackagePlus className="me-1.5 h-4 w-4" />
+                {t('inventory.receiveBtn')}
+              </Button>
+            </Can>
+            <Can permission={PERMISSIONS.locations.manage}>
             <>
               {location.status !== 'active' && (
                 <Button
@@ -168,7 +179,8 @@ export function LocationDetailPage() {
                 {t('locations.delete')}
               </Button>
             </>
-          </Can>
+            </Can>
+          </>
         }
       />
 
@@ -216,6 +228,14 @@ export function LocationDetailPage() {
         onOpenChange={setEditOpen}
         onSuccess={() => refetch()}
       />
+
+      {canAdjustStock && (
+        <ReceiveStockModal
+          open={receiveOpen}
+          onOpenChange={setReceiveOpen}
+          lockedLocationId={location.id}
+        />
+      )}
 
       {canManage && (
         <LocationDeleteDialog
