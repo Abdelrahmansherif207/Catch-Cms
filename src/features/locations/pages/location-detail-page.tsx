@@ -11,6 +11,7 @@ import {
   Tags,
   Trash2,
   PackagePlus,
+  Eraser,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/components/page-header';
@@ -29,6 +30,7 @@ import {
   useDeactivateLocation,
 } from '../hooks/use-locations';
 import { ReceiveStockModal } from '@/features/inventory/components/receive-stock-modal';
+import { EmptyLocationDialog } from '@/features/inventory/components/empty-location-dialog';
 import { LocationFormDialog } from '../components/location-form-dialog';
 import { LocationDeleteDialog } from '../components/location-delete-dialog';
 
@@ -59,6 +61,7 @@ export function LocationDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
+  const [emptyOpen, setEmptyOpen] = useState(false);
 
   const activateMutation = useActivateLocation();
   const deactivateMutation = useDeactivateLocation();
@@ -171,6 +174,11 @@ export function LocationDetailPage() {
                 {t('common.edit')}
               </Button>
 
+              <Button variant="outline" onClick={() => setEmptyOpen(true)}>
+                <Eraser className="me-1.5 h-4 w-4" />
+                {t('inventory.emptyButton')}
+              </Button>
+
               <Button
                 variant="destructive"
                 onClick={() => setDeleteOpen(true)}
@@ -236,6 +244,15 @@ export function LocationDetailPage() {
           lockedLocationId={location.id}
         />
       )}
+
+      <EmptyLocationDialog
+        key={emptyOpen ? 'empty-open' : 'empty-closed'}
+        locationId={location.id}
+        locationName={location.name}
+        locationCode={location.code}
+        open={emptyOpen}
+        onOpenChange={setEmptyOpen}
+      />
 
       {canManage && (
         <LocationDeleteDialog

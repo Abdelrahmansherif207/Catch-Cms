@@ -161,6 +161,13 @@ export function ReceiveStockModal({
       String(location.id) === form.watch('locationId')
   );
 
+  const submitForm = () => {
+    form.handleSubmit(
+      onSubmit,
+      (errors) => console.warn('[receive] validation blocked:', errors)
+    )();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden sm:max-w-3xl">
@@ -210,6 +217,13 @@ export function ReceiveStockModal({
                 onSelect={(id, name) => {
                   setProductId(id);
                   setProductName(name);
+                  // The picker lives OUTSIDE the RHF form — sync the choice
+                  // into the form value or validation blocks the submit with
+                  // an INVISIBLE "product is required" (root cause found via
+                  // the instrumentation round: chip state is NOT form state).
+                  form.setValue('productId', String(id), {
+                    shouldValidate: true,
+                  });
                 }}
               />
               <div className="flex items-center justify-end gap-2">
@@ -231,7 +245,10 @@ export function ReceiveStockModal({
             </div>
           ) : (
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitForm();
+              }}
               noValidate
               className="space-y-4"
             >
@@ -243,6 +260,11 @@ export function ReceiveStockModal({
                   <p className="truncate text-sm font-medium">
                     {productName ?? `#${productId ?? ''}`}
                   </p>
+                  {registerError('productId') && (
+                    <p className="text-xs text-destructive">
+                      {registerError('productId')}
+                    </p>
+                  )}
                 </div>
                 <Button
                   type="button"
@@ -320,7 +342,16 @@ export function ReceiveStockModal({
                 >
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={isPending}>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  onClick={(event) => {
+                    // Click-invoked submit: keeps the path out of native
+                    // form-submit event semantics inside the dialog portal.
+                    event.preventDefault();
+                    submitForm();
+                  }}
+                >
                   {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {isPending ? t('inventory.receiving') : t('inventory.receiveBtn')}
                 </Button>

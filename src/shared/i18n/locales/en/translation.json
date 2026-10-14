@@ -2971,9 +2971,38 @@
     "change": "Change",
     "lockedBin": "Receiving into bin",
     "stats": {
-      "totalBins": "Total bins",
+      "totalSkuUnits": "Total SKU units",
       "activeBins": "Active bins",
-      "totalWarehouses": "Warehouses"
+      "todayTransactions": "Today's transactions"
+    },
+    "inBin": "in bin",
+    "reservedHint": "held",
+    "placementsNote": "Bin quantities are informational hints; the server validates real availability.",
+    "emptyTitle": "Empty bin",
+    "emptyButton": "Empty bin",
+    "emptying": "Emptying...",
+    "emptied": "Bin emptied successfully",
+    "alreadyEmpty": "This bin is already empty",
+    "emptyError": "Failed to empty the bin",
+    "emptyConfirm": "Empty bin",
+    "emptyDescription": "This removes the bin's zero-stock product placement rows from the system.",
+    "emptyHint": "The bin itself is kept. Stocked bins and bins with open picking work are refused by the server.",
+    "emptyBlocked": "The server refused this operation",
+    "emptyResultNote": "The bin stays in place — only the empty product rows were removed.",
+    "removedRows": "Rows removed",
+    "remainingRows": "Rows remaining",
+    "feedTitle": "Recent activity",
+    "feedSubtitle": "The stock operations ledger, newest first.",
+    "feedEmpty": "No stock operations yet",
+    "feedRefresh": "Refresh",
+    "feed": {
+      "receipt": "Receipt",
+      "transfer": "Transfer",
+      "status": {
+        "completed": "Completed",
+        "processing": "In progress",
+        "failed": "Failed"
+      }
     },
     "done": "Done",
     "stockLevelNow": "New stock level",

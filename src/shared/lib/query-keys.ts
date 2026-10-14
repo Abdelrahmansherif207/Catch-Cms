@@ -284,6 +284,13 @@ export const queryKeys = {
   },
   inventory: {
     all: ['inventory'] as const,
+    overview: (warehouseId?: number) =>
+      ['inventory', 'overview', warehouseId ?? null] as const,
+    productPlacements: (
+      productId: number | string,
+      params?: object
+    ) => ['inventory', 'placements', productId, params ?? null] as const,
+    stockOperations: () => ['inventory', 'stock-operations'] as const,
   },
   shipping: {
     countries: {
