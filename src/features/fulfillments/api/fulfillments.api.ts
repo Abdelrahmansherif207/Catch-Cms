@@ -2,6 +2,7 @@ import { axiosClient } from '@/shared/api';
 import type {
   ApiErrorResponse,
 } from '@/shared/api';
+import type { CreatePackingTaskResponseData } from '@/features/packing-tasks/types/packing-task.types';
 import type {
   ApiResponse,
   AssignFulfillmentData,
@@ -97,6 +98,20 @@ export async function assignItemPlacement(
 export async function createPickingTasks(id: number): Promise<ApiResponse<unknown[]>> {
   const { data } = await axiosClient.post<ApiResponse<unknown[]>>(
     '/admin/fulfillments/' + id + '/create-tasks'
+  );
+  return data;
+}
+
+/**
+ * Opens the packing task on a `picked` fulfillment (201 fresh; fulfillment
+ * flips to `packing`). NOT idempotent: a second open task 409s with the
+ * live conflict text; wrong-status 422s naming the status.
+ */
+export async function createPackingTaskForFulfillment(
+  id: number
+): Promise<CreatePackingTaskResponseData> {
+  const { data } = await axiosClient.post<CreatePackingTaskResponseData>(
+    '/admin/fulfillments/' + id + '/create-packing-task'
   );
   return data;
 }

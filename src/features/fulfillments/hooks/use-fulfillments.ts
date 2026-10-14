@@ -10,6 +10,7 @@ import {
   assignFulfillment,
   assignItemPlacement,
   createPickingTasks,
+  createPackingTaskForFulfillment,
   completePicking,
   cancelFulfillment,
   createShipment,
@@ -137,6 +138,28 @@ export function useCreatePickingTasks() {
     },
     onError: (error) => {
       handleApiError(error, t('fulfillments.tasksError'));
+    },
+  });
+}
+
+/**
+ * create-packing-task: 201 fresh (NOT idempotent — a second open task
+ * 409s with the live conflict text, wrong-status 422s naming the status).
+ * Packing tasks mirror onto both the fulfillments and packingTasks caches.
+ */
+export function useCreatePackingTask() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (id: number) => createPackingTaskForFulfillment(id),
+    onSuccess: () => {
+      toast.success(t('fulfillments.packingTaskStarted'));
+      invalidateAll(queryClient);
+      queryClient.invalidateQueries({ queryKey: queryKeys.packingTasks.all });
+    },
+    onError: (error) => {
+      handleApiError(error, t('fulfillments.packingTaskError'));
     },
   });
 }

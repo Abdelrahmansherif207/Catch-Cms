@@ -283,6 +283,12 @@ export function useNavGroups(): NavGroup[] {
           permissions: [PERMISSIONS.fulfillments.picking],
         },
         {
+          title: t('sidebar.packingTasks'),
+          url: '/packing-tasks',
+          icon: Package,
+          permissions: [PERMISSIONS.fulfillments.view],
+        },
+        {
           title: t('sidebar.inventory'),
           url: '/inventory',
           icon: Archive,

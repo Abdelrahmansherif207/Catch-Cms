@@ -274,6 +274,20 @@ export const queryKeys = {
     details: () => ['picking-tasks', 'detail'] as const,
     detail: (id?: number | string) => ['picking-tasks', 'detail', id] as const,
   },
+  packingTasks: {
+    all: ['packing-tasks'] as const,
+    lists: () => ['packing-tasks', 'list'] as const,
+    list: <P extends object>(params: P) => ['packing-tasks', 'list', params] as const,
+    details: () => ['packing-tasks', 'detail'] as const,
+    detail: (id?: number | string) => ['packing-tasks', 'detail', id] as const,
+  },
+  packages: {
+    all: ['packages'] as const,
+    lists: () => ['packages', 'list'] as const,
+    list: <P extends object>(params: P) => ['packages', 'list', params] as const,
+    details: () => ['packages', 'detail'] as const,
+    detail: (id?: number | string) => ['packages', 'detail', id] as const,
+  },
   fulfillments: {
     all: ['fulfillments'] as const,
     lists: () => ['fulfillments', 'list'] as const,
