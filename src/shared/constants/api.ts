@@ -8,6 +8,8 @@ export const NO_TIMEOUT = 0;
 export const STORAGE_KEYS = {
   TOKEN: "auth_token",
   LANGUAGE: "language",
+  /** Persistent release-selection basket (order ids awaiting fulfillment release). */
+  RELEASE_SELECTION: "fulfillment_release_selection",
 } as const;
 
 export const DEFAULT_LANGUAGE = "ar";

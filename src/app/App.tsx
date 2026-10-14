@@ -52,6 +52,10 @@ const WarehouseDetailPage = lazy(() => import("@/features/warehouses/pages/wareh
 const LocationsPage = lazy(() => import("@/features/locations/pages/locations-page").then(m => ({ default: m.LocationsPage })));
 const WarehouseLocationDetailPage = lazy(() => import("@/features/locations/pages/location-detail-page").then(m => ({ default: m.LocationDetailPage })));
 const PackingStationsPage = lazy(() => import("@/features/packing-stations/pages/packing-stations-page").then(m => ({ default: m.PackingStationsPage })));
+const FulfillmentsPage = lazy(() => import("@/features/fulfillments/pages/fulfillments-page").then(m => ({ default: m.FulfillmentsPage })));
+const FulfillmentDetailRoute = lazy(() => import("@/features/fulfillments/pages/fulfillment-detail-page").then(m => ({ default: m.FulfillmentDetailRoute })));
+const PickingTasksPage = lazy(() => import("@/features/picking-tasks/pages/picking-tasks-page").then(m => ({ default: m.PickingTasksPage })));
+const PickingTaskDetailRoute = lazy(() => import("@/features/picking-tasks/pages/picking-task-detail-page").then(m => ({ default: m.PickingTaskDetailRoute })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
 const StaticPageDetailPage = lazy(() => import("@/features/static-pages/pages/static-page-detail-page").then(m => ({ default: m.StaticPageDetailPage })));
@@ -156,6 +160,14 @@ export default function App() {
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.packingStations.view} />}>
                 <Route path="/packing-stations" element={<PackingStationsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.fulfillments.view} />}>
+                <Route path="/fulfillments/:id" element={<FulfillmentDetailRoute />} />
+                <Route path="/fulfillments" element={<FulfillmentsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.fulfillments.picking} />}>
+                <Route path="/picking-tasks/:id" element={<PickingTaskDetailRoute />} />
+                <Route path="/picking-tasks" element={<PickingTasksPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.invoices.view} />}>
                 <Route path="/invoices" element={<InvoicesPage />} />

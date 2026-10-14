@@ -30,6 +30,8 @@ import {
   Workflow,
   Warehouse,
   PackageCheck,
+  Boxes,
+  ListChecks,
   KeyRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -266,6 +268,18 @@ export function useNavGroups(): NavGroup[] {
           url: '/packing-stations',
           icon: PackageCheck,
           permissions: [PERMISSIONS.packingStations.view],
+        },
+        {
+          title: t('sidebar.fulfillments'),
+          url: '/fulfillments',
+          icon: Boxes,
+          permissions: [PERMISSIONS.fulfillments.view],
+        },
+        {
+          title: t('sidebar.pickingTasks'),
+          url: '/picking-tasks',
+          icon: ListChecks,
+          permissions: [PERMISSIONS.fulfillments.picking],
         },
       ],
     },

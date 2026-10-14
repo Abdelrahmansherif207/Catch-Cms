@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { MoreHorizontal, Eye, Trash2, Layers } from 'lucide-react';
+import { MoreHorizontal, Eye, Trash2, Layers, PackageCheck, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Table,
@@ -27,6 +27,8 @@ import { BulkStatusDialog } from './bulk-status-dialog';
 import { usePermissions } from '@/shared/auth/guards';
 import { PERMISSIONS } from '@/shared/auth/permissions';
 import { orderRoutes } from '../routes/order.routes';
+import { useReleaseSelection, RELEASE_SELECTION_MAX } from '../hooks/use-release-selection';
+import { ReleaseFulfillmentDialog } from '@/features/fulfillments/components/release-fulfillment-dialog';
 import type { OrderListItem } from '../types/order.types';
 
 interface OrdersTableProps {
@@ -40,24 +42,44 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const [deleteTarget, setDeleteTarget] = useState<OrderListItem | null>(null);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
-  const selectedCount = selected.size;
+  const [releaseOpen, setReleaseOpen] = useState(false);
+
+  // Persistent selection basket (localStorage) — survives refreshes and
+  // connectivity loss so an operator can stage a release batch over time.
+  const {
+    selected,
+    isSelected,
+    toggle,
+    toggleMany,
+    clearSelected,
+    clearAll,
+  } = useReleaseSelection();
 
   const canUpdateStatus = can(PERMISSIONS.orders.updateStatus);
-  const allSelected = data.length > 0 && data.every((o) => selected.has(o.id));
+  const canRelease = can(PERMISSIONS.fulfillments.release);
+  const showCheckbox = canUpdateStatus || canRelease;
+  const selectedCount = selected.size;
+
+  const pageSelected = data.filter((o) => isSelected(o.id));
+  const allSelected = data.length > 0 && pageSelected.length === data.length;
 
   const toggleAll = () => {
-    setSelected(allSelected ? new Set() : new Set(data.map((o) => o.id)));
+    if (allSelected) {
+      // Un-ticking the header clears ONLY the current page — ids on other
+      // pages are kept in the basket.
+      clearSelected(data.map((o) => o.id));
+    } else {
+      toggleMany(data.map((o) => o.id));
+    }
   };
 
   const toggleOne = (id: number) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    toggle(id);
+  };
+
+  const clearBasket = () => {
+    clearAll();
   };
 
   if (isLoading) {
@@ -66,22 +88,41 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
 
   return (
     <>
-      {selectedCount > 0 && canUpdateStatus && (
-        <div className="flex items-center justify-between rounded-2xl border bg-card px-4 py-3 shadow-card">
+      {selectedCount > 0 && (canUpdateStatus || canRelease) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-card px-4 py-3 shadow-card">
           <span className="text-sm text-muted-foreground">
             {t('orders.selectedCount', { count: selectedCount })}
+            {selectedCount >= RELEASE_SELECTION_MAX && (
+              <span className="ms-1 text-xs text-warning">
+                {t('fulfillments.releaseSelectionCap', { max: RELEASE_SELECTION_MAX })}
+              </span>
+            )}
           </span>
-          <Button size="sm" onClick={() => setBulkOpen(true)}>
-            <Layers className="me-2 h-4 w-4" />
-            {t('orders.bulkStatus')}
-          </Button>
+          <span className="flex flex-wrap items-center gap-2">
+            {canRelease && (
+              <Button size="sm" onClick={() => setReleaseOpen(true)}>
+                <PackageCheck className="me-2 h-4 w-4" />
+                {t('fulfillments.releaseAction')}
+              </Button>
+            )}
+            {canUpdateStatus && (
+              <Button size="sm" variant="outline" onClick={() => setBulkOpen(true)}>
+                <Layers className="me-2 h-4 w-4" />
+                {t('orders.bulkStatus')}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={clearBasket}>
+              <X className="me-1 h-4 w-4" />
+              {t('common.clear')}
+            </Button>
+          </span>
         </div>
       )}
       <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              {canUpdateStatus && (
+              {showCheckbox && (
                 <TableHead className="w-10">
                   <Checkbox
                     checked={allSelected}
@@ -102,7 +143,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canUpdateStatus ? 8 : 7}>
+                <TableCell colSpan={showCheckbox ? 8 : 7}>
                   <DataEmptyState title={t('common.noData')} className="border-0" />
                 </TableCell>
               </TableRow>
@@ -116,7 +157,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                       'bg-primary/10 shadow-[inset_2px_0_0_0_var(--primary)]'
                   )}
                 >
-                  {canUpdateStatus && (
+                  {showCheckbox && (
                     <TableCell>
                       <Checkbox
                         checked={selected.has(order.id)}
@@ -164,6 +205,12 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                           <Eye className="me-2 h-4 w-4" />
                           {t('common.view')}
                         </DropdownMenuItem>
+                        {!selected.has(order.id) && canRelease && (
+                          <DropdownMenuItem onClick={() => toggleOne(order.id)}>
+                            <PackageCheck className="me-2 h-4 w-4" />
+                            {t('fulfillments.addRowToRelease')}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => setDeleteTarget(order)}
@@ -200,9 +247,23 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
           onOpenChange={(open) => {
             if (!open) {
               setBulkOpen(false);
-              setSelected(new Set());
+              clearAll();
               onRefresh();
             }
+          }}
+        />
+      )}
+
+      {canRelease && (
+        <ReleaseFulfillmentDialog
+          orderIds={[...selected]}
+          open={releaseOpen}
+          onOpenChange={setReleaseOpen}
+          onReleased={(releasedOrderIds) => {
+            // Selected orders that produced a fulfillment leave the basket;
+            // refused ones stay so the operator can retry after fixing.
+            clearSelected(releasedOrderIds);
+            onRefresh();
           }}
         />
       )}

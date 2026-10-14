@@ -278,6 +278,14 @@ export const PERMISSIONS = {
     view: 'view-fulfillment',
     manage: 'manage-warehouse',
   },
+  fulfillments: {
+    view: 'view-fulfillment',
+    manage: 'manage-fulfillment',
+    release: 'fulfillment.create',
+    cancel: 'fulfillment.cancel',
+    picking: 'picking-execute',
+    shipment: 'create-shipment',
+  },
   profile: {
     view: 'view-profile',
     update: 'update-profile',
