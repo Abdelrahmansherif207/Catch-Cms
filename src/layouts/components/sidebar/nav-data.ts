@@ -30,6 +30,7 @@ import {
   Workflow,
   Warehouse,
   KeyRound,
+  Boxes,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -259,6 +260,12 @@ export function useNavGroups(): NavGroup[] {
           url: '/locations',
           icon: MapPin,
           permissions: [PERMISSIONS.locations.view],
+        },
+        {
+          title: t('sidebar.inventory'),
+          url: '/inventory',
+          icon: Boxes,
+          permissions: [PERMISSIONS.inventory.adjust],
         },
       ],
     },

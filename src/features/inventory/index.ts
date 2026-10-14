@@ -1,6 +1,13 @@
-// Public API — features/inventory
-// Export: types, hooks, constants, permissions, routes, pages
-
-// export type {} from './types/inventory.types';
-// export { inventoryRoutes } from './routes/inventory.routes';
-// export { INVENTORY_PERMISSIONS } from './permissions/inventory.permissions';
+export { InventoryPage } from './pages/inventory-page';
+export { useReceiveStock, useTransferStock } from './hooks/use-inventory';
+export { inventoryRoutes } from './routes/inventory.routes';
+export { ReceiveStockModal } from './components/receive-stock-modal';
+export { TransferStockModal } from './components/transfer-stock-modal';
+export type {
+  StockOperation,
+  StockPlacement,
+  ReceiveStockData,
+  TransferStockData,
+  ReceiveStockResponse,
+  TransferStockResponse,
+} from './types/inventory.types';
