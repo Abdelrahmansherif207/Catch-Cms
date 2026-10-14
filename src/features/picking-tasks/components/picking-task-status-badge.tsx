@@ -10,14 +10,14 @@ interface PickingTaskStatusBadgeProps {
 
 type Tone = 'success' | 'warning' | 'destructive' | 'info' | 'muted';
 
-/** Six-state pool mapped onto the five semantic soft tones. */
+/** Six-state pool — terminal states render neutral, never red. */
 const TONES: Record<PickingTaskStatus, Tone> = {
   pending: 'warning',
   assigned: 'info',
   picking: 'info',
   picked: 'success',
   skipped: 'muted',
-  cancelled: 'destructive',
+  cancelled: 'muted',
 };
 
 const TONE_CLASSES: Record<Tone, string> = {

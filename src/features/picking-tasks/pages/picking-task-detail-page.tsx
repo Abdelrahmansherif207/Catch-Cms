@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowLeftRight,
+  ArrowRight,
   CheckCircle2,
   ClipboardList,
   Hand,
@@ -13,6 +14,7 @@ import {
   RotateCcw,
   ScanBarcode,
   SkipForward,
+  Waves,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
@@ -28,6 +30,10 @@ import {
 import { isTerminalTask, type PickingTaskDetail } from '../types/picking-task.types';
 import { taskProgress } from '../schemas/picking-task.schema';
 import { pickingTaskRoutes } from '../routes/picking-task.routes';
+import { batchRoutes } from '@/features/batches/routes/batch.routes';
+import { useBatch, useBatchNextTask } from '@/features/batches/hooks/use-batches';
+import { hasNextTask } from '@/features/batches/types/batch.types';
+import { sequencePosition } from '@/features/batches/schemas/batch.schema';
 import { PickingTaskStatusBadge } from '../components/picking-task-status-badge';
 import { RecordPickDialog } from '../components/record-pick-dialog';
 import { ConfirmPickDialog } from '../components/confirm-pick-dialog';
@@ -50,9 +56,24 @@ export function PickingTaskDetailRoute() {
 
 export function PickingTaskDetailPage({ id }: { id: number }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = usePickingTask(id);
   const claimMutation = useClaimPickingTask();
   const releaseMutation = useReleasePickingClaim();
+
+  const detail = data?.data;
+
+  // Batch context (shared cache with the batch pages) — only fetched
+  // when this task belongs to a wave batch.
+  const batchQuery = useBatch(detail?.batch_id ?? undefined);
+  const batch = batchQuery.data?.data ?? null;
+  const batchActive =
+    batch !== null && batch.status !== 'completed' && batch.status !== 'cancelled';
+
+  // Advance loop: the engine's next pending task once this one is picked.
+  const nextQuery = useBatchNextTask(batchActive ? (detail?.batch_id ?? undefined) : undefined);
+  const nextTask =
+    nextQuery.data && hasNextTask(nextQuery.data) ? nextQuery.data.data : null;
 
   const [pickOpen, setPickOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -66,8 +87,6 @@ export function PickingTaskDetailPage({ id }: { id: number }) {
     opSeqRef.current += 1;
     return opSeqRef.current;
   };
-
-  const detail = data?.data;
 
   if (isError) {
     return <DataErrorState onRetry={() => refetch()} />;
@@ -118,6 +137,15 @@ export function PickingTaskDetailPage({ id }: { id: number }) {
           </span>
         )}
       </div>
+
+      {/* Batch arrival banner — "you are here" in the wave. */}
+      {detail.batch_id !== null && batch && (
+        <BatchContextBanner
+          batchNumber={batch.batch_number}
+          batchId={batch.id}
+          position={sequencePosition(batch.tasks, detail.id)}
+        />
+      )}
 
       {/* Progress card — picked/total as a plain-language bar. */}
       <section className="rounded-2xl border bg-card p-4 shadow-card">
@@ -261,6 +289,42 @@ export function PickingTaskDetailPage({ id }: { id: number }) {
         </section>
       )}
 
+      {/* Advance loop — picked task inside an active batch: the operator
+          walks the wave without navigating back manually. */}
+      {detail.status === 'picked' && detail.batch_id !== null && batchActive && (
+        <section className="rounded-2xl border-2 border-primary/40 bg-card p-4 shadow-card">
+          {nextTask ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm">
+                <span className="font-semibold">{t('pickingTasks.nextTaskTitle')}</span>
+                <br />
+                <span className="text-muted-foreground">
+                  {t('pickingTasks.nextTaskDescription', { id: nextTask.id })}
+                </span>
+              </p>
+              <Button size="lg" onClick={() => navigate(pickingTaskRoutes.detail(nextTask.id))}>
+                {t('pickingTasks.nextTaskAction')}
+                <ArrowRight className="ms-1.5 h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="flex items-center gap-2 text-sm font-semibold text-success">
+                <CheckCircle2 className="h-5 w-5" />
+                {t('pickingTasks.batchWaveDone')}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => navigate(batchRoutes.detail(detail.batch_id as number))}
+              >
+                {t('pickingTasks.backToBatchFinish')}
+                <ArrowRight className="ms-1.5 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Audit block — op watermark + scan log + notes. */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border bg-card p-4 shadow-card">
@@ -328,6 +392,49 @@ export function PickingTaskDetailPage({ id }: { id: number }) {
       {reallocateOpen && (
         <ReallocateTaskDialog task={detail} open onOpenChange={setReallocateOpen} />
       )}
+    </div>
+  );
+}
+
+/**
+ * Arrival highlight: the task IS the page, so the banner carries the
+ * wave context — "Task 2 of 5 in BATCH-…" with a way back to the batch.
+ */
+function BatchContextBanner({
+  batchNumber,
+  batchId,
+  position,
+}: {
+  batchNumber: string;
+  batchId: number;
+  position: { index: number; total: number };
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary-soft/40 px-4 py-3">
+      <p className="flex items-center gap-2.5 text-sm">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary font-mono text-sm font-bold text-white">
+          <Waves className="h-4 w-4" />
+        </span>
+        <span>
+          <span className="block font-semibold">
+            {t('pickingTasks.batchWavePosition', {
+              index: position.index,
+              total: position.total,
+            })}
+          </span>
+          <span className="block font-mono text-xs text-muted-foreground">
+            {batchNumber}
+          </span>
+        </span>
+      </p>
+      <Link
+        to={batchRoutes.detail(batchId)}
+        className="text-xs font-medium text-primary hover:underline"
+      >
+        {t('pickingTasks.backToBatch')}
+      </Link>
     </div>
   );
 }

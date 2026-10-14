@@ -12,7 +12,7 @@ interface PackingStationStatusBadgeProps {
 // `active` and `inactive` and reuses the warning/amber semantics.
 const STYLES: Record<PackingStationStatus, string> = {
   active: 'border-transparent bg-success-soft text-success',
-  inactive: 'border-transparent bg-destructive-soft text-destructive',
+  inactive: 'border-transparent bg-muted text-muted-foreground',
   maintenance: 'border-transparent bg-warning-soft text-warning',
 };
 

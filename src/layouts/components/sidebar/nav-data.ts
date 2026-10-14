@@ -32,8 +32,9 @@ import {
   PackageCheck,
   Boxes,
   ListChecks,
-  KeyRound,
+  Layers,
   Archive,
+  KeyRound,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -281,6 +282,12 @@ export function useNavGroups(): NavGroup[] {
           url: '/picking-tasks',
           icon: ListChecks,
           permissions: [PERMISSIONS.fulfillments.picking],
+        },
+        {
+          title: t('sidebar.batches'),
+          url: '/batches',
+          icon: Layers,
+          permissions: [PERMISSIONS.batches.view],
         },
         {
           title: t('sidebar.inventory'),

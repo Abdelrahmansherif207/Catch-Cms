@@ -274,6 +274,17 @@ export const queryKeys = {
     details: () => ['picking-tasks', 'detail'] as const,
     detail: (id?: number | string) => ['picking-tasks', 'detail', id] as const,
   },
+  batches: {
+    all: ['batches'] as const,
+    lists: () => ['batches', 'list'] as const,
+    list: <P extends object>(params: P) => ['batches', 'list', params] as const,
+    details: () => ['batches', 'detail'] as const,
+    detail: (id?: number | string) => ['batches', 'detail', id] as const,
+    nextTask: (id?: number | string) => ['batches', 'next-task', id] as const,
+    pending: () => ['batches', 'pending-fulfillments'] as const,
+    pendingFulfillments: <P extends object>(params: P) =>
+      ['batches', 'pending-fulfillments', params] as const,
+  },
   fulfillments: {
     all: ['fulfillments'] as const,
     lists: () => ['fulfillments', 'list'] as const,

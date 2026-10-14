@@ -56,6 +56,8 @@ const FulfillmentsPage = lazy(() => import("@/features/fulfillments/pages/fulfil
 const FulfillmentDetailRoute = lazy(() => import("@/features/fulfillments/pages/fulfillment-detail-page").then(m => ({ default: m.FulfillmentDetailRoute })));
 const PickingTasksPage = lazy(() => import("@/features/picking-tasks/pages/picking-tasks-page").then(m => ({ default: m.PickingTasksPage })));
 const PickingTaskDetailRoute = lazy(() => import("@/features/picking-tasks/pages/picking-task-detail-page").then(m => ({ default: m.PickingTaskDetailRoute })));
+const BatchesPage = lazy(() => import("@/features/batches/pages/batches-page").then(m => ({ default: m.BatchesPage })));
+const BatchDetailRoute = lazy(() => import("@/features/batches/pages/batch-detail-page").then(m => ({ default: m.BatchDetailRoute })));
 const InventoryPage = lazy(() => import("@/features/inventory/pages/inventory-page").then(m => ({ default: m.InventoryPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
@@ -169,6 +171,10 @@ export default function App() {
               <Route element={<PermissionRoute permission={PERMISSIONS.fulfillments.picking} />}>
                 <Route path="/picking-tasks/:id" element={<PickingTaskDetailRoute />} />
                 <Route path="/picking-tasks" element={<PickingTasksPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.batches.view} />}>
+                <Route path="/batches/:id" element={<BatchDetailRoute />} />
+                <Route path="/batches" element={<BatchesPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.inventory.adjust} />}>
                 <Route path="/inventory" element={<InventoryPage />} />

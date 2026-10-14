@@ -10,7 +10,7 @@ interface FulfillmentStatusBadgeProps {
 
 type Tone = 'success' | 'warning' | 'destructive' | 'info' | 'muted';
 
-/** Eight-state lifecycle mapped onto the five semantic soft tones. */
+/** Eight-state lifecycle — cancelled renders neutral, never red. */
 const TONES: Record<FulfillmentStatus, Tone> = {
   pending: 'warning',
   picking: 'info',
@@ -19,7 +19,7 @@ const TONES: Record<FulfillmentStatus, Tone> = {
   ready_to_ship: 'info',
   shipped: 'info',
   delivered: 'success',
-  cancelled: 'destructive',
+  cancelled: 'muted',
 };
 
 const TONE_CLASSES: Record<Tone, string> = {

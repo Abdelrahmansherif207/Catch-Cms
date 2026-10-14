@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/components/page-header';
 import { DataErrorState } from '@/shared/components/data-state';
@@ -140,7 +141,14 @@ export function PickingTasksPage() {
                 onClick={() => setStatusChip(chip)}
               >
                 {t('pickingTasks.chips.' + chip)}
-                <span className="ms-1.5 rounded-full bg-muted px-1.5 text-xs">
+                <span
+                  className={cn(
+                    'ms-1.5 rounded-full px-1.5 text-xs',
+                    statusChip === chip
+                      ? 'bg-white/25 text-white'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
                   {chipCounts[chip]}
                 </span>
               </Button>

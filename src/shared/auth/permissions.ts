@@ -286,6 +286,11 @@ export const PERMISSIONS = {
     picking: 'picking-execute',
     shipment: 'create-shipment',
   },
+  batches: {
+    view: 'view-fulfillment',
+    manage: 'batch.manage',
+    operate: 'batch.operate',
+  },
   inventory: {
     adjust: 'inventory-adjust',
   },
