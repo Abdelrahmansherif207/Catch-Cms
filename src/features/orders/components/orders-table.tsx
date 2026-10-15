@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
-import { Checkbox } from '@/shared/ui/checkbox';
+import { SelectCheckbox } from '@/shared/components/select-checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -124,10 +124,11 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
             <TableRow>
               {showCheckbox && (
                 <TableHead className="w-10">
-                  <Checkbox
+                  <SelectCheckbox
                     checked={allSelected}
+                    indeterminate={!allSelected && pageSelected.length > 0}
                     onCheckedChange={toggleAll}
-                    aria-label={t('orders.selectAll')}
+                    ariaLabel={t('orders.selectAll')}
                   />
                 </TableHead>
               )}
@@ -159,10 +160,10 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                 >
                   {showCheckbox && (
                     <TableCell>
-                      <Checkbox
+                      <SelectCheckbox
                         checked={selected.has(order.id)}
                         onCheckedChange={() => toggleOne(order.id)}
-                        aria-label={t('orders.selectRow', { id: order.id })}
+                        ariaLabel={t('orders.selectRow', { id: order.id })}
                       />
                     </TableCell>
                   )}

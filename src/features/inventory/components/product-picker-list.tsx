@@ -12,20 +12,21 @@ import {
   useReceivableProductsPage,
   usePickerCategories,
 } from '../hooks/use-inventory';
-import { isReceivableProduct } from '../types/inventory.types';
+import { isReceivableProduct, type PickerVariant } from '../types/inventory.types';
 import type { Product } from '@/features/products/types/product.types';
 
 interface ProductPickerListProps {
   selectedId: number | null;
-  onSelect: (productId: number, name: string) => void;
+  onSelect: (productId: number, name: string, variants: PickerVariant[]) => void;
 }
 
 /**
  * Step 1 of both stock modals: a filtered, paged slice of the REAL admin
  * products index (search + status + category + sort + direction), from which
  * the operator selects EXACTLY ONE product. Rows the backend would always
- * refuse (digital, variable / with-variants) never appear — the visible list
- * only offers receivable rows.
+ * refuse (digital, variable parents without SKUs) never appear — variant
+ * products STAY (the modals then require a variant pick, per the receipts/
+ * transfers `product_variant_id` contract).
  */
 export function ProductPickerList({ selectedId, onSelect }: ProductPickerListProps) {
   const { t } = useTranslation();
@@ -170,7 +171,9 @@ export function ProductPickerList({ selectedId, onSelect }: ProductPickerListPro
           <button
             key={product.id}
             type="button"
-            onClick={() => onSelect(product.id, product.name)}
+            onClick={() =>
+              onSelect(product.id, product.name, product.variants ?? [])
+            }
             className={cn(
               'flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start transition-colors hover:bg-accent',
               product.id === selectedId && 'bg-accent'

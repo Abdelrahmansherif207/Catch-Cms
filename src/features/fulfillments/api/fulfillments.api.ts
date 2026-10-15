@@ -2,10 +2,15 @@ import { axiosClient } from '@/shared/api';
 import type {
   ApiErrorResponse,
 } from '@/shared/api';
+import type { CreatePackingTaskResponseData } from '@/features/packing-tasks/types/packing-task.types';
 import type {
   ApiResponse,
   AssignFulfillmentData,
   AssignPlacementData,
+  BulkCreatePackingTasksData,
+  BulkCreatePackingTasksResponse,
+  BulkCreateShipmentsData,
+  BulkCreateShipmentsResponse,
   BulkReleaseResponseData,
   CancelFulfillmentData,
   CreateShipmentData,
@@ -71,6 +76,38 @@ export async function releaseFulfillments(
   );
   return data;
 }
+/**
+ * Bulk create packing tasks (POST /admin/fulfillments/create-packing-tasks):
+ * ALWAYS 200 — a fault-tolerant report lives in `data` (successful/failed/
+ * summary). Ineligible rows land in `failed[]` with the verbatim engine
+ * reason; unknown ids report "Fulfillment #id not found". Request-level
+ * 422 (validation) and higher statuses relay as-is via the axios path.
+ */
+export async function bulkCreatePackingTasks(
+  payload: BulkCreatePackingTasksData
+): Promise<BulkCreatePackingTasksResponse> {
+  const { data } = await axiosClient.post<BulkCreatePackingTasksResponse>(
+    '/admin/fulfillments/create-packing-tasks',
+    payload
+  );
+  return data;
+}
+
+/**
+ * Bulk create shipment labels (POST /admin/fulfillments/create-shipments):
+ * ALWAYS 200 — fault-tolerant report in `data` (successful/failed/summary);
+ * courier/shipping_method/notes apply to every row. Request-level 422
+ * (validation) relays as-is via the axios error path.
+ */
+export async function bulkCreateShipments(
+  payload: BulkCreateShipmentsData
+): Promise<BulkCreateShipmentsResponse> {
+  const { data } = await axiosClient.post<BulkCreateShipmentsResponse>(
+    '/admin/fulfillments/create-shipments',
+    payload
+  );
+  return data;
+}
 
 export async function assignFulfillment(
   id: number,
@@ -97,6 +134,20 @@ export async function assignItemPlacement(
 export async function createPickingTasks(id: number): Promise<ApiResponse<unknown[]>> {
   const { data } = await axiosClient.post<ApiResponse<unknown[]>>(
     '/admin/fulfillments/' + id + '/create-tasks'
+  );
+  return data;
+}
+
+/**
+ * Opens the packing task on a `picked` fulfillment (201 fresh; fulfillment
+ * flips to `packing`). NOT idempotent: a second open task 409s with the
+ * live conflict text; wrong-status 422s naming the status.
+ */
+export async function createPackingTaskForFulfillment(
+  id: number
+): Promise<CreatePackingTaskResponseData> {
+  const { data } = await axiosClient.post<CreatePackingTaskResponseData>(
+    '/admin/fulfillments/' + id + '/create-packing-task'
   );
   return data;
 }

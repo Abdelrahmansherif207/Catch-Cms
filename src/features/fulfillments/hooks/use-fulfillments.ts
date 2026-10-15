@@ -9,6 +9,9 @@ import {
   releaseFulfillments,
   assignFulfillment,
   assignItemPlacement,
+  bulkCreatePackingTasks,
+  bulkCreateShipments,
+  createPackingTaskForFulfillment,
   createPickingTasks,
   completePicking,
   cancelFulfillment,
@@ -19,6 +22,8 @@ import {
 import type {
   AssignFulfillmentData,
   AssignPlacementData,
+  BulkCreatePackingTasksData,
+  BulkCreateShipmentsData,
   BulkReleaseResponseData,
   CancelFulfillmentData,
   CreateShipmentData,
@@ -36,6 +41,10 @@ function handleApiError(error: unknown, fallbackMessage: string): ApiErrorRespon
 function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: queryKeys.fulfillments.lists() });
   queryClient.invalidateQueries({ queryKey: queryKeys.fulfillments.details() });
+}
+
+function invalidatePackingTasks(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: queryKeys.packingTasks.all });
 }
 
 export function useFulfillments(params: FetchFulfillmentsParams = {}) {
@@ -89,6 +98,76 @@ export function useReleaseFulfillments() {
   });
 }
 
+/**
+ * Bulk create packing tasks — the bulk path is ALWAYS 200 with a
+ * report inside `data`; per-item failures never reject. Toast mirrors
+ * the bulk-release phrasing (full success vs partial), and both the
+ * fulfillments cache and the packing-task queue are invalidated since
+ * the engine flipped statuses on the successful rows.
+ */
+export function useBulkCreatePackingTasks() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (payload: BulkCreatePackingTasksData) => bulkCreatePackingTasks(payload),
+    onSuccess: (response) => {
+      const summary = response.data.summary;
+      if (summary.success_count === 0) {
+        toast.error(t('fulfillments.bulkPackingAllFailed', { count: summary.failed_count }));
+      } else if (summary.failed_count === 0) {
+        toast.success(t('fulfillments.bulkPackingAllCreated', { count: summary.success_count }));
+      } else {
+        toast.warning(
+          t('fulfillments.bulkPackingPartial', {
+            created: summary.success_count,
+            failed: summary.failed_count,
+          })
+        );
+      }
+      invalidateAll(queryClient);
+      invalidatePackingTasks(queryClient);
+    },
+    onError: (error) => {
+      handleApiError(error, t('fulfillments.bulkPackingError'));
+    },
+  });
+}
+
+/**
+ * Bulk create shipment labels — same fault-tolerant shape as bulk packing
+ * (always 200, report in data). Invalidates fulfillments + shipments caches
+ * because ready_to_ship rows gained labels and gained active-shipment locks.
+ */
+export function useBulkCreateShipments() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (payload: BulkCreateShipmentsData) => bulkCreateShipments(payload),
+    onSuccess: (response) => {
+      const summary = response.data.summary;
+      if (summary.success_count === 0) {
+        toast.error(t('fulfillments.bulkShipAllFailed', { count: summary.failed_count }));
+      } else if (summary.failed_count === 0) {
+        toast.success(t('fulfillments.bulkShipAllCreated', { count: summary.success_count }));
+      } else {
+        toast.warning(
+          t('fulfillments.bulkShipPartial', {
+            created: summary.success_count,
+            failed: summary.failed_count,
+          })
+        );
+      }
+      invalidateAll(queryClient);
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipments.all });
+    },
+    onError: (error) => {
+      handleApiError(error, t('fulfillments.bulkShipError'));
+    },
+  });
+}
+
 export function useAssignFulfillment() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -137,6 +216,28 @@ export function useCreatePickingTasks() {
     },
     onError: (error) => {
       handleApiError(error, t('fulfillments.tasksError'));
+    },
+  });
+}
+
+/**
+ * create-packing-task: 201 fresh (NOT idempotent — a second open task
+ * 409s with the live conflict text, wrong-status 422s naming the status).
+ * Packing tasks mirror onto both the fulfillments and packingTasks caches.
+ */
+export function useCreatePackingTask() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (id: number) => createPackingTaskForFulfillment(id),
+    onSuccess: () => {
+      toast.success(t('fulfillments.packingTaskStarted'));
+      invalidateAll(queryClient);
+      queryClient.invalidateQueries({ queryKey: queryKeys.packingTasks.all });
+    },
+    onError: (error) => {
+      handleApiError(error, t('fulfillments.packingTaskError'));
     },
   });
 }

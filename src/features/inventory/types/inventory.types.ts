@@ -42,6 +42,8 @@ export interface StockOperation {
 /** POST /admin/locations/{location}/stock-receipts */
 export interface ReceiveStockData {
   product_id: number;
+  /** Omitted for simple rows; a variant id targets one SKU. */
+  product_variant_id?: number | null;
   quantity: number;
   reference?: string | null;
   idempotency_key?: string | null;
@@ -50,6 +52,8 @@ export interface ReceiveStockData {
 /** POST /admin/stock-transfers */
 export interface TransferStockData {
   product_id: number;
+  /** Omitted for simple rows; a variant id moves one SKU. */
+  product_variant_id?: number | null;
   source_location_id: number;
   destination_location_id: number;
   quantity: number;
@@ -111,19 +115,42 @@ export function isStockCapableBin(location: {
   return true;
 }
 
+/** Variant candidate from the admin products index rows (picker hand-off). */
+export interface PickerVariant {
+  id?: number;
+  sku?: string;
+  quantity?: number;
+  price?: number;
+  name?: string;
+}
+
+/** Selector label: "SKU · quantity" (fallback "#id"), empty when unset. */
+export function variantLabel(variant?: PickerVariant): string {
+  if (!variant) return '';
+  const sku =
+    variant.sku ?? (variant.id !== undefined ? '#' + String(variant.id) : '');
+  return variant.quantity !== undefined ? sku + ' · ' + variant.quantity : sku;
+}
+
 /** Minimal product shape the picker needs (admin /products search rows). */
 export interface ReceivableProduct {
   id: number;
   name: string;
   product_type?: string | null;
   item_type?: 'PHYSICAL' | 'DIGITAL';
-  variants?: Array<unknown>;
+  variants?: PickerVariant[];
 }
 
+/**
+ * Receivability split (receipt contract): DIGITAL and the variable PARENT
+ * row (no SKU of its own) are refused by the engine — but a product WITH
+ * variants is receivable PER VARIANT (`product_variant_id` targets the
+ * SKU), so those rows stay and the modals require a variant pick.
+ */
 export function isReceivableProduct(product: ReceivableProduct): boolean {
   if (product.item_type === 'DIGITAL') return false;
+  if (Array.isArray(product.variants) && product.variants.length > 0) return true;
   if (product.product_type === 'variable') return false;
-  if (Array.isArray(product.variants) && product.variants.length > 0) return false;
   return true;
 }
 

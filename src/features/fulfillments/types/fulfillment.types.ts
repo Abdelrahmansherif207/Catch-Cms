@@ -40,15 +40,48 @@ export interface FulfillmentWarehouseRef {
   status: string;
 }
 
+/**
+ * Live contract (Fulfillment – Show / Packing Tasks – Show, 2026-10-15):
+ * the detail endpoints enrich every item with nullable foreign reads via
+ * `FormatsWmsProductVariant`; `location.id` is the productLocation pivot id
+ * while `code`/`name`/`barcode` come from the nested warehouse location.
+ * `quantity`/`quantity_picked` are now backend-cast floats (no strings).
+ */
+export interface WmsProductRef {
+  id: number;
+  name: string;
+  sku: string;
+  product_type: string;
+  thumbnail: string | null;
+}
+
+export interface WmsVariantRef {
+  id: number;
+  sku: string;
+  price: number;
+  stock_quantity: number;
+  attributes: string[];
+}
+
+export interface WmsLocationRef {
+  id: number;
+  code: string;
+  name: string;
+  barcode: string | null;
+}
+
 export interface FulfillmentItem {
   id: number;
   order_item_id: number;
   product_id: number;
   product_variant_id: number | null;
   product_location_id: number | null;
-  quantity: number | string;
-  quantity_picked: number | string;
+  quantity: number;
+  quantity_picked: number;
   status: string;
+  product: WmsProductRef | null;
+  variant: WmsVariantRef | null;
+  location: WmsLocationRef | null;
 }
 
 export interface PickingTask {
@@ -171,6 +204,79 @@ export interface BulkReleaseResponseData {
 export type ReleaseResponse =
   | ApiResponse<FulfillmentDetail> // single mode — 201 fresh / 200 replay
   | ApiResponse<BulkReleaseResponseData>; // bulk mode — always 200
+
+/** POST /admin/fulfillments/create-packing-tasks — station is omitted (wave-1
+ * scope: tasks always created unassigned). 1–100 unique fulfillment ids. */
+export interface BulkCreatePackingTasksData {
+  fulfillment_ids: number[];
+  packing_station_id?: number | null;
+}
+
+/** A row the engine allowed: fresh packing task created per fulfillment. */
+export interface BulkPackingTaskCreatedRow {
+  fulfillment_id: number;
+  fulfillment_number: string | null;
+  packing_task_id: number;
+  status: string;
+  packing_station_id: number | null;
+}
+
+/** Refusal/miss row — verbatim engine reason (or "Fulfillment #id not found"). */
+export interface BulkPackingTaskFailedRow {
+  fulfillment_id: number;
+  fulfillment_number: string | null;
+  reason: string;
+}
+
+/** Fault-tolerant bulk result — NEVER a non-200; failures live here. */
+export interface BulkCreatePackingTasksResult {
+  successful: BulkPackingTaskCreatedRow[];
+  failed: BulkPackingTaskFailedRow[];
+  summary: {
+    total: number;
+    success_count: number;
+    failed_count: number;
+  };
+}
+
+export type BulkCreatePackingTasksResponse = ApiResponse<BulkCreatePackingTasksResult>;
+
+/** POST /admin/fulfillments/create-shipments — courier/method/notes apply to
+ * EVERY created label (contract commonData); 1–100 unique fulfillment ids.
+ * NO idempotency_key and NO per-label destination_address on the bulk path. */
+export interface BulkCreateShipmentsData {
+  fulfillment_ids: number[];
+  courier?: string | null;
+  shipping_method?: string | null;
+  notes?: string | null;
+}
+
+export interface BulkShipmentCreatedRow {
+  fulfillment_id: number;
+  fulfillment_number: string | null;
+  shipment_id: number;
+  tracking_number: string | null;
+  status: string;
+  courier: string | null;
+}
+
+export interface BulkShipmentFailedRow {
+  fulfillment_id: number;
+  fulfillment_number: string | null;
+  reason: string;
+}
+
+export interface BulkCreateShipmentsResult {
+  successful: BulkShipmentCreatedRow[];
+  failed: BulkShipmentFailedRow[];
+  summary: {
+    total: number;
+    success_count: number;
+    failed_count: number;
+  };
+}
+
+export type BulkCreateShipmentsResponse = ApiResponse<BulkCreateShipmentsResult>;
 
 /** DELETE-less commands (assign/create-tasks/complete-picking/cancel) return the bounded detail. */
 export type FulfillmentDetailApiResponse = ApiResponse<FulfillmentDetail>;

@@ -39,6 +39,9 @@ export const SHIPPABLE_STATUS: FulfillmentStatus = 'ready_to_ship';
 /** create-tasks serves pending (advance) and picking (idempotent reuse). */
 export const TASK_CREATABLE_STATUSES: FulfillmentStatus[] = ['pending', 'picking'];
 
+/** create-packing-task is served from `picked` only (service-refused otherwise). */
+export const PACKING_CREATABLE_STATUS: FulfillmentStatus = 'picked';
+
 export const PICKING_COMPLETABLE_STATUSES: FulfillmentStatus[] = ['picking'];
 
 export function isFulfillmentStatus(value: unknown): value is FulfillmentStatus {

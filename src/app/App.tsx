@@ -58,6 +58,10 @@ const PickingTasksPage = lazy(() => import("@/features/picking-tasks/pages/picki
 const PickingTaskDetailRoute = lazy(() => import("@/features/picking-tasks/pages/picking-task-detail-page").then(m => ({ default: m.PickingTaskDetailRoute })));
 const BatchesPage = lazy(() => import("@/features/batches/pages/batches-page").then(m => ({ default: m.BatchesPage })));
 const BatchDetailRoute = lazy(() => import("@/features/batches/pages/batch-detail-page").then(m => ({ default: m.BatchDetailRoute })));
+const PackingTasksPage = lazy(() => import("@/features/packing-tasks/pages/packing-tasks-page").then(m => ({ default: m.PackingTasksPage })));
+const PackingTaskDetailRoute = lazy(() => import("@/features/packing-tasks/pages/packing-task-detail-page").then(m => ({ default: m.PackingTaskDetailRoute })));
+const ShipmentsPage = lazy(() => import("@/features/shipments/pages/shipments-page").then(m => ({ default: m.ShipmentsPage })));
+const ShipmentDetailRoute = lazy(() => import("@/features/shipments/pages/shipment-detail-page").then(m => ({ default: m.ShipmentDetailRoute })));
 const InventoryPage = lazy(() => import("@/features/inventory/pages/inventory-page").then(m => ({ default: m.InventoryPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
@@ -175,6 +179,16 @@ export default function App() {
               <Route element={<PermissionRoute permission={PERMISSIONS.batches.view} />}>
                 <Route path="/batches/:id" element={<BatchDetailRoute />} />
                 <Route path="/batches" element={<BatchesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permission={PERMISSIONS.fulfillments.view} />}>
+                <Route path="/packing-tasks/:id" element={<PackingTaskDetailRoute />} />
+                <Route path="/packing-tasks" element={<PackingTasksPage />} />
+              </Route>
+              {/* Shipments: list is fulfillment-scoped (query param), show guards view-shipment,
+                  commands (dispatch/deliver/cancel + bulks) guard update-shipment server-side. */}
+              <Route element={<PermissionRoute permission={PERMISSIONS.shipments.view} />}>
+                <Route path="/shipments/:id" element={<ShipmentDetailRoute />} />
+                <Route path="/shipments" element={<ShipmentsPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.inventory.adjust} />}>
                 <Route path="/inventory" element={<InventoryPage />} />

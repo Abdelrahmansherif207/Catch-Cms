@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -23,12 +22,12 @@ import {
   normalizeQuantity,
 } from '../schemas/release.schema';
 import { useAssignItemPlacement } from '../hooks/use-fulfillments';
-import { fetchLocations } from '../api/locations.api';
+import { useProductPlacements } from '@/features/inventory/hooks/use-inventory';
 import type { FulfillmentItem } from '../types/fulfillment.types';
 
 interface AssignPlacementDialogProps {
   item: FulfillmentItem;
-  /** Filter visible locations to the fulfillment's warehouse. */
+  /** Narrows the placement list to the fulfillment's warehouse (globals). */
   warehouseId?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,11 +35,16 @@ interface AssignPlacementDialogProps {
 }
 
 /**
- * Pins a fulfillment item to a placement row. The picker sources
- * `/admin/locations` (physical locations — configured and verified live);
- * the chosen id is sent as `product_location_id`. If the engine rejects
- * the id upstream, the live 422 text surfaces inside this dialog verbatim,
- * so the mismatch is observable instead of silent.
+ * Pins a fulfillment item to a placement row. The picker sources the
+ * product's OWN multi-location read model
+ * (GET /admin/products/{id}/placements): every row IS a product_locations
+ * row, so its `id` is exactly the `product_location_id` the engine
+ * expects — no more casting a warehouse location id into a placement id.
+ * Variant items narrow the list with `?product_variant_id`; scoped
+ * callers are forced to their home warehouse server-side, while global
+ * holders get the optional `?warehouse_id` narrow.
+ * Empty placements are still 200 — the assign must be blocked client-side
+ * (the engine would reject any guessed id with a live 422).
  */
 export function AssignPlacementDialog({
   item,
@@ -54,21 +58,19 @@ export function AssignPlacementDialog({
   const [selectedId, setSelectedId] = useState('');
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
-  const { data: locationsResponse } = useQuery({
-    queryKey: ['locations', 'packing-picker', { limit: 100 }],
-    queryFn: () => fetchLocations({ limit: 100 }),
-    enabled: open,
-    staleTime: 60 * 1000,
-  });
+  const placementsQuery = useProductPlacements(
+    item.product_id,
+    {
+      product_variant_id: item.product_variant_id ?? undefined,
+      warehouse_id: warehouseId,
+    },
+    open
+  );
 
-  const locations = useMemo(
-    () =>
-      (locationsResponse?.data ?? []).filter(
-        (location) =>
-          location.status === 'active' &&
-          (warehouseId ? location.warehouse_id === warehouseId : true)
-      ),
-    [locationsResponse, warehouseId]
+  const header = placementsQuery.data?.data.product ?? null;
+  const placements = useMemo(
+    () => placementsQuery.data?.data.placements ?? [],
+    [placementsQuery.data]
   );
 
   // NB: gated render — parent mounts this only while placementItem exists,
@@ -107,6 +109,7 @@ export function AssignPlacementDialog({
   };
 
   const pending = assignMutation.isPending;
+  const loading = placementsQuery.isLoading;
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
@@ -123,23 +126,90 @@ export function AssignPlacementDialog({
         </DialogHeader>
 
         <div className="space-y-3">
+          {/* Variant awareness — the row's SKU identity drives the fetch
+              (?product_variant_id) and the placement rows differ per SKU;
+              making it explicit prevents pinning the wrong SKU's bin. */}
+          {item.variant && (
+            <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-info-soft/40 px-3 py-2 text-xs">
+              <span className="text-muted-foreground">
+                {t('fulfillments.placementVariantFor')}:
+              </span>
+              <span className="rounded-md bg-info-soft px-1.5 py-0.5 font-mono text-info">
+                {item.variant.sku}
+              </span>
+              {item.variant.attributes.map((attr, index) => (
+                <span
+                  key={index}
+                  className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground"
+                >
+                  {attr}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {header && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              <span>{t('fulfillments.placementAuthority')}:</span>
+              <span className="font-mono">{header.stock_quantity}</span>
+              <span>· {t('fulfillments.placementReserved')}:</span>
+              <span className="font-mono">{header.reserved_quantity}</span>
+              <span>· {t('fulfillments.placementAvailable')}:</span>
+              <span className="font-mono text-success">{header.available_quantity}</span>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label>{t('fulfillments.placementSelect')}</Label>
-            <Select value={selectedId} onValueChange={(v) => { if (v !== null) setSelectedId(v); }}>
+            <Select
+              value={selectedId}
+              onValueChange={(v) => {
+                if (v !== null) {
+                  setSelectedId(v);
+                  setServerError(undefined);
+                }
+              }}
+              disabled={loading || placements.length === 0}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('fulfillments.placementSelect')} />
+                <SelectValue
+                  placeholder={
+                    loading
+                      ? t('common.loading')
+                      : placements.length === 0
+                        ? t('fulfillments.placementNone')
+                        : t('fulfillments.placementSelect')
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={String(location.id)}>
-                    {location.name} ({location.code})
+                {placements.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    <span className="font-mono">{row.location_code ?? '#' + row.location_id}</span>
+                    <span className="text-muted-foreground"> · {row.sku}</span>
+                    {(row.variant_attributes ?? []).map((attr, index) => (
+                      <span
+                        key={index}
+                        className="text-xs text-muted-foreground"
+                      >
+                        {' '}
+                        · {attr.attribute}: {attr.value}
+                      </span>
+                    ))}
+                    <span className="text-xs text-muted-foreground">
+                      {' '}
+                      · {t('fulfillments.placementQuantity')} {row.quantity}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              {t('fulfillments.placementHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('fulfillments.placementHint')}</p>
+            {placementsQuery.isError && (
+              <p className="text-xs text-destructive">
+                {t('fulfillments.placementLoadError')}
+              </p>
+            )}
           </div>
           {serverError && <p className="text-xs text-destructive">{serverError}</p>}
         </div>
@@ -148,7 +218,11 @@ export function AssignPlacementDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             {t('common.cancel')}
           </Button>
-          <Button type="button" onClick={handleAssign} disabled={pending}>
+          <Button
+            type="button"
+            onClick={handleAssign}
+            disabled={pending || placements.length === 0}
+          >
             {pending ? t('fulfillments.placementSaving') : t('fulfillments.placementAction')}
           </Button>
         </DialogFooter>

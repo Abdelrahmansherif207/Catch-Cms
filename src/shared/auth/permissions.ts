@@ -284,7 +284,14 @@ export const PERMISSIONS = {
     release: 'fulfillment.create',
     cancel: 'fulfillment.cancel',
     picking: 'picking-execute',
+    packingExecute: 'packing-execute',
+    packingComplete: 'packing.complete',
     shipment: 'create-shipment',
+  },
+  shipments: {
+    view: 'view-shipment',
+    update: 'update-shipment',
+    create: 'create-shipment',
   },
   batches: {
     view: 'view-fulfillment',

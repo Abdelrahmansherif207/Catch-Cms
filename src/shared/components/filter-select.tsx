@@ -25,6 +25,8 @@ interface FilterSelectProps {
   icon?: LucideIcon;
   className?: string;
   triggerClassName?: string;
+  /** Disable interaction — used when a bulk mode pins the filter. */
+  disabled?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export function FilterSelect({
   icon: Icon,
   className,
   triggerClassName,
+  disabled,
 }: FilterSelectProps) {
   const current =
     value === allValue
@@ -52,6 +55,7 @@ export function FilterSelect({
     <Select value={value} onValueChange={(v) => onValueChange(v ?? allValue)}>
       <SelectTrigger
         aria-label={`${prefix}: ${current}`}
+        disabled={disabled}
         className={cn('gap-2', triggerClassName)}
       >
         <span className={cn('flex min-w-0 flex-1 items-center gap-1.5', className)}>

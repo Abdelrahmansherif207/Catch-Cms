@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Button } from '@/shared/ui/button';
+import { SelectCheckbox } from '@/shared/components/select-checkbox';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
   DropdownMenu,
@@ -26,11 +27,35 @@ import type { FulfillmentListItem } from '../types/fulfillment.types';
 interface FulfillmentsTableProps {
   data: FulfillmentListItem[];
   isLoading: boolean;
+  /** Bulk-actions selection — render only when provided (back-compatible). */
+  selectedIds?: Set<number>;
+  onToggle?: (id: number) => void;
+  /**
+   * Receives the ELIGIBLE rows only (see eligibleStatus) — the caller never
+   * sees an ineligible id staged.
+   */
+  onToggleAll?: (eligibleRows: FulfillmentListItem[], checked: boolean) => void;
+  /** Active bulk mode's status — rows of other statuses render disabled. */
+  eligibleStatus?: string | null;
 }
 
-export function FulfillmentsTable({ data, isLoading }: FulfillmentsTableProps) {
+export function FulfillmentsTable({
+  data,
+  isLoading,
+  selectedIds,
+  onToggle,
+  onToggleAll,
+  eligibleStatus,
+}: FulfillmentsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const selectable = selectedIds !== undefined && onToggle !== undefined && onToggleAll !== undefined;
+  const isEligible = (row: FulfillmentListItem) =>
+    eligibleStatus === undefined || eligibleStatus === null || row.status === eligibleStatus;
+  const eligibleRows = data.filter(isEligible);
+  const allSelected =
+    selectable && eligibleRows.length > 0 && eligibleRows.every((row) => selectedIds.has(row.id));
+  const someSelected = selectable && eligibleRows.some((row) => selectedIds.has(row.id));
 
   if (isLoading) {
     return <TableSkeleton />;
@@ -41,6 +66,16 @@ export function FulfillmentsTable({ data, isLoading }: FulfillmentsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            {selectable && (
+              <TableHead className="w-10">
+                <SelectCheckbox
+                  checked={allSelected}
+                  indeterminate={someSelected && !allSelected}
+                  onCheckedChange={(checked) => onToggleAll(eligibleRows, checked)}
+                  ariaLabel={t('common.selectAll')}
+                />
+              </TableHead>
+            )}
             <TableHead>{t('fulfillments.number')}</TableHead>
             <TableHead>{t('fulfillments.order')}</TableHead>
             <TableHead>{t('common.status')}</TableHead>
@@ -53,13 +88,32 @@ export function FulfillmentsTable({ data, isLoading }: FulfillmentsTableProps) {
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7}>
+              <TableCell colSpan={selectable ? 8 : 7}>
                 <DataEmptyState className="border-0" />
               </TableCell>
             </TableRow>
           ) : (
             data.map((fulfillment) => (
-              <TableRow key={fulfillment.id}>
+              <TableRow
+                key={fulfillment.id}
+                className={
+                  selectable && selectedIds.has(fulfillment.id)
+                    ? 'bg-primary/10 shadow-[inset_2px_0_0_0_var(--primary)]'
+                    : undefined
+                }
+              >
+                {selectable && (
+                  <TableCell
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <SelectCheckbox
+                      checked={selectedIds.has(fulfillment.id)}
+                      onCheckedChange={() => onToggle(fulfillment.id)}
+                      disabled={!isEligible(fulfillment)}
+                      ariaLabel={fulfillment.fulfillment_number}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>
                   <button
                     type="button"

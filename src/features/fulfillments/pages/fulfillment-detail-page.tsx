@@ -5,12 +5,18 @@ import {
   CheckCircle2,
   ClipboardList,
   MapPin,
+  PackageCheck,
   PackageSearch,
   Pencil,
   Ship,
   XCircle,
 } from 'lucide-react';
+import { PackageStatusBadge } from '@/features/packages/components/package-status-badge';
+import type { PackingTask, FulfillmentPackage } from '../types/fulfillment.types';
 import { pickingTaskRoutes } from '@/features/picking-tasks/routes/picking-task.routes';
+import { WmsItemProductDetails } from '../components/wms-item-product';
+import { packingTaskRoutes } from '@/features/packing-tasks/routes/packing-task.routes';
+import { shipmentRoutes } from '@/features/shipments/routes/shipment.routes';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
@@ -24,10 +30,12 @@ import { orderRoutes } from '@/features/orders/routes/order.routes';
 import {
   useFulfillment,
   useCreatePickingTasks,
+  useCreatePackingTask,
   useCompletePicking,
 } from '../hooks/use-fulfillments';
 import {
   CANCELLABLE_STATUSES,
+  PACKING_CREATABLE_STATUS,
   PICKING_COMPLETABLE_STATUSES,
   SHIPPABLE_STATUS,
   TASK_CREATABLE_STATUSES,
@@ -71,10 +79,12 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
   const [shipmentOpen, setShipmentOpen] = useState(false);
   const [placementItem, setPlacementItem] = useState<FulfillmentItem | null>(null);
   const createTasksMutation = useCreatePickingTasks();
+  const createPackingTaskMutation = useCreatePackingTask();
   const completePickingMutation = useCompletePicking();
 
   const canManage = can(PERMISSIONS.fulfillments.manage);
   const canPick = can(PERMISSIONS.fulfillments.picking);
+  const canPackExecute = can(PERMISSIONS.fulfillments.packingExecute);
   const canCancel = can(PERMISSIONS.fulfillments.cancel);
   const canShipment = can(PERMISSIONS.fulfillments.shipment);
 
@@ -98,6 +108,7 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
   // operators never see an action the engine would refuse with 422.
   const showCreateTasks = canPick && TASK_CREATABLE_STATUSES.includes(status);
   const showCompletePicking = canManage && PICKING_COMPLETABLE_STATUSES.includes(status);
+  const showStartPacking = canPackExecute && status === PACKING_CREATABLE_STATUS;
   const showAssign = canManage && status !== 'cancelled';
   const showCancel = canCancel && CANCELLABLE_STATUSES.includes(status);
   const showShipment = canShipment && status === SHIPPABLE_STATUS;
@@ -142,6 +153,17 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
               <Button onClick={() => completePickingMutation.mutate(detail.id)}>
                 <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t('fulfillments.completePicking')}
+              </Button>
+            )}
+            {showStartPacking && (
+              <Button
+                onClick={() => createPackingTaskMutation.mutate(detail.id)}
+                disabled={createPackingTaskMutation.isPending}
+              >
+                <PackageCheck className="me-1.5 h-4 w-4" />
+                {createPackingTaskMutation.isPending
+                  ? t('fulfillments.startingPacking')
+                  : t('fulfillments.startPacking')}
               </Button>
             )}
             {showAssign && (
@@ -259,6 +281,16 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
         <PickingTasksMiniTable tasks={detail.picking_tasks} />
       )}
 
+      {detail.packing_tasks.length > 0 && (
+        <PackingTasksMiniTable tasks={detail.packing_tasks} />
+      )}
+
+      {detail.packages.length > 0 && <PackagesMiniTable packages={detail.packages} />}
+
+      {detail.shipments.length > 0 && (
+        <ShipmentsMiniTable shipments={detail.shipments} fulfillmentId={detail.id} />
+      )}
+
       <AssignFulfillmentDialog
         fulfillment={detail}
         open={assignOpen}
@@ -327,7 +359,9 @@ function ItemRow({
   return (
     <tr>
       <td className="px-3 py-2 font-mono text-xs">{item.id}</td>
-      <td className="px-3 py-2">#{item.product_id}</td>
+      <td className="px-3 py-2">
+        <WmsItemProductDetails item={item} />
+      </td>
       <td className="px-3 py-2">{item.quantity}</td>
       <td className="px-3 py-2">{item.quantity_picked}</td>
       <td className="px-3 py-2">{item.status}</td>
@@ -432,6 +466,166 @@ function PickingTasksMiniTable({
                     <PackageSearch className="h-3.5 w-3.5" />
                     {t('fulfillments.viewPickingTask')}
                   </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Live packing-task rows for this fulfillment — mirrors the picking table
+ * shape (slim {id, status, packing_station_id, assigned_to} payload).
+ */
+function PackingTasksMiniTable({ tasks }: { tasks: PackingTask[] }) {
+  const { t } = useTranslation();
+  const canView = usePermissions().can(PERMISSIONS.fulfillments.view);
+
+  if (!canView) return null;
+
+  return (
+    <section className="rounded-2xl border bg-card p-4 shadow-card">
+      <h2 className="mb-3 text-sm font-semibold">{t('fulfillments.packingTasks')}</h2>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-start">#</th>
+              <th className="px-3 py-2 text-start">{t('common.status')}</th>
+              <th className="px-3 py-2 text-start">{t('packingTasks.station')}</th>
+              <th className="px-3 py-2 text-start">{t('packingTasks.assignee')}</th>
+              <th className="px-2 py-2 text-end" />
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {tasks.map((task) => (
+              <tr key={task.id}>
+                <td className="px-3 py-2 font-mono text-xs">#{task.id}</td>
+                <td className="px-3 py-2">
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">
+                    {task.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2 font-mono text-xs">
+                  {task.packing_station_id === null ? '—' : '#' + task.packing_station_id}
+                </td>
+                <td className="px-3 py-2 font-mono text-xs">
+                  {task.assigned_to === null ? '—' : '#' + task.assigned_to}
+                </td>
+                <td className="px-2 py-2 text-end">
+                  <Link
+                    to={packingTaskRoutes.detail(task.id)}
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <PackageCheck className="h-3.5 w-3.5" />
+                    {t('fulfillments.viewPackingTask')}
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Slim package rows for this fulfillment — the physical boxes (the full
+ * management surface lives on the packing task detail screen).
+ */
+function PackagesMiniTable({ packages }: { packages: FulfillmentPackage[] }) {
+  const { t } = useTranslation();
+
+  return (
+    <section className="rounded-2xl border bg-card p-4 shadow-card">
+      <h2 className="mb-3 text-sm font-semibold">{t('fulfillments.packages')}</h2>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-start">{t('packages.package')}</th>
+              <th className="px-3 py-2 text-start">{t('common.status')}</th>
+              <th className="px-2 py-2 text-start">{t('packingTasks.task')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {packages.map((pkg) => (
+              <tr key={pkg.id}>
+                <td className="px-3 py-2 font-mono text-xs">{pkg.package_number}</td>
+                <td className="px-3 py-2">
+                  <PackageStatusBadge status={pkg.status} />
+                </td>
+                <td className="px-3 py-2 font-mono text-xs">
+                  {pkg.packing_task_id === null ? '—' : '#' + pkg.packing_task_id}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Slim shipment rows for this fulfillment — each links into the shipments
+ * management surface (per-fulfillment page: bulk dispatch/deliver, cancel
+ * and full detail). Read-only here; commands live on the shipments page.
+ */
+function ShipmentsMiniTable({
+  shipments,
+  fulfillmentId,
+}: {
+  shipments: FulfillmentDetail['shipments'];
+  fulfillmentId: number;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <section className="rounded-2xl border bg-card p-4 shadow-card">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">{t('fulfillments.shipments')}</h2>
+        <Link
+          to={shipmentRoutes.forFulfillment(fulfillmentId)}
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <Ship className="h-3.5 w-3.5" />
+          {t('fulfillments.openShipments')}
+        </Link>
+      </div>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-start">#</th>
+              <th className="px-3 py-2 text-start">{t('common.status')}</th>
+              <th className="px-3 py-2 text-start">{t('shipments.courier')}</th>
+              <th className="px-2 py-2 text-end">{t('shipments.tracking')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {shipments.map((shipment) => (
+              <tr key={shipment.id}>
+                <td className="px-3 py-2 font-mono text-xs">
+                  <Link
+                    to={shipmentRoutes.detail(shipment.id)}
+                    className="text-primary hover:underline"
+                  >
+                    #{shipment.id}
+                  </Link>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">
+                    {shipment.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-xs">{shipment.courier ?? '—'}</td>
+                <td className="px-2 py-2 text-end font-mono text-xs">
+                  {shipment.tracking_number ?? '—'}
                 </td>
               </tr>
             ))}

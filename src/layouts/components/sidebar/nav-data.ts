@@ -35,6 +35,7 @@ import {
   Layers,
   Archive,
   KeyRound,
+  Truck,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS, type Permission } from '@/shared/auth/permissions';
@@ -288,6 +289,18 @@ export function useNavGroups(): NavGroup[] {
           url: '/batches',
           icon: Layers,
           permissions: [PERMISSIONS.batches.view],
+        },
+        {
+          title: t('sidebar.shipments'),
+          url: '/shipments',
+          icon: Truck,
+          permissions: [PERMISSIONS.shipments.view],
+        },
+        {
+          title: t('sidebar.packingTasks'),
+          url: '/packing-tasks',
+          icon: Package,
+          permissions: [PERMISSIONS.fulfillments.view],
         },
         {
           title: t('sidebar.inventory'),

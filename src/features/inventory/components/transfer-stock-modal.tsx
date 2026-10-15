@@ -31,11 +31,13 @@ import {
   emptyToNull,
   type TransferStockFormValues,
 } from '../schemas/inventory.schema';
-import type {
-  StockOperationResultData,
-  TransferStockData,
+import {
+  isStockCapableBin,
+  variantLabel,
+  type PickerVariant,
+  type StockOperationResultData,
+  type TransferStockData,
 } from '../types/inventory.types';
-import { isStockCapableBin } from '../types/inventory.types';
 import { ProductPickerList } from './product-picker-list';
 import { StockOperationSummary } from './stock-operation-summary';
 
@@ -71,8 +73,16 @@ export function TransferStockModal({
   const [step, setStep] = useState<'pick' | 'details'>('pick');
   const [productId, setProductId] = useState<number | null>(null);
   const [productName, setProductName] = useState<string | null>(null);
+  const [productVariants, setProductVariants] = useState<PickerVariant[]>([]);
+  const [variantId, setVariantId] = useState<number | null>(null);
+  const [variantError, setVariantError] = useState<string | undefined>(undefined);
   const [result, setResult] = useState<StockOperationResultData | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(generateIdempotencyKey);
+
+  // Transfers are PER-SKU: placement rows and the available bound both key on
+  // (product, variant) — a product with variants requires a picked SKU, and
+  // the placements query must carry that SKU or the rows mix across variants.
+  const needsVariant = productVariants.length > 0;
 
   const form = useForm<TransferStockFormValues>({
     resolver: zodResolver(transferStockFormSchema),
@@ -92,10 +102,16 @@ export function TransferStockModal({
 
   // Step 2 loads the product's REAL placements (GET /products/{id}/placements)
   // — the source list becomes exactly the bins the product occupies, each
-  // with its informational quantity (allocated_hint). Empty placements fall
-  // back to the full bin list: authority stock can exist without hint rows
-  // (live-verified on meem: product 1682, authority 100, placements []).
-  const placementsQuery = useProductPlacements(productId, {}, step === 'details');
+  // with its informational quantity (allocated_hint). Variant products pass
+  // the picked SKU as ?product_variant_id so bins reflect THAT SKU only.
+  // Empty placements fall back to the full bin list: authority stock can
+  // exist without hint rows (live-verified on meem: product 1682, authority
+  // 100, placements []).
+  const placementsQuery = useProductPlacements(
+    productId,
+    { product_variant_id: variantId ?? undefined },
+    step === 'details' && (!needsVariant || variantId !== null)
+  );
   const placements = useMemo(
     () => placementsQuery.data?.data.placements ?? [],
     [placementsQuery.data]
@@ -129,6 +145,9 @@ export function TransferStockModal({
       setStep('pick');
       setProductId(null);
       setProductName(null);
+      setProductVariants([]);
+      setVariantId(null);
+      setVariantError(undefined);
       setResult(null);
       setIdempotencyKey(generateIdempotencyKey());
       form.reset({ ...transferStockFormDefaults } as TransferStockFormValues);
@@ -156,6 +175,7 @@ export function TransferStockModal({
   const onSubmit = (values: TransferStockFormValues) => {
     const payload: TransferStockData = {
       product_id: Number(values.productId),
+      product_variant_id: variantId ?? null,
       source_location_id: Number(values.sourceLocationId),
       destination_location_id: Number(values.destinationLocationId),
       quantity: Number(values.quantity),
@@ -204,6 +224,10 @@ export function TransferStockModal({
   })();
 
   const submitForm = () => {
+    if (needsVariant && variantId === null) {
+      setVariantError(t('inventory.variantRequired'));
+      return;
+    }
     form.handleSubmit(
       onSubmit,
       (errors) => console.warn('[transfer] validation blocked:', errors)
@@ -245,9 +269,12 @@ export function TransferStockModal({
             <div className="space-y-4">
               <ProductPickerList
                 selectedId={productId}
-                onSelect={(id, name) => {
+                onSelect={(id, name, variants) => {
                   setProductId(id);
                   setProductName(name);
+                  setProductVariants(variants);
+                  setVariantId(null);
+                  setVariantError(undefined);
                   // Sync the pick into the RHF form (chip state is NOT form
                   // state — the missing setValue silently blocked submits).
                   form.setValue('productId', String(id), {
@@ -305,6 +332,47 @@ export function TransferStockModal({
                   {t('inventory.change')}
                 </Button>
               </div>
+
+              {needsVariant && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="transfer-variant">{t('inventory.selectVariant')}</Label>
+                  <Select
+                    value={variantId === null ? '' : String(variantId)}
+                    onValueChange={(value) => {
+                      if (value !== null) {
+                        setVariantId(Number(value));
+                        setVariantError(undefined);
+                        // Rows and bins are SKU-specific — a SKU change
+                        // invalidates both picks.
+                        form.setValue('sourceLocationId', '');
+                        form.setValue('destinationLocationId', '');
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="transfer-variant">
+                      <SelectValue placeholder={t('inventory.variantPlaceholder')}>
+                        {variantId !== null &&
+                          variantLabel(
+                            productVariants.find((v) => v.id === variantId)
+                          )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productVariants.map((variant) => (
+                        <SelectItem key={variant.id} value={String(variant.id)}>
+                          {variantLabel(variant)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {t('inventory.variantPlacementsHint')}
+                  </p>
+                  {variantError && (
+                    <p className="text-xs text-destructive">{variantError}</p>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <Label htmlFor="transfer-source">{t('inventory.sourceLocation')}</Label>

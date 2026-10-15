@@ -28,6 +28,12 @@ interface CreateBatchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: (batchId: number) => void;
+  /**
+   * Wave-mode hand-off from the fulfillments page multi-select: the staged
+   * fulfillment ids seed the review step directly (the dialog OPENS on the
+   * review step since the selection already happened on the list).
+   */
+  initialIds?: number[];
 }
 
 const WAREHOUSE_DEFAULT = 'default';
@@ -39,13 +45,20 @@ const WAREHOUSE_DEFAULT = 'default';
  * NOTE: pending-fulfillments rows always carry items_count 0 (no count
  * eager-load) — it is deliberately NOT displayed.
  */
-export function CreateBatchDialog({ open, onOpenChange, onCreated }: CreateBatchDialogProps) {
+export function CreateBatchDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  initialIds,
+}: CreateBatchDialogProps) {
   const { t } = useTranslation();
   const createMutation = useCreateBatch();
 
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<number[]>(initialIds ?? []);
   const [warehouseValue, setWarehouseValue] = useState<string>(WAREHOUSE_DEFAULT);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2>(
+    initialIds !== undefined && initialIds.length > 0 ? 2 : 1
+  );
   const [created, setCreated] = useState<{ id: number; number: string } | null>(null);
 
   const { data: warehousesResponse } = useWarehouses({ limit: 100 });

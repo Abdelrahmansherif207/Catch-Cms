@@ -285,6 +285,28 @@ export const queryKeys = {
     pendingFulfillments: <P extends object>(params: P) =>
       ['batches', 'pending-fulfillments', params] as const,
   },
+  packingTasks: {
+    all: ['packing-tasks'] as const,
+    lists: () => ['packing-tasks', 'list'] as const,
+    list: <P extends object>(params: P) => ['packing-tasks', 'list', params] as const,
+    details: () => ['packing-tasks', 'detail'] as const,
+    detail: (id?: number | string) => ['packing-tasks', 'detail', id] as const,
+  },
+  packages: {
+    all: ['packages'] as const,
+    lists: () => ['packages', 'list'] as const,
+    list: <P extends object>(params: P) => ['packages', 'list', params] as const,
+    details: () => ['packages', 'detail'] as const,
+    detail: (id?: number | string) => ['packages', 'detail', id] as const,
+  },
+  shipments: {
+    all: ['shipments'] as const,
+    /** The WMS list is fulfillment-scoped (fulfillment_id IS required). */
+    fulfillments: (fulfillmentId?: number | string, params?: object) =>
+      ['shipments', 'list', fulfillmentId ?? null, params] as const,
+    details: () => ['shipments', 'detail'] as const,
+    detail: (id?: number | string) => ['shipments', 'detail', id] as const,
+  },
   fulfillments: {
     all: ['fulfillments'] as const,
     lists: () => ['fulfillments', 'list'] as const,

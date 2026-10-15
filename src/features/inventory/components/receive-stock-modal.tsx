@@ -24,7 +24,12 @@ import { useLocations } from '@/features/locations/hooks/use-locations';
 import { useWarehouses } from '@/features/warehouses/hooks/use-warehouses';
 import type { ApiErrorResponse } from '@/shared/api';
 import type { WarehouseLocation } from '@/features/locations/types/location.types';
-import type { ReceiveStockData } from '../types/inventory.types';
+import {
+  isStockCapableBin,
+  variantLabel,
+  type PickerVariant,
+  type ReceiveStockData,
+} from '../types/inventory.types';
 import { useReceiveStock } from '../hooks/use-inventory';
 import {
   receiveStockFormSchema,
@@ -33,7 +38,6 @@ import {
   type ReceiveStockFormValues,
 } from '../schemas/inventory.schema';
 import type { StockOperationResultData } from '../types/inventory.types';
-import { isStockCapableBin } from '../types/inventory.types';
 import { ProductPickerList } from './product-picker-list';
 import { StockOperationSummary } from './stock-operation-summary';
 
@@ -72,8 +76,16 @@ export function ReceiveStockModal({
   const [step, setStep] = useState<'pick' | 'details'>('pick');
   const [productId, setProductId] = useState<number | null>(null);
   const [productName, setProductName] = useState<string | null>(null);
+  const [productVariants, setProductVariants] = useState<PickerVariant[]>([]);
+  const [variantId, setVariantId] = useState<number | null>(null);
+  const [variantError, setVariantError] = useState<string | undefined>(undefined);
   const [result, setResult] = useState<StockOperationResultData | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(generateIdempotencyKey);
+
+  // Receipts are PER-SKU (`product_variant_id`, null = simple row): a product
+  // with variants always requires one picked SKU — the variable parent row
+  // itself is refused by the engine (product_variants guard).
+  const needsVariant = productVariants.length > 0;
 
   const form = useForm<ReceiveStockFormValues>({
     resolver: zodResolver(receiveStockFormSchema),
@@ -92,6 +104,9 @@ export function ReceiveStockModal({
       setStep('pick');
       setProductId(null);
       setProductName(null);
+      setProductVariants([]);
+      setVariantId(null);
+      setVariantError(undefined);
       setResult(null);
       setIdempotencyKey(generateIdempotencyKey());
       form.reset({
@@ -126,6 +141,7 @@ export function ReceiveStockModal({
       locationId: lockedLocationId ?? values.locationId,
       payload: {
         product_id: Number(values.productId),
+        product_variant_id: variantId ?? null,
         quantity: Number(values.quantity),
         reference: emptyToNull(values.reference),
         idempotency_key: idempotencyKey,
@@ -162,6 +178,10 @@ export function ReceiveStockModal({
   );
 
   const submitForm = () => {
+    if (needsVariant && variantId === null) {
+      setVariantError(t('inventory.variantRequired'));
+      return;
+    }
     form.handleSubmit(
       onSubmit,
       (errors) => console.warn('[receive] validation blocked:', errors)
@@ -214,9 +234,12 @@ export function ReceiveStockModal({
               )}
               <ProductPickerList
                 selectedId={productId}
-                onSelect={(id, name) => {
+                onSelect={(id, name, variants) => {
                   setProductId(id);
                   setProductName(name);
+                  setProductVariants(variants);
+                  setVariantId(null);
+                  setVariantError(undefined);
                   // The picker lives OUTSIDE the RHF form — sync the choice
                   // into the form value or validation blocks the submit with
                   // an INVISIBLE "product is required" (root cause found via
@@ -276,6 +299,40 @@ export function ReceiveStockModal({
                   {t('inventory.change')}
                 </Button>
               </div>
+
+              {needsVariant && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="receive-variant">{t('inventory.selectVariant')}</Label>
+                  <Select
+                    value={variantId === null ? '' : String(variantId)}
+                    onValueChange={(value) => {
+                      if (value !== null) {
+                        setVariantId(Number(value));
+                        setVariantError(undefined);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="receive-variant">
+                      <SelectValue placeholder={t('inventory.variantPlaceholder')}>
+                        {variantId !== null &&
+                          variantLabel(
+                            productVariants.find((v) => v.id === variantId)
+                          )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productVariants.map((variant) => (
+                        <SelectItem key={variant.id} value={String(variant.id)}>
+                          {variantLabel(variant)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {variantError && (
+                    <p className="text-xs text-destructive">{variantError}</p>
+                  )}
+                </div>
+              )}
 
               {lockedLocationId === undefined && (
                 <div className="space-y-1.5">
