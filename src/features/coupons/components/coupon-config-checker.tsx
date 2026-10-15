@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -37,6 +37,10 @@ function normalizeLimiter(value: number | string | null | undefined): number | n
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function limiterToInput(value: number | string | null | undefined): string {
+  return value === null || value === undefined || String(value).trim() === '' ? '' : String(value);
+}
+
 /**
  * Pre-save capacity-model sanity check (POST /coupons/validate-configuration).
  * Stateless advisor only — never blocks saving. The API returns HTTP 200 even
@@ -45,21 +49,20 @@ function normalizeLimiter(value: number | string | null | undefined): number | n
 export function CouponConfigChecker({ limiter }: CouponConfigCheckerProps) {
   const { t } = useTranslation();
   const [couponType, setCouponType] = useState<CouponUsageModel>('public');
-  const [limiterInput, setLimiterInput] = useState('');
+  const [limiterInput, setLimiterInput] = useState(() => limiterToInput(limiter));
   const [limiterTouched, setLimiterTouched] = useState(false);
   const [maxUsesPerUser, setMaxUsesPerUser] = useState('1');
   const [result, setResult] = useState<ValidateConfigurationResponse['data'] | null>(null);
+  const [prevLimiter, setPrevLimiter] = useState(limiter);
 
   // Prefill the limiter from the coupon form (e.g. once the coupon loads).
   // Stops syncing once the user edits the field here, so their input wins.
-  useEffect(() => {
-    if (limiterTouched) return;
-    setLimiterInput(
-      limiter === null || limiter === undefined || String(limiter).trim() === ''
-        ? ''
-        : String(limiter)
-    );
-  }, [limiter, limiterTouched]);
+  // Adjusted during render (the "You Might Not Need an Effect" pattern) to
+  // avoid cascading renders from a setState-in-effect.
+  if (limiter !== prevLimiter) {
+    setPrevLimiter(limiter);
+    if (!limiterTouched) setLimiterInput(limiterToInput(limiter));
+  }
 
   const validateMutation = useValidateConfiguration();
 

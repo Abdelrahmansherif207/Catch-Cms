@@ -8,10 +8,18 @@ import { fetchProducts } from '@/features/products/api/products.api';
 import { fetchCategories } from '@/features/categories/api/categories.api';
 import type { Category } from '@/features/categories/types/category.types';
 import {
+  emptyLocation,
+  fetchInventoryOverview,
+  fetchProductPlacements,
+  fetchStockOperations,
   receiveStock,
   transferStock,
 } from '../api/inventory.api';
-import type { ReceiveStockData, TransferStockData } from '../types/inventory.types';
+import type {
+  FetchProductPlacementsParams,
+  ReceiveStockData,
+  TransferStockData,
+} from '../types/inventory.types';
 
 function handleApiError(error: unknown, fallbackMessage: string): ApiErrorResponse {
   const apiError = error as ApiErrorResponse;
@@ -121,5 +129,73 @@ export function usePickerCategories() {
         }))
       ),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Real stats-bar source — replaces client-side derivations. */
+export function useInventoryOverview(warehouseId?: number) {
+  return useQuery({
+    queryKey: queryKeys.inventory.overview(warehouseId),
+    queryFn: () => fetchInventoryOverview(warehouseId),
+    staleTime: 60 * 1000,
+  });
+}
+
+/**
+ * Recent-activity feed (ledger list). Lives under inventory.all, so every
+ * receive/transfer/empty mutation invalidates it automatically — the feed
+ * refreshes itself after each successful operation.
+ */
+export function useStockOperations() {
+  return useQuery({
+    queryKey: queryKeys.inventory.stockOperations(),
+    queryFn: () => fetchStockOperations(),
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Per-product multi-location read for the transfer modal — enabled only once
+ * a product is actually picked at the details step. Under inventory.all, so
+ * every stock mutation invalidates it automatically.
+ */
+export function useProductPlacements(
+  productId: number | null,
+  params: FetchProductPlacementsParams = {},
+  enabled = true
+) {
+  return useQuery({
+    queryKey: queryKeys.inventory.productPlacements(productId ?? 0, params),
+    queryFn: () => fetchProductPlacements(productId!, params),
+    enabled: enabled && productId !== null,
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Empty-bin housekeeping (DELETE /admin/locations/{id}/products): removes
+ * only zero-stock/zero-hint placement rows; the server refuses stocked or
+ * picking-worked bins with verbatim translated 422s (flat — shown as toast +
+ * inline refusal text), and already-empty is an idempotent 200.
+ */
+export function useEmptyLocation() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (locationId: number | string) => emptyLocation(locationId),
+    onSuccess: (response) => {
+      toast.success(
+        response.data.removed > 0
+          ? t('inventory.emptied')
+          : t('inventory.alreadyEmpty')
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.locations.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+    },
+    onError: (error) => {
+      return handleApiError(error, t('inventory.emptyError'));
+    },
   });
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -25,14 +25,19 @@ export function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(data?.data?.logo || null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(data?.data?.favicon || null);
   const [footerLogoPreview, setFooterLogoPreview] = useState<string | null>(data?.data?.footer_logo || null);
+  const [serverData, setServerData] = useState(data?.data);
 
-  useEffect(() => {
+  // Sync preview images when fresh settings arrive from the server. Adjusted
+  // during render (the "You Might Not Need an Effect" pattern) to avoid
+  // cascading renders from a setState-in-effect.
+  if (data?.data !== serverData) {
+    setServerData(data?.data);
     if (data?.data) {
       setLogoPreview(data.data.logo || null);
       setFaviconPreview(data.data.favicon || null);
       setFooterLogoPreview(data.data.footer_logo || null);
     }
-  }, [data?.data]);
+  }
 
   const form = useForm<SettingsFormInput, unknown, SettingsFormValues>({
     resolver: zodResolver(settingsSchema),

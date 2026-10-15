@@ -24,7 +24,7 @@ import { useLocations } from '@/features/locations/hooks/use-locations';
 import { useWarehouses } from '@/features/warehouses/hooks/use-warehouses';
 import type { ApiErrorResponse } from '@/shared/api';
 import type { WarehouseLocation } from '@/features/locations/types/location.types';
-import { useTransferStock } from '../hooks/use-inventory';
+import { useTransferStock, useProductPlacements } from '../hooks/use-inventory';
 import {
   transferStockFormSchema,
   transferStockFormDefaults,
@@ -90,20 +90,38 @@ export function TransferStockModal({
     [locationsData]
   );
 
+  // Step 2 loads the product's REAL placements (GET /products/{id}/placements)
+  // — the source list becomes exactly the bins the product occupies, each
+  // with its informational quantity (allocated_hint). Empty placements fall
+  // back to the full bin list: authority stock can exist without hint rows
+  // (live-verified on meem: product 1682, authority 100, placements []).
+  const placementsQuery = useProductPlacements(productId, {}, step === 'details');
+  const placements = useMemo(
+    () => placementsQuery.data?.data.placements ?? [],
+    [placementsQuery.data]
+  );
+  const placementsDriven = placements.length > 0;
+
   // Transfers NEVER cross warehouses (live-verified refusal) — the destination
   // picker narrows to the source's warehouse up front and excludes the source.
   const sourceLocationId = form.watch('sourceLocationId');
   const sourceBin = selectableBins.find(
     (location) => String(location.id) === sourceLocationId
   );
+  const sourcePlacement = placements.find(
+    (row) => String(row.location_id) === sourceLocationId
+  );
+  const sourceWarehouseId =
+    sourceBin?.warehouse_id ?? sourcePlacement?.warehouse_id;
   const destinationBins = useMemo(
     () =>
-      sourceBin
+      sourceWarehouseId !== undefined
         ? selectableBins.filter(
-            (location) => location.warehouse_id === sourceBin.warehouse_id
+            (location) =>
+              String(location.warehouse_id) === String(sourceWarehouseId)
           )
         : [],
-    [sourceBin, selectableBins]
+    [sourceWarehouseId, selectableBins]
   );
 
   useEffect(() => {
@@ -173,6 +191,25 @@ export function TransferStockModal({
     (location) => String(location.id) === form.watch('destinationLocationId')
   );
 
+  const sourceTriggerLabel = (() => {
+    if (sourcePlacement) {
+      const binName = sourceBin
+        ? `${sourceBin.code} — ${sourceBin.name}`
+        : (sourcePlacement.location_code ?? `Bin #${sourcePlacement.location_id}`);
+      return `${binName} · ${sourcePlacement.quantity} ${t('inventory.inBin')}`;
+    }
+    return sourceBin
+      ? `${sourceBin.code} — ${sourceBin.name}`
+      : t('inventory.locationPlaceholder');
+  })();
+
+  const submitForm = () => {
+    form.handleSubmit(
+      onSubmit,
+      (errors) => console.warn('[transfer] validation blocked:', errors)
+    )();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden sm:max-w-3xl">
@@ -211,6 +248,11 @@ export function TransferStockModal({
                 onSelect={(id, name) => {
                   setProductId(id);
                   setProductName(name);
+                  // Sync the pick into the RHF form (chip state is NOT form
+                  // state — the missing setValue silently blocked submits).
+                  form.setValue('productId', String(id), {
+                    shouldValidate: true,
+                  });
                 }}
               />
               <div className="flex items-center justify-end gap-2">
@@ -232,7 +274,10 @@ export function TransferStockModal({
             </div>
           ) : (
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitForm();
+              }}
               noValidate
               className="space-y-4"
             >
@@ -244,6 +289,11 @@ export function TransferStockModal({
                   <p className="truncate text-sm font-medium">
                     {productName ?? `#${productId ?? ''}`}
                   </p>
+                  {registerError('productId') && (
+                    <p className="text-xs text-destructive">
+                      {registerError('productId')}
+                    </p>
+                  )}
                 </div>
                 <Button
                   type="button"
@@ -269,19 +319,46 @@ export function TransferStockModal({
                 >
                   <SelectTrigger id="transfer-source">
                     <SelectValue placeholder={t('inventory.locationPlaceholder')}>
-                      {sourceBin
-                        ? `${sourceBin.code} — ${sourceBin.name}`
-                        : t('inventory.locationPlaceholder')}
+                      {sourceTriggerLabel}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {selectableBins.map((location) => (
-                      <SelectItem key={location.id} value={String(location.id)}>
-                        {`${location.code} — ${location.name}`}
-                      </SelectItem>
-                    ))}
+                    {placementsDriven
+                      ? [...placements]
+                          .sort((a, b) => b.quantity - a.quantity)
+                          .map((row) => {
+                            const bin = selectableBins.find(
+                              (location) => location.id === row.location_id
+                            );
+                            const label =
+                              bin
+                                ? `${bin.code} — ${bin.name}`
+                                : row.location_code ?? `Bin #${row.location_id}`;
+                            return (
+                              <SelectItem
+                                key={row.id}
+                                value={String(row.location_id)}
+                              >
+                                {`${label} · ${row.quantity} ${t('inventory.inBin')}${
+                                  row.allocated_hint > 0
+                                    ? ` (${row.allocated_hint} ${t('inventory.reservedHint')})`
+                                    : ''
+                                }`}
+                              </SelectItem>
+                            );
+                          })
+                      : selectableBins.map((location) => (
+                          <SelectItem key={location.id} value={String(location.id)}>
+                            {`${location.code} — ${location.name}`}
+                          </SelectItem>
+                        ))}
                   </SelectContent>
                 </Select>
+                {placementsDriven && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('inventory.placementsNote')}
+                  </p>
+                )}
                 {registerError('sourceLocationId') && (
                   <p className="text-xs text-destructive">
                     {registerError('sourceLocationId')}
@@ -356,7 +433,15 @@ export function TransferStockModal({
                 >
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={isPending}>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  onClick={(event) => {
+                    // Click-invoked submit (same pattern as the receive modal).
+                    event.preventDefault();
+                    submitForm();
+                  }}
+                >
                   {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {isPending ? t('inventory.transferring') : t('inventory.transferBtn')}
                 </Button>
