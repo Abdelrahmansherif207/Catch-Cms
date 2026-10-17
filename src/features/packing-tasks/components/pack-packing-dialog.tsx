@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Scale } from 'lucide-react';
+import { Scale, TriangleAlert } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import type { PackingTaskDetail } from '../types/packing-task.types';
 
 interface PackPackingDialogProps {
   task: PackingTaskDetail;
+  /** Live deficit count from the coverage guard (0/undefined = complete). */
+  incompleteCoverage?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -26,8 +28,15 @@ interface PackPackingDialogProps {
 /**
  * Completion form — supervisor records the locked-after-write numbers.
  * Materials is a comma-separated convenience over the server's array body.
+ * The engine allows packing with empty boxes, but verify later refuses the
+ * `verify_quantities` rule — surface the coverage debt BEFORE the write.
  */
-export function PackPackingDialog({ task, open, onOpenChange }: PackPackingDialogProps) {
+export function PackPackingDialog({
+  task,
+  incompleteCoverage,
+  open,
+  onOpenChange,
+}: PackPackingDialogProps) {
   const { t } = useTranslation();
   const packMutation = usePackPackingTask();
 
@@ -98,6 +107,12 @@ export function PackPackingDialog({ task, open, onOpenChange }: PackPackingDialo
         </DialogHeader>
 
         <div className="space-y-4">
+          {typeof incompleteCoverage === 'number' && incompleteCoverage > 0 && (
+            <div className="flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-xs text-warning">
+              <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{t('packingTasks.packCoverageWarning', { count: incompleteCoverage })}</span>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="pack-weight">{t('packingTasks.packWeight')}</Label>
             <Input

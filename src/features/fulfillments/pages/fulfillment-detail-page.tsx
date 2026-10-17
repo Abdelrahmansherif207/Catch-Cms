@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Link, useParams } from 'react-router';
 import {
   AlertTriangle,
@@ -46,6 +47,7 @@ import { AssignFulfillmentDialog } from '../components/assign-fulfillment-dialog
 import { CancelFulfillmentDialog } from '../components/cancel-fulfillment-dialog';
 import { CreateShipmentDialog } from '../components/create-shipment-dialog';
 import { AssignPlacementDialog } from '../components/assign-placement-dialog';
+import { PlacementTaskGate } from '../components/placement-task-gate';
 import type {
   FulfillmentDetail,
   FulfillmentItem,
@@ -89,6 +91,67 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
   const canShipment = can(PERMISSIONS.fulfillments.shipment);
 
   const detail = data?.data;
+
+  // ── Placement-aware create-tasks orchestration ──────────────────────
+  // create-tasks refuses while items lack placement; instead of surfacing
+  // the engine 422, queue the unplaced items and walk the operator through
+  // them (manual assign / inline receive-stock), then fire create-tasks
+  // when the queue drains — completing the click that started the flow.
+  // Fully event-driven: the queue array DROPS resolved ids (scan-based
+  // derivation skips out-of-band-placed rows), so no effects are needed.
+  const [placementQueueIds, setPlacementQueueIds] = useState<number[]>([]);
+  const createAfterQueueRef = useRef(false);
+
+  const openTaskFlow = useCallback(
+    (items: FulfillmentItem[]) => {
+      if (items.length === 0) return;
+      toast.info(t('fulfillments.placementWaitHint', { count: items.length }));
+      createAfterQueueRef.current = true;
+      setPlacementQueueIds(items.map((item) => item.id));
+    },
+    [t]
+  );
+
+  const handleCreateTasksClick = useCallback(() => {
+    if (!detail) return;
+    const unplaced = detail.items.filter((item) => item.product_location_id === null);
+    if (unplaced.length === 0) {
+      createTasksMutation.mutate(detail.id);
+      return;
+    }
+    openTaskFlow(unplaced);
+  }, [detail, createTasksMutation, openTaskFlow]);
+
+  // One queue item resolved (dialog assigned / receipt+auto-pin completed).
+  const handleQueueResolved = useCallback(
+    (itemId: number) => {
+      const remainder = placementQueueIds.filter((id) => id !== itemId);
+      setPlacementQueueIds(remainder);
+      if (remainder.length === 0 && createAfterQueueRef.current && detail) {
+        createAfterQueueRef.current = false;
+        createTasksMutation.mutate(detail.id);
+      }
+    },
+    [placementQueueIds, detail, createTasksMutation]
+  );
+
+  const handleQueueDismiss = useCallback(() => {
+    createAfterQueueRef.current = false;
+    setPlacementQueueIds([]);
+  }, []);
+
+  // Active gate item = first queued id whose fresh row is STILL unplaced
+  // (rows placed out-of-band via the per-row dialogs skip transparently).
+  const queueItem = useMemo(() => {
+    if (!detail) return null;
+    for (const id of placementQueueIds) {
+      const item = detail.items.find((row) => row.id === id);
+      if (item && item.product_location_id === null) return item;
+    }
+    return null;
+  }, [placementQueueIds, detail]);
+
+
 
   const refresh = useCallback(() => {
     refetch();
@@ -144,7 +207,7 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
               </Button>
             )}
             {showCreateTasks && (
-              <Button onClick={() => createTasksMutation.mutate(detail.id)}>
+              <Button onClick={handleCreateTasksClick}>
                 <ClipboardList className="me-1.5 h-4 w-4" />
                 {t('fulfillments.createTasks')}
               </Button>
@@ -291,6 +354,15 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
         <ShipmentsMiniTable shipments={detail.shipments} fulfillmentId={detail.id} />
       )}
 
+      {queueItem && (
+        <PlacementTaskGate
+          key={queueItem.id}
+          item={queueItem}
+          warehouseId={detail.warehouse_id}
+          onResolved={handleQueueResolved}
+          onDismiss={handleQueueDismiss}
+        />
+      )}
       <AssignFulfillmentDialog
         fulfillment={detail}
         open={assignOpen}
@@ -317,7 +389,14 @@ export function FulfillmentDetailPage({ id }: FulfillmentDetailPageProps) {
           onOpenChange={(open) => {
             if (!open) setPlacementItem(null);
           }}
-          onSuccess={refresh}
+          // Row-button resolutions also advance the task flow queue so an
+          // operator mixing both surfaces never stalls the auto create-tasks.
+          onSuccess={() => {
+            refresh();
+            if (placementQueueIds.includes(placementItem.id)) {
+              handleQueueResolved(placementItem.id);
+            }
+          }}
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -15,6 +16,7 @@ import type {
   AddPackageItemData,
   CreatePackageData,
   FetchPackagesParams,
+  PackageListItem,
   VoidPackageData,
 } from '../types/package.types';
 
@@ -34,10 +36,11 @@ function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: queryKeys.fulfillments.all });
 }
 
-export function usePackages(params: FetchPackagesParams) {
+export function usePackages(params: FetchPackagesParams, enabled = true) {
   return useQuery({
     queryKey: queryKeys.packages.list(params),
     queryFn: () => fetchPackages(params),
+    enabled,
     staleTime: 15 * 1000,
   });
 }
@@ -47,6 +50,46 @@ export function usePackage(id: number | string | undefined) {
     queryKey: queryKeys.packages.detail(id),
     queryFn: () => fetchPackageById(Number(id!)),
     enabled: id !== undefined && id !== null,
+    staleTime: 15 * 1000,
+  });
+}
+
+/**
+ * Per-fulfillment-item packaging coverage — mirrors the verify engine rule
+ * (SUM of non-voided package_items.quantity per fulfillment_item; "picked N,
+ * packed M" refusals). The packages INDEX rows carry NO items, so every
+ * non-voided package detail is fetched and summed into a plain Record keyed
+ * by fulfillment_item_id. Keyed under packages.details() so every package
+ * mutation's packages.all invalidation refetches it automatically.
+ * A coverage QUERY error deliberately does NOT block the caller — the
+ * engine stays the authority (soft-degrade: guard reads as "ready").
+ */
+export function usePackageItemTotals(
+  packages: PackageListItem[] | undefined,
+  enabled = true
+) {
+  const activeIds = useMemo(
+    () =>
+      (packages ?? [])
+        .filter((pkg) => pkg.status !== 'voided')
+        .map((pkg) => pkg.id),
+    [packages]
+  );
+  const activeKey = activeIds.join(',');
+  return useQuery<Record<string, number>>({
+    queryKey: [...queryKeys.packages.details(), 'coverage', activeKey] as const,
+    queryFn: async () => {
+      const details = await Promise.all(activeIds.map((id) => fetchPackageById(id)));
+      const totals: Record<string, number> = {};
+      for (const response of details) {
+        for (const entry of response.data.items) {
+          const itemId = entry.fulfillment_item_id;
+          totals[itemId] = (totals[itemId] ?? 0) + (Number(entry.quantity) || 0);
+        }
+      }
+      return totals;
+    },
+    enabled: enabled && packages !== undefined,
     staleTime: 15 * 1000,
   });
 }

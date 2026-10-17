@@ -55,12 +55,21 @@ export interface WmsProductRef {
   thumbnail: string | null;
 }
 
+/** Live-verified variant attribute row — the backend sends objects
+ * (keys: attribute, value, attribute_id, attribute_value_id), never strings. */
+export interface WmsVariantAttribute {
+  attribute: string;
+  value: string;
+  attribute_id: number;
+  attribute_value_id: number;
+}
+
 export interface WmsVariantRef {
   id: number;
   sku: string;
   price: number;
   stock_quantity: number;
-  attributes: string[];
+  attributes: WmsVariantAttribute[];
 }
 
 export interface WmsLocationRef {

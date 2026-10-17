@@ -67,7 +67,7 @@ export function WmsItemProductDetails({ item }: { item: FulfillmentItem }) {
                 key={index}
                 className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
               >
-                {attr}
+                {attr.attribute}: {attr.value}
               </span>
             ))}
             <span className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground">

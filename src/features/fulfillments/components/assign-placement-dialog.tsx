@@ -88,8 +88,10 @@ export function AssignPlacementDialog({
       { itemId: item.id, payload: { product_location_id: Number(selectedId) } },
       {
         onSuccess: () => {
-          onOpenChange(false);
+          // Resolve FIRST, then close: the task-flow gate distinguishes
+          // "assigned" from "cancelled" by this ordering.
           onSuccess();
+          onOpenChange(false);
         },
         onError: (error) => {
           const apiError = error as {
@@ -142,7 +144,7 @@ export function AssignPlacementDialog({
                   key={index}
                   className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground"
                 >
-                  {attr}
+                  {attr.attribute}: {attr.value}
                 </span>
               ))}
             </div>
