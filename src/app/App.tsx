@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { PERMISSIONS } from "@/shared/auth/permissions";
@@ -40,6 +40,7 @@ const EditProductPage = lazy(() => import("@/features/products/pages/edit-produc
 const OrdersPage = lazy(() => import("@/features/orders/pages/orders-page").then(m => ({ default: m.OrdersPage })));
 const OrderDetailPage = lazy(() => import("@/features/orders/pages/order-detail-page").then(m => ({ default: m.OrderDetailPage })));
 const MyOrdersPage = lazy(() => import("@/features/orders/pages/my-orders-page").then(m => ({ default: m.MyOrdersPage })));
+const TrackingDashboardPage = lazy(() => import("@/features/tracking/pages/tracking-dashboard-page").then(m => ({ default: m.TrackingDashboardPage })));
 const OrderFlowsPage = lazy(() => import("@/features/order-flows/pages/order-flows-page").then(m => ({ default: m.OrderFlowsPage })));
 const OrderFlowDetailPage = lazy(() => import("@/features/order-flows/pages/order-flow-detail-page").then(m => ({ default: m.OrderFlowDetailPage })));
 const OrderStatusesPage = lazy(() => import("@/features/order-flows/pages/order-statuses-page").then(m => ({ default: m.OrderStatusesPage })));
@@ -84,6 +85,12 @@ function Spinner() {
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
+}
+
+/** Legacy /tracking/orders/:orderId → /orders/:orderId. */
+function TrackingOrdersRedirect() {
+  const { orderId } = useParams();
+  return <Navigate to={`/orders/${orderId}`} replace />;
 }
 
 export default function App() {
@@ -141,10 +148,17 @@ export default function App() {
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/users/:id" element={<UserDetailPage />} />
               </Route>
+              {/* Unified orders module:
+                  list + detail live on the tracking API (superset filters);
+                  the tracking dashboard is served under /tracking here. */}
               <Route element={<PermissionRoute permission={PERMISSIONS.orders.view} />}>
                 <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/orders/:id" element={<OrderDetailPage />} />
+                <Route path="/tracking" element={<TrackingDashboardPage />} />
               </Route>
+              {/* Legacy /tracking/orders URLs — redirect into the unified routes. */}
+              <Route path="/tracking/orders/:orderId" element={<TrackingOrdersRedirect />} />
+              <Route path="/tracking/orders" element={<Navigate to="/orders" replace />} />
               <Route
                 element={
                   <PermissionRoute

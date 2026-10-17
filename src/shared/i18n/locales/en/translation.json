@@ -137,7 +137,9 @@
     "pickingTasks": "Picking Tasks",
     "batches": "Pick Waves",
     "packingTasks": "Packing Tasks",
-    "shipments": "Shipments"
+    "shipments": "Shipments",
+    "tracking": "Order Tracking",
+    "trackedOrders": "Tracked Orders"
   },
   "orders": {
     "title": "Orders",
@@ -152,17 +154,26 @@
       "processing": "Processing",
       "completed": "Completed",
       "cancelled": "Cancelled",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "shipped": "Shipped",
+      "refunded": "Refunded",
+      "failed": "Failed",
+      "on_hold": "On Hold",
+      "awaiting_payment": "Awaiting Payment"
     },
     "paymentStatuses": {
       "payment-success": "Payment Success",
       "payment-pending": "Payment Pending",
-      "payment-failed": "Payment Failed"
+      "payment-failed": "Payment Failed",
+      "paid": "Paid",
+      "refunded": "Refunded"
     },
     "orderNumber": "Order #",
     "customer": "Customer",
     "status": "Status",
     "paymentStatus": "Payment",
+    "fulfillment": "Fulfillment",
+    "allFulfillments": "All Fulfillments",
     "shippingMethod": "Shipping",
     "date": "Date",
     "orderItems": "Order Items",
@@ -251,6 +262,149 @@
       "invalid_flow_input": "Invalid input value",
       "payment_permission_required": "Payment must be marked paid first (missing permission)",
       "internal_error": "Internal error"
+    },
+    "fulfillmentStatuses": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "picking": "Picking",
+      "packing": "Packing",
+      "ready_to_ship": "Ready to ship",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "shipmentStatuses": {
+      "pending": "Pending",
+      "label_created": "Label created",
+      "picked_up": "Picked up",
+      "in_transit": "In transit",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "failed_delivery": "Failed delivery",
+      "returned": "Returned",
+      "cancelled": "Cancelled"
+    },
+    "shipmentDialog": {
+      "title": "Update shipment — order #{{id}}",
+      "description": "Fires the domain transition; the response echo may be stale, the panel re-reads afterwards.",
+      "status": "Status",
+      "selectStatus": "Select status",
+      "statusRequired": "A target status is required.",
+      "trackingNumber": "Tracking number",
+      "courier": "Courier",
+      "courierPlaceholder": "e.g. Aramex",
+      "eta": "Estimated delivery",
+      "etaHint": "Only a changed value fires the ETA event.",
+      "notes": "Note",
+      "notesPlaceholder": "e.g. left at depot",
+      "updating": "Updating...",
+      "submit": "Update"
+    },
+    "cancelDialog": {
+      "dialogTitle": "Cancel order {{orderNumber}}",
+      "dialogDescription": "Cancels through the order flow authority; open fulfillments cascade in the same transaction while shipped rows survive.",
+      "reason": "Reason (required)",
+      "reasonPlaceholder": "e.g. customer changed mind",
+      "reasonRequired": "A cancellation reason is required.",
+      "cancelling": "Cancelling...",
+      "submit": "Cancel order"
+    },
+    "noShipment": "No shipment",
+    "shipment": {
+      "statusLabel": "Status",
+      "trackingNumber": "Tracking number",
+      "courier": "Courier",
+      "estimated": "Estimated delivery",
+      "actual": "Actual delivery"
+    },
+    "list": {
+      "quickRange": "Range",
+      "allTime": "All time",
+      "quickRanges": {
+        "24h": "Last 24 hours",
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "older_30d": "Older than 30 days",
+        "older_90d": "Older than 90 days"
+      },
+      "sortBy": "Sort by",
+      "sortColumns": {
+        "created_at": "Created",
+        "updated_at": "Updated",
+        "total_price": "Total price",
+        "status": "Status",
+        "id": "ID"
+      },
+      "sortOrder": "Direction",
+      "sortDirections": {
+        "desc": "Newest first",
+        "asc": "Oldest first"
+      },
+      "perPage": "Per page",
+      "refreshing": "Refreshing..."
+    },
+    "statusChanges": "Status changes",
+    "timeToComplete": "Time to complete",
+    "notCompleted": "Not completed",
+    "sinceCreation": "Since creation",
+    "inCurrentStatus": "In current status",
+    "updateShipment": "Update shipment",
+    "cancelOrder": "Cancel order",
+    "timeline": "Status timeline",
+    "noTimeline": "No status changes recorded yet.",
+    "transition": "From {{from}} · {{at}}",
+    "timelineAt": "{{at}}",
+    "shipmentPanel": "Shipment",
+    "cancelledAt": "Cancelled",
+    "engineGatedHint": "Buttons reflect the engine's exact rules; hidden actions are refused server-side.",
+    "trackingError": "Failed to load order tracking.",
+    "actions": {
+      "canProcess": "Can process",
+      "canRefund": "Can refund",
+      "canMarkDelivered": "Can mark delivered"
+    },
+    "shipmentUpdated": "Shipment status updated successfully",
+    "shipmentUpdateError": "Failed to update shipment status",
+    "orderCancelled": "Order cancelled successfully",
+    "cancelError": "Failed to cancel order"
+  },
+  "tracking": {
+    "title": "Order Tracking",
+    "subtitle": "Operations monitoring for order status, revenue and shipment flow.",
+    "dashboardError": "Failed to load tracking dashboard.",
+    "periods": {
+      "today": "Today",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year"
+    },
+    "overview": {
+      "totalOrders": "Total Orders",
+      "completedOrders": "Completed",
+      "pendingOrders": "Pending",
+      "cancelledOrders": "Cancelled",
+      "pendingAllTime": "All-time count, not period-scoped",
+      "statusBreakdown": "Status breakdown",
+      "rangeScoped": "Only statuses present in the selected period appear.",
+      "pendingActions": "Pending actions",
+      "revenue": "Revenue (paid)",
+      "totalRevenue": "Total revenue"
+    },
+    "actions": {
+      "needsProcessing": "Needs processing (pending + paid)",
+      "needsShipment": "Needs shipment (completed + processing)",
+      "paymentVerification": "Payment verification (last 24h)"
+    },
+    "revenue": {
+      "total": "Total",
+      "average": "Average",
+      "paidCount": "Paid orders",
+      "mixed": "Mixed currencies",
+      "unknownCurrency": "Unclassified currency"
+    },
+    "attention": {
+      "title": "Requires attention",
+      "view": "View"
     }
   },
   "pickupLocations": {
@@ -2597,7 +2751,31 @@
     "activateError": "Failed to activate warehouse",
     "deactivateError": "Failed to deactivate warehouse",
     "defaultUpdateError": "Failed to update the default warehouse",
-    "archiveError": "Failed to archive warehouse"
+    "archiveError": "Failed to archive warehouse",
+    "usersTitle": "Assigned users",
+    "usersDescription": "Staff users assigned to this warehouse.",
+    "assignUsers": "Assign users",
+    "assignUsersTitle": "Assign users to warehouse",
+    "assignUsersDescription": "Pick users and a mode for \"{{name}}\". Sync replaces the whole assignment list.",
+    "usersSearchPlaceholder": "Search users by name or email...",
+    "usersNoResults": "No users found.",
+    "usersEmpty": "No users are assigned to this warehouse yet.",
+    "usersViewPermissionHint": "User search requires the view-users permission — ask an administrator to grant it before assigning.",
+    "selectedCount": "{{count}} selected",
+    "mode": "Mode",
+    "modeAttach": "Attach",
+    "modeAttachHint": "Adds the selected users without removing anyone (idempotent).",
+    "modeSync": "Sync",
+    "modeSyncHint": "Replaces the assignment list — unchecked users are removed.",
+    "modeDetach": "Detach",
+    "modeDetachHint": "Removes the selected users from the warehouse.",
+    "usersAssigned": "Users assigned to warehouse successfully",
+    "assignUsersError": "Failed to assign users",
+    "removeUser": "Remove",
+    "removeUserTitle": "Remove user from warehouse",
+    "removeUserConfirm": "Remove \"{{name}}\" from \"{{warehouse}}\"? Only the assignment is removed — the user account stays.",
+    "userRemoved": "User removed from warehouse successfully",
+    "removeUserError": "Failed to remove user"
   },
   "locations": {
     "pageTitle": "Location Bins",

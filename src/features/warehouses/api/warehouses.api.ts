@@ -1,11 +1,15 @@
 import { axiosClient } from '@/shared/api';
 import type {
   ApiResponse,
+  AssignWarehouseUsersData,
+  AssignWarehouseUsersResponse,
   CreateWarehouseData,
   MessageResponse,
+  RemoveWarehouseUserResponse,
   UpdateWarehouseData,
   Warehouse,
   WarehouseDetailResponse,
+  WarehouseUsersResponse,
   WarehousesListResponse,
 } from '../types/warehouse.types';
 
@@ -81,6 +85,51 @@ export async function setDefaultWarehouse(
 ): Promise<ApiResponse<Warehouse>> {
   const { data } = await axiosClient.post<ApiResponse<Warehouse>>(
     `/admin/warehouses/${id}/set-default`
+  );
+  return data;
+}
+
+/**
+ * GET /admin/warehouses/{id}/users — pivot list of assigned staff users.
+ * Cross-warehouse reads are masked as 404 (anti-enumeration, view-warehouse).
+ */
+export async function fetchWarehouseUsers(
+  id: number | string
+): Promise<WarehouseUsersResponse> {
+  const { data } = await axiosClient.get<WarehouseUsersResponse>(
+    `/admin/warehouses/${id}/users`
+  );
+  return data;
+}
+
+/**
+ * POST /admin/warehouses/{id}/users — bulk pivot write (attach/sync/detach)
+ * inside one transaction; requires manage-warehouse, cross-warehouse → 403.
+ * attach = syncWithoutDetaching (idempotent), sync = replace, detach = remove.
+ */
+export async function assignWarehouseUsers(
+  id: number | string,
+  payload: AssignWarehouseUsersData
+): Promise<AssignWarehouseUsersResponse> {
+  const { data } = await axiosClient.post<AssignWarehouseUsersResponse>(
+    `/admin/warehouses/${id}/users`,
+    payload
+  );
+  return data;
+}
+
+/**
+ * DELETE /admin/warehouses/{id}/users/{userId} — single-target unlink of the
+ * `warehouse_users` pivot row; the user account itself is never deleted.
+ * No body is read. Idempotent no-op: 200 + count 1 even if the user was not
+ * assigned. Unknown warehouse/user → 404; foreign warehouse scope → 403.
+ */
+export async function removeWarehouseUser(
+  id: number | string,
+  userId: number | string
+): Promise<RemoveWarehouseUserResponse> {
+  const { data } = await axiosClient.delete<RemoveWarehouseUserResponse>(
+    `/admin/warehouses/${id}/users/${userId}`
   );
   return data;
 }

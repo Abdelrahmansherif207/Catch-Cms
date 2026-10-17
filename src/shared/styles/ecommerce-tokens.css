@@ -8,11 +8,22 @@
   /* Order Status — all reference semantic tokens, no raw hex */
   --order-pending: var(--warning);
   --order-confirmed: var(--brand-primary);
-  --order-processing: var(--brand-processing);
+  --order-processing: var(--processing);
   --order-shipped: var(--brand-primary-dark);
   --order-delivered: var(--brand-success);
-  --order-cancelled: var(--brand-text-secondary);
-  --order-refunded: var(--brand-text-secondary);
+  --order-cancelled: var(--destructive);
+  --order-failed: var(--destructive);
+  --order-refunded: var(--violet);
+
+  /* Fulfillment Status — picking/packing pipeline stages */
+  --fulfillment-pending: var(--brand-text-secondary);
+  --fulfillment-processing: var(--info);
+  --fulfillment-picking: var(--cyan);
+  --fulfillment-packing: var(--indigo);
+  --fulfillment-ready-to-ship: var(--warning);
+  --fulfillment-shipped: var(--brand-primary);
+  --fulfillment-delivered: var(--brand-success);
+  --fulfillment-cancelled: var(--destructive);
 
   /* Product Status */
   --product-draft: var(--brand-text-secondary);
@@ -27,8 +38,9 @@
   /* Payment Status */
   --payment-pending: var(--warning);
   --payment-paid: var(--brand-success);
+  --payment-success: var(--brand-success);
   --payment-failed: var(--destructive);
-  --payment-refunded: var(--brand-text-secondary);
+  --payment-refunded: var(--violet);
 
   /* Customer Status */
   --customer-active: var(--brand-success);

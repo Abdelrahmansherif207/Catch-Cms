@@ -29,6 +29,7 @@ import {
 } from '../hooks/use-warehouses';
 import { WarehouseFormDialog } from '../components/warehouse-form-dialog';
 import { WarehouseArchiveDialog } from '../components/warehouse-archive-dialog';
+import { WarehouseUsersCard } from '../components/warehouse-users-card';
 
 export function WarehouseDetailPage() {
   const { t } = useTranslation();
@@ -184,6 +185,8 @@ export function WarehouseDetailPage() {
           </p>
         </CardSection>
       )}
+
+      <WarehouseUsersCard warehouse={warehouse} onChanged={() => refetch()} />
 
       <WarehouseFormDialog warehouse={warehouse} open={editOpen} onOpenChange={setEditOpen} onSuccess={() => refetch()} />
 

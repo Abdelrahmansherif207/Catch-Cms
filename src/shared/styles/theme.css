@@ -37,12 +37,24 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-processing: var(--processing);
+  --color-processing-foreground: var(--processing-foreground);
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-cyan: var(--cyan);
+  --color-cyan-foreground: var(--cyan-foreground);
+  --color-indigo: var(--indigo);
+  --color-indigo-foreground: var(--indigo-foreground);
 
   /* Soft status fills → Tailwind (badge backgrounds) */
   --color-success-soft: var(--success-soft);
   --color-warning-soft: var(--warning-soft);
   --color-destructive-soft: var(--destructive-soft);
   --color-info-soft: var(--info-soft);
+  --color-processing-soft: var(--processing-soft);
+  --color-violet-soft: var(--violet-soft);
+  --color-cyan-soft: var(--cyan-soft);
+  --color-indigo-soft: var(--indigo-soft);
 
   /* Charts */
   --color-chart-1: var(--chart-1);

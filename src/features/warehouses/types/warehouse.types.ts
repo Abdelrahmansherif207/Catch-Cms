@@ -57,3 +57,52 @@ export interface MessageResponse {
   message: string;
   success: boolean;
 }
+
+/** `warehouse_users` pivot row, as returned with each assigned user. */
+export interface WarehouseUserPivot {
+  warehouse_id: number;
+  user_id: number;
+  is_primary: number | boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * GET /admin/warehouses/{id}/users item — pivot list of staff users
+ * (id, name, email, type + the `email_verified` model append).
+ */
+export interface WarehouseUser {
+  id: number;
+  name: string;
+  email: string;
+  type: string;
+  email_verified?: boolean;
+  pivot: WarehouseUserPivot;
+}
+
+export type WarehouseUsersResponse = ApiResponse<WarehouseUser[]>;
+
+export type WarehouseAssignMode = 'attach' | 'sync' | 'detach';
+
+export interface AssignWarehouseUsersData {
+  user_ids: number[];
+  mode?: WarehouseAssignMode;
+}
+
+/** POST summary echo: deduped ids + the applied mode. */
+export interface AssignWarehouseUsersResult {
+  warehouse_id: number;
+  user_ids: number[];
+  count: number;
+  mode: string;
+}
+
+export type AssignWarehouseUsersResponse = ApiResponse<AssignWarehouseUsersResult>;
+
+/**
+ * DELETE /admin/warehouses/{id}/users/{userId} — same contract as the POST
+ * summary (warehouse_id, user_ids, count, mode) with mode always "detach".
+ * Idempotent: 200 + count 1 even when the user was not assigned (count counts
+ * REQUESTED ids, never rows actually removed). No validation → no 422.
+ */
+export type RemoveWarehouseUserResponse = AssignWarehouseUsersResponse;

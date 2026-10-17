@@ -252,6 +252,10 @@ export const queryKeys = {
     list: <P extends object>(params: P) => ['warehouses', 'list', params] as const,
     details: () => ['warehouses', 'detail'] as const,
     detail: (id?: number | string) => ['warehouses', 'detail', id] as const,
+    users: {
+      all: ['warehouses', 'users'] as const,
+      of: (id?: number | string) => ['warehouses', 'users', id] as const,
+    },
   },
   locations: {
     all: ['locations'] as const,
@@ -306,6 +310,15 @@ export const queryKeys = {
       ['shipments', 'list', fulfillmentId ?? null, params] as const,
     details: () => ['shipments', 'detail'] as const,
     detail: (id?: number | string) => ['shipments', 'detail', id] as const,
+  },
+  tracking: {
+    all: ['tracking'] as const,
+    dashboard: (period: string) => ['tracking', 'dashboard', period] as const,
+    attention: () => ['tracking', 'attention'] as const,
+    orders: <P extends object>(params: P) => ['tracking', 'orders', params] as const,
+    details: () => ['tracking', 'detail'] as const,
+    detail: (id?: number | string) => ['tracking', 'detail', id] as const,
+    shipment: (id?: number | string) => ['tracking', 'shipment', id] as const,
   },
   fulfillments: {
     all: ['fulfillments'] as const,
