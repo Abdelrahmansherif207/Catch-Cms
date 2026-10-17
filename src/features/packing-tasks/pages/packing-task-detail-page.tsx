@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,6 +21,10 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { fulfillmentRoutes } from '@/features/fulfillments/routes/fulfillment.routes';
 import { WmsItemProductDetails } from '@/features/fulfillments/components/wms-item-product';
 import { useFulfillment } from '@/features/fulfillments/hooks/use-fulfillments';
+import {
+  usePackageItemTotals,
+  usePackages,
+} from '@/features/packages/hooks/use-packages';
 import {
   usePackingTask,
   useStartPackingTask,
@@ -74,6 +78,33 @@ export function PackingTaskDetailPage({ id }: { id: number }) {
   const { data: fulfillmentResponse } = useFulfillment(detail?.fulfillment_id);
   const fulfillment = fulfillmentResponse?.data;
 
+  // ── Verify coverage (mirrors the engine's verify_quantities rule: every
+  // picked unit must sit inside a NON-voided package before verify) ──────
+  // Hooks sit above the early returns; params swap when the fulfillment
+  // loads and the enabled flag keeps the 0-id placeholder unfetched.
+  const { data: packagesResponse } = usePackages(
+    { fulfillmentId: detail?.fulfillment_id ?? 0 },
+    detail !== undefined
+  );
+  const coverageQuery = usePackageItemTotals(
+    detail !== undefined ? packagesResponse?.data : undefined
+  );
+  const coverageRows = useMemo(
+    () =>
+      (fulfillment?.items ?? []).map((item) => {
+        const picked = Number(item.quantity_picked) || 0;
+        const packed = coverageQuery.data?.[item.id] ?? 0;
+        return { item, picked, packed, remaining: Math.max(picked - packed, 0) };
+      }),
+    [fulfillment, coverageQuery.data]
+  );
+  // Hook stays above the early returns alongside its coverageRows input;
+  // the readiness consts below are plain derivations, safe post-return.
+  const coverageDeficits = useMemo(
+    () => coverageRows.filter((row) => row.remaining > 0),
+    [coverageRows]
+  );
+
   if (isError) {
     return <DataErrorState onRetry={() => refetch()} />;
   }
@@ -93,6 +124,13 @@ export function PackingTaskDetailPage({ id }: { id: number }) {
     canComplete && VERIFIABLE_STATUSES.includes(status as (typeof VERIFIABLE_STATUSES)[number]);
   const canCancelById =
     canManage && CANCELLABLE_STATUSES.includes(status as (typeof CANCELLABLE_STATUSES)[number]);
+
+  // Verify guard: covered = every fulfillment item's picked units sit in a
+  // non-voided package. A coverage fetch error soft-degrades to "allow" —
+  // the engine re-checks server-side with the verbatim refusal.
+  const coverageLoaded = coverageQuery.isSuccess;
+  const coverageReady =
+    coverageQuery.isError || (coverageLoaded && coverageDeficits.length === 0);
 
   return (
     <div className="space-y-6">
@@ -208,10 +246,22 @@ export function PackingTaskDetailPage({ id }: { id: number }) {
             <p className="text-sm text-muted-foreground">
               {t('packingTasks.verifyDescription')}
             </p>
-            <Button onClick={() => setVerifyOpen(true)}>
-              <BadgeCheck className="me-1.5 h-4 w-4" />
-              {t('packingTasks.verifyAction')}
-            </Button>
+            <span className="flex flex-col items-end gap-1">
+              <Button
+                onClick={() => setVerifyOpen(true)}
+                disabled={!coverageReady}
+                title={!coverageReady ? t('packingTasks.verifyBlockedTitle') : undefined}
+              >
+                <BadgeCheck className="me-1.5 h-4 w-4" />
+                {t('packingTasks.verifyAction')}
+              </Button>
+              {!coverageReady && (
+                <span className="flex max-w-xs items-center gap-1 text-end text-xs text-destructive">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  {t('packingTasks.verifyBlockedHint')}
+                </span>
+              )}
+            </span>
           </div>
         ) : null}
 
@@ -246,21 +296,41 @@ export function PackingTaskDetailPage({ id }: { id: number }) {
                   <th className="px-3 py-2 text-start">{t('packingTasks.itemProduct')}</th>
                   <th className="px-3 py-2 text-start">{t('packingTasks.itemQty')}</th>
                   <th className="px-3 py-2 text-start">{t('packingTasks.itemPicked')}</th>
+                  <th className="px-3 py-2 text-start">{t('packingTasks.itemPacked')}</th>
                   <th className="px-2 py-2 text-end">{t('common.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {detail.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-3 py-2 font-mono text-xs">{item.id}</td>
-                    <td className="px-3 py-2">
-                      <WmsItemProductDetails item={item} />
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{item.quantity}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{item.quantity_picked}</td>
-                    <td className="px-2 py-2 text-end">{item.status}</td>
-                  </tr>
-                ))}
+                {detail.items.map((item) => {
+                  const row = coverageRows.find((entry) => entry.item.id === item.id);
+                  const picked = Number(item.quantity_picked) || 0;
+                  const packed = row?.packed ?? 0;
+                  const covered = packed >= picked;
+                  return (
+                    <tr key={item.id}>
+                      <td className="px-3 py-2 font-mono text-xs">{item.id}</td>
+                      <td className="px-3 py-2">
+                        <WmsItemProductDetails item={item} />
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs">{item.quantity}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{item.quantity_picked}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs',
+                            covered
+                              ? 'bg-success-soft text-success'
+                              : 'bg-warning-soft text-warning'
+                          )}
+                          title={t('packingTasks.coverageChipTitle')}
+                        >
+                          {packed} / {picked}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 text-end">{item.status}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -330,8 +400,26 @@ export function PackingTaskDetailPage({ id }: { id: number }) {
           onOpenChange={setAssignOpen}
         />
       )}
-      {packOpen && <PackPackingDialog task={detail} open onOpenChange={setPackOpen} />}
-      {verifyOpen && <VerifyPackingDialog task={detail} open onOpenChange={setVerifyOpen} />}
+      {packOpen && (
+        <PackPackingDialog
+          task={detail}
+          incompleteCoverage={coverageDeficits.length}
+          open
+          onOpenChange={setPackOpen}
+        />
+      )}
+      {verifyOpen && (
+        <VerifyPackingDialog
+          task={detail}
+          coverage={coverageReady ? undefined : coverageDeficits.map((row) => ({
+            itemId: row.item.id,
+            picked: row.picked,
+            packed: row.packed,
+          }))}
+          open
+          onOpenChange={setVerifyOpen}
+        />
+      )}
       {cancelOpen && (
         <CancelPackingTaskDialog task={detail} open onOpenChange={setCancelOpen} />
       )}

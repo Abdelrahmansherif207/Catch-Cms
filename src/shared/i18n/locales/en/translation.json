@@ -2884,7 +2884,22 @@
     "bulkShipPartial": "Created {{created}}, failed {{failed}} — check the details.",
     "bulkShipAllFailed": "All {{count}} refused — check the details.",
     "bulkShipError": "Failed to create shipment labels",
-    "openShipments": "Open shipments"
+    "openShipments": "Open shipments",
+    "placementWaitHint": "{{count}} item(s) await placement — assign them before picking tasks run.",
+    "receiveStock": {
+      "title": "Receive stock & place item",
+      "description": "Item {{item}} (product {{product}}, picked {{progress}}) has no placement yet. Receive stock at a bin to create one — the item is pinned to it automatically.",
+      "bin": "Bin",
+      "binPlaceholder": "Select a bin",
+      "binRequired": "Select a bin",
+      "noBins": "No stock-capable bins in this warehouse yet — create one under Locations first.",
+      "quantity": "Quantity",
+      "quantityInvalid": "Quantity must be a whole number of at least 1.",
+      "receive": "Receive stock",
+      "receiving": "Receiving...",
+      "placementMissing": "Stock was received but no placement row was returned — refresh and try the assign dialog again.",
+      "permissionHint": "Item {{item}} (product {{product}}) has no placements at all and stock reception requires the inventory-adjust permission."
+    }
   },
   "pickingTasks": {
     "pageTitle": "Picking Tasks",
@@ -3377,6 +3392,13 @@
     "itemProduct": "Product",
     "itemQty": "Quantity",
     "itemPicked": "Picked",
+    "itemPacked": "Packed",
+    "coverageChipTitle": "Packed / picked — mirrors the verify packaging rule",
+    "verifyBlockedTitle": "Add items to packages first",
+    "verifyBlockedHeading": "Packaging is incomplete",
+    "verifyBlockedHint": "Every picked unit must sit in a package before verifying — use the Packages panel below.",
+    "verifyCoverageRow": "item #{{itemId}} — picked {{picked}}, packed {{packed}}",
+    "packCoverageWarning": "{{count}} item(s) are not fully in packages yet — verify will refuse until they are.",
     "timeline": {
       "assigned": "Assigned at",
       "started": "Packing started",
