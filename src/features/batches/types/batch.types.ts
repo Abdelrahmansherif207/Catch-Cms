@@ -106,8 +106,20 @@ export interface NextTaskEmptyResponse {
 
 export type NextTaskResponse = NextTaskResponseData | NextTaskEmptyResponse;
 
+/**
+ * Guard against non-row payloads: the EMPTY variant omits `data`, but a
+ * defensive check also rejects arrays / id-less objects so callers never
+ * navigate to `/picking-tasks/undefined`.
+ */
 export function hasNextTask(response: NextTaskResponse): response is NextTaskResponseData {
-  return response.data !== undefined && response.data !== null;
+  const data = response.data as unknown;
+  return (
+    data !== undefined &&
+    data !== null &&
+    typeof data === 'object' &&
+    !Array.isArray(data) &&
+    typeof (data as BatchTaskRow).id === 'number'
+  );
 }
 
 /**

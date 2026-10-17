@@ -71,9 +71,16 @@ export function PickingTaskDetailPage({ id }: { id: number }) {
     batch !== null && batch.status !== 'completed' && batch.status !== 'cancelled';
 
   // Advance loop: the engine's next pending task once this one is picked.
+  // A cached next-task can still name THIS task right after the pick —
+  // treating it as "no next" shows the wave-done branch instead of a
+  // self-navigating no-op button.
   const nextQuery = useBatchNextTask(batchActive ? (detail?.batch_id ?? undefined) : undefined);
   const nextTask =
-    nextQuery.data && hasNextTask(nextQuery.data) ? nextQuery.data.data : null;
+    nextQuery.data &&
+    hasNextTask(nextQuery.data) &&
+    nextQuery.data.data.id !== id
+      ? nextQuery.data.data
+      : null;
 
   const [pickOpen, setPickOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);

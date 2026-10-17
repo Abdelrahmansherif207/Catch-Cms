@@ -137,7 +137,9 @@
     "pickingTasks": "مهام الانتقاء",
     "batches": "موجات الانتقاء",
     "packingTasks": "مهام التغليف",
-    "shipments": "الشحنات"
+    "shipments": "الشحنات",
+    "tracking": "تتبع الطلبات",
+    "trackedOrders": "الطلبات المتتبعة"
   },
   "orders": {
     "title": "الطلبات",
@@ -152,17 +154,26 @@
       "processing": "قيد المعالجة",
       "completed": "مكتمل",
       "cancelled": "ملغي",
-      "delivered": "تم التوصيل"
+      "delivered": "تم التوصيل",
+      "shipped": "تم الشحن",
+      "refunded": "تم الاسترداد",
+      "failed": "فشل",
+      "on_hold": "معلق",
+      "awaiting_payment": "بانتظار الدفع"
     },
     "paymentStatuses": {
       "payment-success": "تم الدفع",
       "payment-pending": "بانتظار الدفع",
-      "payment-failed": "فشل الدفع"
+      "payment-failed": "فشل الدفع",
+      "paid": "مدفوع",
+      "refunded": "مسترد"
     },
     "orderNumber": "رقم الطلب",
     "customer": "العميل",
     "status": "الحالة",
     "paymentStatus": "الدفع",
+    "fulfillment": "التنفيذ",
+    "allFulfillments": "كل حالات التنفيذ",
     "shippingMethod": "الشحن",
     "date": "التاريخ",
     "orderItems": "عناصر الطلب",
@@ -251,6 +262,149 @@
       "invalid_flow_input": "قيمة إدخال غير صالحة",
       "payment_permission_required": "يجب تسجيل الدفع أولًا (صلاحية مفقودة)",
       "internal_error": "خطأ داخلي"
+    },
+    "fulfillmentStatuses": {
+      "pending": "انتظار",
+      "processing": "معالجة",
+      "picking": "انتقاء",
+      "packing": "تغليف",
+      "ready_to_ship": "جاهز للشحن",
+      "shipped": "تم شحنه",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى"
+    },
+    "shipmentStatuses": {
+      "pending": "انتظار",
+      "label_created": "تم إنشاء البوليصة",
+      "picked_up": "تم الاستلام",
+      "in_transit": "في الطريق",
+      "out_for_delivery": "خارج للتوصيل",
+      "delivered": "تم التسليم",
+      "failed_delivery": "فشل التسليم",
+      "returned": "مرتجع",
+      "cancelled": "ملغى"
+    },
+    "shipmentDialog": {
+      "title": "تحديث الشحن — الطلب #{{id}}",
+      "description": "يُطلق انتقال الحالة؛ قد يكون الارتداد في الاستجابة قديمًا وتُعاد قراءة اللوحة بعد ذلك.",
+      "status": "الحالة",
+      "selectStatus": "اختر الحالة",
+      "statusRequired": "الحالة الهدف مطلوبة.",
+      "trackingNumber": "رقم التتبع",
+      "courier": "الناقل",
+      "courierPlaceholder": "مثل: Aramex",
+      "eta": "التسليم المتوقع",
+      "etaHint": "تُطلق حدث الموعد المتوقع فقط عند تغيّر القيمة.",
+      "notes": "ملاحظة",
+      "notesPlaceholder": "مثل: تُرك في المخزن",
+      "updating": "جارٍ التحديث...",
+      "submit": "تحديث"
+    },
+    "cancelDialog": {
+      "dialogTitle": "إلغاء الطلب {{orderNumber}}",
+      "dialogDescription": "الإلغاء يتم عبر سلطة مسار الطلب؛ تُلغى عمليات التنفيذ المفتوحة في نفس المعاملة بينما تنجو الصفوف المشحونة.",
+      "reason": "السبب (مطلوب)",
+      "reasonPlaceholder": "مثل: غيّر العميل رأيه",
+      "reasonRequired": "سبب الإلغاء مطلوب.",
+      "cancelling": "جارٍ الإلغاء...",
+      "submit": "إلغاء الطلب"
+    },
+    "noShipment": "لا يوجد شحن",
+    "shipment": {
+      "statusLabel": "الحالة",
+      "trackingNumber": "رقم التتبع",
+      "courier": "الناقل",
+      "estimated": "التسليم المتوقع",
+      "actual": "التسليم الفعلي"
+    },
+    "list": {
+      "quickRange": "المدى",
+      "allTime": "كل الأوقات",
+      "quickRanges": {
+        "24h": "آخر 24 ساعة",
+        "7d": "آخر 7 أيام",
+        "30d": "آخر 30 يوماً",
+        "older_30d": "أقدم من 30 يوماً",
+        "older_90d": "أقدم من 90 يوماً"
+      },
+      "sortBy": "ترتيب حسب",
+      "sortColumns": {
+        "created_at": "الإنشاء",
+        "updated_at": "التحديث",
+        "total_price": "الإجمالي",
+        "status": "الحالة",
+        "id": "المعرف"
+      },
+      "sortOrder": "الاتجاه",
+      "sortDirections": {
+        "desc": "الأحدث أولًا",
+        "asc": "الأقدم أولًا"
+      },
+      "perPage": "لكل صفحة",
+      "refreshing": "جارٍ التحديث..."
+    },
+    "statusChanges": "تغييرات الحالة",
+    "timeToComplete": "وقت الإكمال",
+    "notCompleted": "غير مكتمل",
+    "sinceCreation": "منذ الإنشاء",
+    "inCurrentStatus": "في الحالة الحالية",
+    "updateShipment": "تحديث الشحن",
+    "cancelOrder": "إلغاء الطلب",
+    "timeline": "خط زمني للحالة",
+    "noTimeline": "لا توجد تغييرات حالة مسجلة بعد.",
+    "transition": "من {{from}} · {{at}}",
+    "timelineAt": "{{at}}",
+    "shipmentPanel": "الشحنة",
+    "cancelledAt": "أُلغي",
+    "engineGatedHint": "تعكس الأزرار قواعد المحرك الدقيقة؛ والإجراءات المخفية يرفضها الخادم.",
+    "trackingError": "فشل تحميل تتبع الطلب.",
+    "actions": {
+      "canProcess": "قابل للمعالجة",
+      "canRefund": "قابل للاسترداد",
+      "canMarkDelivered": "قابل للتحويل كمسلّم"
+    },
+    "shipmentUpdated": "تم تحديث حالة الشحن بنجاح",
+    "shipmentUpdateError": "فشل تحديث حالة الشحن",
+    "orderCancelled": "تم إلغاء الطلب بنجاح",
+    "cancelError": "فشل إلغاء الطلب"
+  },
+  "tracking": {
+    "title": "تتبع الطلبات",
+    "subtitle": "مراقبة العمليات لحالات الطلبات والإيرادات وتدفق الشحن.",
+    "dashboardError": "فشل تحميل لوحة التتبع.",
+    "periods": {
+      "today": "اليوم",
+      "week": "الأسبوع",
+      "month": "الشهر",
+      "year": "السنة"
+    },
+    "overview": {
+      "totalOrders": "إجمالي الطلبات",
+      "completedOrders": "مكتملة",
+      "pendingOrders": "قيد الانتظار",
+      "cancelledOrders": "ملغاة",
+      "pendingAllTime": "عدد تراكمي عبر كل الفترات",
+      "statusBreakdown": "تفصيل الحالات",
+      "rangeScoped": "تظهر فقط الحالات الموجودة ضمن الفترة المحددة.",
+      "pendingActions": "إجراءات معلقة",
+      "revenue": "الإيرادات (المدفوعة)",
+      "totalRevenue": "إجمالي الإيرادات"
+    },
+    "actions": {
+      "needsProcessing": "بحاجة معالجة (انتظار + مدفوع)",
+      "needsShipment": "بحاجة شحن (مكتمل + تنفيذ قيد المعالجة)",
+      "paymentVerification": "تحقق من الدفع (آخر 24 ساعة)"
+    },
+    "revenue": {
+      "total": "الإجمالي",
+      "average": "المتوسط",
+      "paidCount": "الطلبات المدفوعة",
+      "mixed": "عملات مختلطة",
+      "unknownCurrency": "عملة غير مصنفة"
+    },
+    "attention": {
+      "title": "بحاجة إلى انتباه",
+      "view": "عرض"
     }
   },
   "categories": {
@@ -2597,7 +2751,31 @@
     "activateError": "فشل تنشيط المستودع",
     "deactivateError": "فشل إلغاء تنشيط المستودع",
     "defaultUpdateError": "فشل تحديث المستودع الافتراضي",
-    "archiveError": "فشل أرشفة المستودع"
+    "archiveError": "فشل أرشفة المستودع",
+    "usersTitle": "المستخدمون المعيّنون",
+    "usersDescription": "المستخدمون العاملون المعيّنون لهذا المستودع.",
+    "assignUsers": "تعيين مستخدمين",
+    "assignUsersTitle": "تعيين مستخدمين إلى المستودع",
+    "assignUsersDescription": "اختر المستخدمين والوضع لـ \"{{name}}\". خيار المزامنة يستبدل قائمة التعيين بالكامل.",
+    "usersSearchPlaceholder": "ابحث عن المستخدمين بالاسم أو البريد الإلكتروني...",
+    "usersNoResults": "لا يوجد مستخدمون.",
+    "usersEmpty": "لا يوجد مستخدمون معيّنون لهذا المستودع بعد.",
+    "usersViewPermissionHint": "البحث عن المستخدمين يتطلب صلاحية view-users — اطلب من المسؤول منحها قبل التعيين.",
+    "selectedCount": "تم اختيار {{count}}",
+    "mode": "الوضع",
+    "modeAttach": "إضافة",
+    "modeAttachHint": "يضيف المستخدمين المحددين دون إزالة أي أحد (عملية آمنة للتكرار).",
+    "modeSync": "مزامنة",
+    "modeSyncHint": "يستبدل قائمة التعيين — سيتم إزالة المستخدمين غير المحددين.",
+    "modeDetach": "إزالة",
+    "modeDetachHint": "يزيل المستخدمين المحددين من المستودع.",
+    "usersAssigned": "تم تعيين المستخدمين إلى المستودع بنجاح",
+    "assignUsersError": "فشل تعيين المستخدمين",
+    "removeUser": "إزالة",
+    "removeUserTitle": "إزالة مستخدم من المستودع",
+    "removeUserConfirm": "إزالة \"{{name}}\" من \"{{warehouse}}\"؟ تُزال العلاقة فقط ويبقى حساب المستخدم.",
+    "userRemoved": "تمت إزالة المستخدم من المستودع بنجاح",
+    "removeUserError": "فشل إزالة المستخدم"
   },
   "locations": {
     "pageTitle": "مواقع التخزين",

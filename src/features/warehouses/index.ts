@@ -3,6 +3,9 @@ export { WarehouseDetailPage } from './pages/warehouse-detail-page';
 export {
   useWarehouses,
   useWarehouse,
+  useWarehouseUsers,
+  useAssignWarehouseUsers,
+  useRemoveWarehouseUser,
   useCreateWarehouse,
   useUpdateWarehouse,
   useActivateWarehouse,
@@ -17,4 +20,6 @@ export type {
   WarehouseStatus,
   CreateWarehouseData,
   UpdateWarehouseData,
+  WarehouseUser,
+  WarehouseAssignMode,
 } from './types/warehouse.types';

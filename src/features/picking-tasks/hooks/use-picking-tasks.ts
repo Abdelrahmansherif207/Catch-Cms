@@ -34,6 +34,10 @@ function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: queryKeys.pickingTasks.details() });
   // Task progress mirrors onto the fulfillment + its items.
   queryClient.invalidateQueries({ queryKey: queryKeys.fulfillments.all });
+  // Task moves also move the wave: batch progress/sequence and the cached
+  // next-task answer (otherwise the picking page's "Next task" card keeps
+  // pointing at the task that was just picked and self-navigates nowhere).
+  queryClient.invalidateQueries({ queryKey: queryKeys.batches.all });
 }
 
 export function usePickingTasks(params: FetchPickingTasksParams = {}) {

@@ -22,6 +22,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { DataEmptyState } from '@/shared/components/data-state';
 import { cn } from '@/shared/lib/utils';
 import { OrderStatusBadge } from './order-status-badge';
+import { FulfillmentStatusBadge } from './fulfillment-status-badge';
 import { OrderDeleteDialog } from './order-delete-dialog';
 import { BulkStatusDialog } from './bulk-status-dialog';
 import { usePermissions } from '@/shared/auth/guards';
@@ -29,10 +30,11 @@ import { PERMISSIONS } from '@/shared/auth/permissions';
 import { orderRoutes } from '../routes/order.routes';
 import { useReleaseSelection, RELEASE_SELECTION_MAX } from '../hooks/use-release-selection';
 import { ReleaseFulfillmentDialog } from '@/features/fulfillments/components/release-fulfillment-dialog';
-import type { OrderListItem } from '../types/order.types';
+import { stalenessAccent } from '@/features/tracking/utils/order-colors';
+import type { TrackingOrderRow } from '@/features/tracking/types/tracking.types';
 
 interface OrdersTableProps {
-  data: OrderListItem[];
+  data: TrackingOrderRow[];
   isLoading: boolean;
   onRefresh: () => void;
 }
@@ -41,7 +43,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { can } = usePermissions();
-  const [deleteTarget, setDeleteTarget] = useState<OrderListItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TrackingOrderRow | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [releaseOpen, setReleaseOpen] = useState(false);
 
@@ -83,7 +85,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
   };
 
   if (isLoading) {
-    return <TableSkeleton />;
+    return <TableSkeleton showCheckbox={showCheckbox} />;
   }
 
   return (
@@ -94,7 +96,7 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
             {t('orders.selectedCount', { count: selectedCount })}
             {selectedCount >= RELEASE_SELECTION_MAX && (
               <span className="ms-1 text-xs text-warning">
-                {t('fulfillments.releaseSelectionCap', { max: RELEASE_SELECTION_MAX })}
+                {t('fulfillments.releaseCap', { max: RELEASE_SELECTION_MAX })}
               </span>
             )}
           </span>
@@ -132,19 +134,21 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                   />
                 </TableHead>
               )}
+              <TableHead>{'#'}</TableHead>
               <TableHead>{t('orders.orderNumber')}</TableHead>
               <TableHead>{t('orders.customer')}</TableHead>
               <TableHead>{t('orders.status')}</TableHead>
               <TableHead>{t('orders.paymentStatus')}</TableHead>
-              <TableHead>{t('orders.shippingMethod')}</TableHead>
-              <TableHead>{t('orders.date')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('orders.fulfillment')}</TableHead>
+              <TableHead>{t('orders.total')}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t('orders.createdAt')}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={showCheckbox ? 8 : 7}>
+                <TableCell colSpan={showCheckbox ? 10 : 9}>
                   <DataEmptyState title={t('common.noData')} className="border-0" />
                 </TableCell>
               </TableRow>
@@ -154,8 +158,8 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                   key={order.id}
                   className={cn(
                     'transition-colors',
-                    selected.has(order.id) &&
-                      'bg-primary/10 shadow-[inset_2px_0_0_0_var(--primary)]'
+                    stalenessAccent(order),
+                    selected.has(order.id) && 'bg-primary/10'
                   )}
                 >
                   {showCheckbox && (
@@ -167,14 +171,17 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                       />
                     </TableCell>
                   )}
+                  <TableCell className="font-mono text-xs">{order.id}</TableCell>
                   <TableCell>
-                    <span className="font-medium">{order.order_number}</span>
+                    <span className="font-medium font-mono text-sm">{order.order_number}</span>
                   </TableCell>
                   <TableCell>
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{order.customer.name}</p>
+                      <p className="font-medium truncate">
+                        {order.user?.name ?? order.name ?? '—'}
+                      </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {order.customer.email}
+                        {order.user?.email ?? order.user_email ?? '—'}
                       </p>
                     </div>
                   </TableCell>
@@ -182,17 +189,27 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
                     <OrderStatusBadge status={order.status} type="order" />
                   </TableCell>
                   <TableCell>
-                    <OrderStatusBadge status={order.payment_status} type="payment" />
+                    {order.payment_status ? (
+                      <OrderStatusBadge status={order.payment_status} type="payment" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
-                      {order.shipping_method}
+                  <TableCell className="hidden md:table-cell">
+                    {order.fulfillment_status ? (
+                      <FulfillmentStatusBadge status={order.fulfillment_status} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm tabular-nums">
+                    {order.total_price.toLocaleString()}{' '}
+                    <span className="text-xs text-muted-foreground">
+                      {order.currency_code ?? ''}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </span>
+                  <TableCell className="hidden text-sm text-muted-foreground whitespace-nowrap sm:table-cell">
+                    {new Date(order.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -272,24 +289,30 @@ export function OrdersTable({ data, isLoading, onRefresh }: OrdersTableProps) {
   );
 }
 
-function TableSkeleton() {
+function TableSkeleton({ showCheckbox }: { showCheckbox: boolean }) {
   return (
     <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
       <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{'Order'}</TableHead>
-              <TableHead>{'Customer'}</TableHead>
-              <TableHead>{'Status'}</TableHead>
-              <TableHead>{'Payment'}</TableHead>
-              <TableHead>{'Shipping'}</TableHead>
-            <TableHead>{'Date'}</TableHead>
+        <TableHeader>
+          <TableRow>
+            {showCheckbox && <TableHead className="w-10" />}
+            <TableHead>{'Order'}</TableHead>
+            <TableHead>{'Customer'}</TableHead>
+            <TableHead>{'Status'}</TableHead>
+            <TableHead>{'Payment'}</TableHead>
+            <TableHead className="hidden md:table-cell">{'Fulfillment'}</TableHead>
+            <TableHead>{'Total'}</TableHead>
+            <TableHead className="hidden sm:table-cell">{'Date'}</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {Array.from({ length: 5 }).map((_, i) => (
             <TableRow key={i}>
+              {showCheckbox && <TableCell />}
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-28" />
               </TableCell>
@@ -303,10 +326,13 @@ function TableSkeleton() {
               <TableCell>
                 <Skeleton className="h-5 w-24" />
               </TableCell>
+              <TableCell className="hidden md:table-cell">
+                <Skeleton className="h-5 w-24" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-16" />
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <Skeleton className="h-4 w-20" />
               </TableCell>
               <TableCell>

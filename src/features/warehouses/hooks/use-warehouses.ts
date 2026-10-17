@@ -6,6 +6,9 @@ import type { ApiErrorResponse } from '@/shared/api';
 import {
   fetchWarehouses,
   fetchWarehouseById,
+  fetchWarehouseUsers,
+  assignWarehouseUsers,
+  removeWarehouseUser,
   createWarehouse,
   updateWarehouse,
   archiveWarehouse,
@@ -15,6 +18,7 @@ import {
   type FetchWarehousesParams,
 } from '../api/warehouses.api';
 import type {
+  AssignWarehouseUsersData,
   CreateWarehouseData,
   UpdateWarehouseData,
 } from '../types/warehouse.types';
@@ -143,6 +147,74 @@ export function useArchiveWarehouse() {
     },
     onError: (error) => {
       handleApiError(error, t('warehouses.archiveError'));
+    },
+  });
+}
+
+/**
+ * Assigned-staff pivot read — GET /admin/warehouses/{id}/users.
+ * Cross-warehouse 404s surface through the page's error state.
+ */
+export function useWarehouseUsers(id: number | string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.warehouses.users.of(id),
+    queryFn: () => fetchWarehouseUsers(id!),
+    enabled: id !== undefined && id !== null,
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Bulk pivot write — POST /admin/warehouses/{id}/users. The error is
+ * re-thrown to callers (the dialog maps 422 field errors), after the
+ * generic toast.
+ */
+export function useAssignWarehouseUsers() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number | string;
+      payload: AssignWarehouseUsersData;
+    }) => assignWarehouseUsers(id, payload),
+    onSuccess: () => {
+      toast.success(t('warehouses.usersAssigned'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.users.all });
+    },
+    onError: (error) => {
+      handleApiError(error, t('warehouses.assignUsersError'));
+    },
+  });
+}
+
+/**
+ * Single-target pivot unlink — DELETE /admin/warehouses/{id}/users/{userId}.
+ * Idempotent no-op (200 even when the user was not assigned); 404 on unknown
+ * warehouse/user, 403 on foreign-warehouse scope denial. Only the users query
+ * is invalidated — assignments don't affect warehouse metadata.
+ */
+export function useRemoveWarehouseUser() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      userId,
+    }: {
+      id: number | string;
+      userId: number | string;
+    }) => removeWarehouseUser(id, userId),
+    onSuccess: () => {
+      toast.success(t('warehouses.userRemoved'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.users.all });
+    },
+    onError: (error) => {
+      handleApiError(error, t('warehouses.removeUserError'));
     },
   });
 }

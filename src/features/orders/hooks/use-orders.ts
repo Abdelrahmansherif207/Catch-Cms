@@ -65,6 +65,7 @@ export function useDeleteOrder() {
     onSuccess: (response) => {
       toast.success(response.message || 'Order deleted successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tracking.all });
       navigate(orderRoutes.list);
     },
     onError: (error: unknown) => {
@@ -89,6 +90,7 @@ export function useUpdateOrderStatus() {
     onSuccess: (response, variables) => {
       toast.success(response.message || 'Order status updated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tracking.all });
       queryClient.invalidateQueries({
         queryKey: queryKeys.orders.detail(variables.id),
       });
@@ -121,6 +123,7 @@ export function useUpdateOrdersStatusBatch() {
       const total = response.data?.summary?.total ?? 0;
       toast.success(`${succeeded} of ${total} orders updated`);
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tracking.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       const succeededIds =
         response.data?.results?.filter((r) => r.success).map((r) => r.order_id) ?? [];

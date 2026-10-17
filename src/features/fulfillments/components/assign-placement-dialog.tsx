@@ -136,7 +136,7 @@ export function AssignPlacementDialog({
               <span className="text-muted-foreground">
                 {t('fulfillments.placementVariantFor')}:
               </span>
-              <span className="rounded-md bg-info-soft px-1.5 py-0.5 font-mono text-info">
+              <span className="min-w-0 max-w-full truncate rounded-md bg-info-soft px-1.5 py-0.5 font-mono text-info">
                 {item.variant.sku}
               </span>
               {item.variant.attributes.map((attr, index) => (
@@ -185,21 +185,16 @@ export function AssignPlacementDialog({
                 />
               </SelectTrigger>
               <SelectContent>
+                {/* Compact rows: the narrowed list is single-variant, so
+                    SKU/attributes are constant and already shown in the
+                    header chip — repeating them made every option an
+                    unshrinkable nowrap line that overflowed the dialog. */}
                 {placements.map((row) => (
                   <SelectItem key={row.id} value={String(row.id)}>
-                    <span className="font-mono">{row.location_code ?? '#' + row.location_id}</span>
-                    <span className="text-muted-foreground"> · {row.sku}</span>
-                    {(row.variant_attributes ?? []).map((attr, index) => (
-                      <span
-                        key={index}
-                        className="text-xs text-muted-foreground"
-                      >
-                        {' '}
-                        · {attr.attribute}: {attr.value}
-                      </span>
-                    ))}
-                    <span className="text-xs text-muted-foreground">
-                      {' '}
+                    <span className="truncate font-mono">
+                      {row.location_code ?? '#' + row.location_id}
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">
                       · {t('fulfillments.placementQuantity')} {row.quantity}
                     </span>
                   </SelectItem>

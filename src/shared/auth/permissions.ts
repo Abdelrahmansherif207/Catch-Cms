@@ -184,6 +184,10 @@ export const PERMISSIONS = {
     view: 'view-orders',
     viewDetail: 'view-order',
     updateStatus: 'update-order-status',
+    cancelDuringFulfillment: 'order.cancel-during-fulfillment',
+  },
+  tracking: {
+    view: 'view-orders',
   },
   digitalEntitlements: {
     manage: 'manage-digital-access',
