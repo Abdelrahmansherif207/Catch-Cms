@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Archive,
   Eye,
+  Map,
   MoreHorizontal,
   Pencil,
   Play,
@@ -33,6 +34,7 @@ import { usePermissions } from '@/shared/auth/guards';
 import { PERMISSIONS } from '@/shared/auth/permissions';
 import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 import { warehouseRoutes } from '../routes/warehouse.routes';
+import { warehouseMapRoutes } from '@/features/warehouse-map/routes/warehouse-map.routes';
 import {
   useActivateWarehouse,
   useDeactivateWarehouse,
@@ -68,6 +70,7 @@ export function WarehousesTable({
   const [defaultTarget, setDefaultTarget] = useState<Warehouse | null>(null);
 
   const canManage = can(PERMISSIONS.warehouses.manage);
+  const canViewMap = can(PERMISSIONS.locations.view);
   const setDefaultMutation = useSetDefaultWarehouse();
   const activateMutation = useActivateWarehouse();
   const deactivateMutation = useDeactivateWarehouse();
@@ -146,6 +149,14 @@ export function WarehousesTable({
                           {t('common.view')}
                         </DropdownMenuItem>
 
+                        {canViewMap && (
+                          <DropdownMenuItem
+                            onClick={() => navigate(warehouseMapRoutes.detail(warehouse.id))}
+                          >
+                            <Map className="me-2 h-4 w-4" />
+                            {t('warehouseMap.viewMap')}
+                          </DropdownMenuItem>
+                        )}
                         {canManage && (
                           <>
                             <DropdownMenuItem onClick={() => handlers.onEdit(warehouse)}>

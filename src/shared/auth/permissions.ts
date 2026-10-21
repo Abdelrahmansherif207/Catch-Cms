@@ -277,6 +277,8 @@ export const PERMISSIONS = {
   locations: {
     view: 'view-location',
     manage: 'manage-location',
+    /** POST /admin/locations/check-occupancy (Permission::LOCATIONS_CHECK_OCCUPANCY). */
+    checkOccupancy: 'locations.check-occupancy',
   },
   packingStations: {
     view: 'view-fulfillment',

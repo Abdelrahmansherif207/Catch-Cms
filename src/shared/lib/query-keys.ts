@@ -264,6 +264,13 @@ export const queryKeys = {
     details: () => ['locations', 'detail'] as const,
     detail: (id?: number | string) => ['locations', 'detail', id] as const,
   },
+  warehouseMap: {
+    all: ['warehouse-map'] as const,
+    pickRoutes: () => ['warehouse-map', 'pick-route'] as const,
+    pickRoute: (batchId: number | string) => ['warehouse-map', 'pick-route', batchId] as const,
+    binContents: (warehouseId: number) =>
+      ['warehouse-map', 'bin-contents', warehouseId] as const,
+  },
   packingStations: {
     all: ['packing-stations'] as const,
     lists: () => ['packing-stations', 'list'] as const,

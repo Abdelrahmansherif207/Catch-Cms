@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Archive,
   Building,
+  Map,
   MapPin,
   Play,
   Pencil,
@@ -21,6 +22,7 @@ import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 import { Can, usePermissions } from '@/shared/auth/guards';
 import { PERMISSIONS } from '@/shared/auth/permissions';
 import { warehouseRoutes } from '../routes/warehouse.routes';
+import { warehouseMapRoutes } from '@/features/warehouse-map/routes/warehouse-map.routes';
 import {
   useWarehouse,
   useActivateWarehouse,
@@ -33,6 +35,7 @@ import { WarehouseUsersCard } from '../components/warehouse-users-card';
 
 export function WarehouseDetailPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { can } = usePermissions();
 
@@ -101,8 +104,19 @@ export function WarehouseDetailPage() {
           { label: warehouse.code },
         ]}
         actions={
-          <Can permission={PERMISSIONS.warehouses.manage}>
-            <>
+          <>
+            <Can permission={PERMISSIONS.locations.view}>
+              <Button
+                variant="outline"
+                onClick={() => navigate(warehouseMapRoutes.detail(warehouse.id))}
+              >
+                <Map className="me-1.5 h-4 w-4" />
+                {t('warehouseMap.viewMap')}
+              </Button>
+            </Can>
+
+            <Can permission={PERMISSIONS.warehouses.manage}>
+              <>
               {warehouse.status === 'inactive' ? (
                 <Button
                   variant="outline"
@@ -147,8 +161,9 @@ export function WarehouseDetailPage() {
                   {t('warehouses.archive')}
                 </Button>
               )}
-            </>
-          </Can>
+              </>
+            </Can>
+          </>
         }
       />
 
