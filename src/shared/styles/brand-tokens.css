@@ -5,16 +5,22 @@
  */
 
 :root {
-  /* Primary — Brand Blue */
-  --brand-primary: #124e91;
-  --brand-primary-dark: #0b3a6b;
+  /* Primary — Brand Green */
+  --brand-primary: #16834b;
+  --brand-primary-hover: #126c3e;
+  --brand-primary-active: #0e5a34;
+  --brand-primary-dark: #0b472a;
+  --brand-primary-light: #75c65c;
+  --brand-primary-surface: #f0f8ef;
 
-  /* Secondary — Brand Red */
-  --brand-secondary: #da2128;
-  --brand-secondary-dark: #b01a20;
+  /* Secondary — Brand Orange */
+  --brand-secondary: #f5822a;
+  --brand-secondary-hover: #df6e1c;
+  --brand-secondary-dark: #b95412;
+  --brand-secondary-surface: #fff4e9;
 
-  /* Accent — Brand Deep Red */
-  --brand-accent: #d20025;
+  /* Accent — Brand Light Green */
+  --brand-accent: #75c65c;
 
   /* Semantic Brand Colors */
   --brand-success: #237f52;

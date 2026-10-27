@@ -21,9 +21,9 @@
   --primary: var(--brand-primary);
   --primary-foreground: #ffffff;
 
-  /* Secondary */
+  /* Secondary — orange needs dark ink for contrast */
   --secondary: var(--brand-secondary);
-  --secondary-foreground: #ffffff;
+  --secondary-foreground: #1c1a1a;
 
   /* Muted */
   --muted: var(--brand-surface);
@@ -127,21 +127,21 @@
   --popover: #1a1c23;
   --popover-foreground: #f0f0f0;
 
-  /* Primary — Lighter blue for contrast on dark */
-  --primary: #4a85c4;
-  --primary-foreground: #001a33;
+  /* Primary — Light green for contrast on dark */
+  --primary: #75c65c;
+  --primary-foreground: #0b472a;
 
-  /* Secondary — Lighter red */
-  --secondary: #ff6b6b;
-  --secondary-foreground: #ffffff;
+  /* Secondary — Brand orange with dark ink */
+  --secondary: #f5822a;
+  --secondary-foreground: #1c1a1a;
 
   /* Muted */
   --muted: #232530;
   --muted-foreground: #999999;
 
-  /* Accent — Lighter deep red */
-  --accent: #ff4757;
-  --accent-foreground: #f0f0f0;
+  /* Accent — Brand light green */
+  --accent: #75c65c;
+  --accent-foreground: #0b472a;
 
   /* Destructive */
   --destructive: #ff6b6b;
@@ -194,7 +194,7 @@
   --input: #2a2d38;
 
   /* Ring */
-  --ring: #4a85c4;
+  --ring: #75c65c;
 
   /* Success */
   --success: #3DB87A;
@@ -204,19 +204,19 @@
   --discount: #ff6b6b;
 
   /* Charts */
-  --chart-1: #4a85c4;
-  --chart-2: #ff6b6b;
-  --chart-3: #ff4757;
+  --chart-1: #75c65c;
+  --chart-2: #f5822a;
+  --chart-3: #16834b;
   --chart-4: #3DB87A;
-  --chart-5: #7ab8e8;
+  --chart-5: #b95412;
 
   /* Sidebar */
   --sidebar: #0d0f14;
   --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: #4a85c4;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #75c65c;
+  --sidebar-primary-foreground: #0b472a;
   --sidebar-accent: #232530;
   --sidebar-accent-foreground: #f0f0f0;
   --sidebar-border: #2a2d38;
-  --sidebar-ring: #4a85c4;
+  --sidebar-ring: #75c65c;
 }
