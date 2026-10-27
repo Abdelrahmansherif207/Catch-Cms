@@ -1,5 +1,5 @@
 {
-  "name": "meem-market-cms",
+  "name": "rawd-al-aseel-cms",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -72,7 +72,7 @@
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
   },
-  "description": "Admin dashboard for managing the [Meem Market](https://meem.market) e-commerce platform. Handles products, orders, promotions, coupons, categories, brands, content, users, roles, and settings for the Meem Market retail chain ([meem-market.com](https://meem-market.com)).",
+  "description": "Admin dashboard for managing the Rawd Al Aseel e-commerce platform. Handles products, orders, promotions, coupons, categories, brands, content, users, roles, and settings for the Rawd Al Aseel retail chain.",
   "main": "eslint.config.js",
   "directories": {
     "doc": "docs"
