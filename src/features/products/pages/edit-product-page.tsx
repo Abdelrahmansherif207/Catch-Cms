@@ -38,12 +38,14 @@ function productToFormValues(product: Product): ProductFormValues {
     nameAr: name.ar,
     descriptionEn: description.en,
     descriptionAr: description.ar,
+    sku: product.sku || '',
     price: product.price || undefined,
     quantity: product.stock_quantity || undefined,
     inStock: isTruthyFlag(product.in_stock),
     status: isActiveStatus(product.status),
     categoryIds: product.categories?.map((c) => c.id) || [],
     brandIds: product.brands?.map((b) => b.id) || [],
+    tagIds: product.tags?.map((t) => t.id) || [],
     bannerIds: product.banners?.map((b) => b.id) || [],
     sliderIds: product.sliders?.map((s) => s.id) || [],
     hasDiscount: product.has_discount,
@@ -58,13 +60,22 @@ function productToFormValues(product: Product): ProductFormValues {
     width: product.width ? Number(product.width) : undefined,
     length: product.length ? Number(product.length) : undefined,
     weight: product.weight ? Number(product.weight) : undefined,
+    pieceBarcode: product.piece_barcode || undefined,
+    cartonBarcode: product.carton_barcode || undefined,
+    piecesPerCarton: product.pieces_per_carton || undefined,
+    isFastShippingAvailable: isTruthyFlag(product.is_fast_shipping_available),
     images: [],
     variants:
       product.variants?.map((v) => ({
+        id: v.id,
         price: v.price,
         quantity: v.quantity,
         sku: v.sku || '',
-        attributeValueIds: v.attribute_values,
+        // The show endpoint returns label-shaped attributes only (no
+        // attribute_values ids) — ProductForm resolves the ids against the
+        // attributes API once loaded.
+        attributeValueIds: v.attribute_values ?? [],
+        attributes: v.attributes?.map((a) => ({ attribute_name: a.attribute_name, value: a.value })),
         height: v.height ? Number(v.height) : undefined,
         width: v.width ? Number(v.width) : undefined,
         length: v.length ? Number(v.length) : undefined,

@@ -54,12 +54,27 @@ export interface FlashSaleBrief {
   created_at: string;
 }
 
+export interface TagBrief {
+  id: number;
+  name: string;
+  slug: string;
+  image?: string;
+  icon?: string;
+}
+
 export interface ProductVariant {
   id?: number;
   price: number;
   quantity: number;
   sku?: string;
-  attribute_values: number[];
+  /**
+   * Label-shaped attributes come from the show endpoint (verified):
+   * `attributes: [{ attribute_name, value }]` — the ids-backed
+   * `attribute_values` field is NOT returned there, it only exists on
+   * submit payloads. Editing must resolve ids via the attributes API.
+   */
+  attribute_values?: number[];
+  attributes?: { attribute_name: string; value: string }[];
   height?: string;
   width?: string;
   length?: string;
@@ -111,6 +126,11 @@ export interface Product {
   sliders?: SliderBrief[];
   reviews?: ReviewBrief[];
   related_products?: Product[];
+  tags?: TagBrief[];
+  piece_barcode?: string | null;
+  carton_barcode?: string | null;
+  pieces_per_carton?: number | null;
+  is_fast_shipping_available?: boolean;
 }
 
 export interface PaginationLinks {

@@ -40,6 +40,7 @@ export const queryKeys = {
     all: ['tags'] as const,
     lists: () => ['tags', 'list'] as const,
     list: <P extends object>(params: P) => ['tags', 'list', params] as const,
+    allList: () => ['tags', 'list', 'all'] as const,
     details: () => ['tags', 'detail'] as const,
     detail: (id: number | string) => ['tags', 'detail', id] as const,
   },

@@ -28,6 +28,7 @@ import { DigitalAssetsSection } from './digital-assets-section';
 import type { PendingDigitalAsset } from '../types/digital-asset.types';
 import { useAllCategories } from '@/features/categories/hooks/use-categories';
 import { useAllBrands } from '@/features/brands/hooks/use-brands';
+import { useAllTags } from '@/features/tags/hooks/use-tags';
 import { useAllSliders } from '@/features/sliders/hooks/use-sliders';
 import { useAllBanners } from '@/features/banners/hooks/use-banners';
 import { useAllFlashSales } from '@/features/flash-sale/hooks/use-flash-sale';
@@ -84,6 +85,11 @@ const SERVER_ERROR_TO_FIELD: Record<string, readonly string[]> = {
   tax_rate: ['taxRate'],
   price: ['price'],
   quantity: ['quantity'],
+  sku: ['sku'],
+  piece_barcode: ['pieceBarcode'],
+  carton_barcode: ['cartonBarcode'],
+  pieces_per_carton: ['piecesPerCarton'],
+  is_fast_shipping_available: ['isFastShippingAvailable'],
 };
 
 /** Server keys that arrive as bare parent keys or numbered per element
@@ -91,6 +97,7 @@ const SERVER_ERROR_TO_FIELD: Record<string, readonly string[]> = {
 const PREFIX_ERROR_TO_FIELD: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['categories', ['categoryIds']],
   ['brands', ['brandIds']],
+  ['tags', ['tagIds']],
   ['banners', ['bannerIds']],
   ['sliders', ['sliderIds']],
   ['images', ['images']],
@@ -173,6 +180,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
 
   const { data: categoriesData, isLoading: categoriesLoading } = useAllCategories();
   const { data: brandsData, isLoading: brandsLoading } = useAllBrands();
+  const { data: tagsData, isLoading: tagsLoading } = useAllTags();
   const { data: slidersData, isLoading: slidersLoading } = useAllSliders();
   const { data: bannersData, isLoading: bannersLoading } = useAllBanners();
   const { data: flashSalesData, isLoading: flashSalesLoading } = useAllFlashSales();
@@ -224,6 +232,46 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
     return items;
   }, [attributesData]);
 
+  /**
+   * P0: the show endpoint returns variant attributes as labels only
+   * (`attributes: [{ attribute_name, value }]` — verified), while the form
+   * needs `attributeValueIds`. Once the attributes API is loaded, resolve
+   * each prefilled variant's ids by matching the label pair. Variants that
+   * cannot be matched stay empty with a warning (user reselects).
+   */
+  const variantResolutionDoneRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (attributesLoading || !isEditMode || attributeValueItems.length === 0) return;
+    if (variantResolutionDoneRef.current === resetKey) return;
+    const labelToId = new Map(attributeValueItems.map((item) => [item.label, item.id]));
+    const variants = form.getValues('variants') ?? [];
+    let changed = false;
+    let unmatched = 0;
+    const next = variants.map((variant) => {
+      if ((variant.attributeValueIds?.length ?? 0) > 0) return variant;
+      const attrs = variant.attributes || [];
+      if (attrs.length === 0) return variant;
+      const ids: number[] = [];
+      for (const attr of attrs) {
+        const id = labelToId.get(`${attr.attribute_name.trim()}: ${attr.value.trim()}`);
+        if (id !== undefined) ids.push(id);
+      }
+      if (ids.length === attrs.length && ids.length > 0) {
+        changed = true;
+        return { ...variant, attributeValueIds: ids };
+      }
+      unmatched += 1;
+      return variant;
+    });
+    if (changed) {
+      form.setValue('variants', next, { shouldDirty: false, shouldValidate: true });
+    }
+    if (unmatched > 0) {
+      toast.warning(t('productsForm.attributesUnresolved', { count: unmatched }));
+    }
+    variantResolutionDoneRef.current = resetKey;
+  }, [attributeValueItems, attributesLoading, isEditMode, form, t, resetKey]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     form.setValue('images', files);
@@ -267,6 +315,10 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
     label: b.title,
   }));
   const flashSales = flashSalesData ?? [];
+  const tags = (tagsData ?? []).map((tag) => ({
+    id: tag.id,
+    label: tag.name,
+  }));
 
   const onSubmit = (values: ProductFormValues) => {
     setServerErrors({});
@@ -506,6 +558,15 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             {(getError('descriptionAr') || getError('description[ar]')) && (
               <p className="text-xs text-destructive">{getError('descriptionAr') || getError('description[ar]')}</p>
             )}
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="sku" className="text-sm font-medium">
+              {t('productsForm.sku')}
+            </label>
+            <Input id="sku" placeholder={t('productsForm.skuPlaceholder')} {...form.register('sku')} />
+            {getError('sku') && <p className="text-xs text-destructive">{getError('sku')}</p>}
           </div>
         </div>
       </div>
@@ -829,6 +890,18 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             />
             {getError('bannerIds') && <p className="text-xs text-destructive">{getError('bannerIds')}</p>}
           </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('productsForm.tags')}</label>
+            <CheckboxList
+              items={tags}
+              selectedIds={form.watch('tagIds')}
+              onChange={(ids) => form.setValue('tagIds', ids)}
+              searchPlaceholder={t('productsForm.searchTags')}
+              emptyMessage={t('productsForm.noTags')}
+              isLoading={tagsLoading}
+            />
+            {getError('tagIds') && <p className="text-xs text-destructive">{getError('tagIds')}</p>}
+          </div>
         </div>
       </div>
 
@@ -991,7 +1064,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
         )}
       </div>
 
-      {productType === 'simple' && itemType === 'PHYSICAL' && (
+      {itemType === 'PHYSICAL' && (
         <>
           <hr className="border-t" />
 
@@ -999,26 +1072,81 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {t('productsForm.shipping')}
             </h3>
+            {productType === 'simple' && (
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="height" className="text-sm font-medium">{t('productsForm.height')}</label>
+                  <Input id="height" type="number" step="0.01" placeholder="0" {...form.register('height')} />
+                  {getError('height') && <p className="text-xs text-destructive">{getError('height')}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="width" className="text-sm font-medium">{t('productsForm.width')}</label>
+                  <Input id="width" type="number" step="0.01" placeholder="0" {...form.register('width')} />
+                  {getError('width') && <p className="text-xs text-destructive">{getError('width')}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="length" className="text-sm font-medium">{t('productsForm.length')}</label>
+                  <Input id="length" type="number" step="0.01" placeholder="0" {...form.register('length')} />
+                  {getError('length') && <p className="text-xs text-destructive">{getError('length')}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="weight" className="text-sm font-medium">{t('productsForm.weight')}</label>
+                  <Input id="weight" type="number" step="0.01" placeholder="0" {...form.register('weight')} />
+                  {getError('weight') && <p className="text-xs text-destructive">{getError('weight')}</p>}
+                </div>
+              </div>
+            )}
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
               <div className="space-y-1.5">
-                <label htmlFor="height" className="text-sm font-medium">{t('productsForm.height')}</label>
-                <Input id="height" type="number" step="0.01" placeholder="0" {...form.register('height')} />
-                {getError('height') && <p className="text-xs text-destructive">{getError('height')}</p>}
+                <label htmlFor="pieceBarcode" className="text-sm font-medium">{t('productsForm.pieceBarcode')}</label>
+                <Input
+                  id="pieceBarcode"
+                  maxLength={64}
+                  placeholder="P-XXX-001"
+                  {...form.register('pieceBarcode')}
+                />
+                {(getError('pieceBarcode') || getError('piece_barcode')) && (
+                  <p className="text-xs text-destructive">{getError('pieceBarcode') || getError('piece_barcode')}</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="width" className="text-sm font-medium">{t('productsForm.width')}</label>
-                <Input id="width" type="number" step="0.01" placeholder="0" {...form.register('width')} />
-                {getError('width') && <p className="text-xs text-destructive">{getError('width')}</p>}
+                <label htmlFor="cartonBarcode" className="text-sm font-medium">{t('productsForm.cartonBarcode')}</label>
+                <Input
+                  id="cartonBarcode"
+                  maxLength={64}
+                  placeholder="C-XXX-001"
+                  {...form.register('cartonBarcode')}
+                />
+                {(getError('cartonBarcode') || getError('carton_barcode')) && (
+                  <p className="text-xs text-destructive">{getError('cartonBarcode') || getError('carton_barcode')}</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="length" className="text-sm font-medium">{t('productsForm.length')}</label>
-                <Input id="length" type="number" step="0.01" placeholder="0" {...form.register('length')} />
-                {getError('length') && <p className="text-xs text-destructive">{getError('length')}</p>}
+                <label htmlFor="piecesPerCarton" className="text-sm font-medium">{t('productsForm.piecesPerCarton')}</label>
+                <Input id="piecesPerCarton" type="number" min={1} placeholder="0" {...form.register('piecesPerCarton')} />
+                {(getError('piecesPerCarton') || getError('pieces_per_carton')) && (
+                  <p className="text-xs text-destructive">{getError('piecesPerCarton') || getError('pieces_per_carton')}</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="weight" className="text-sm font-medium">{t('productsForm.weight')}</label>
-                <Input id="weight" type="number" step="0.01" placeholder="0" {...form.register('weight')} />
-                {getError('weight') && <p className="text-xs text-destructive">{getError('weight')}</p>}
+                <label className="text-sm font-medium">{t('productsForm.fastShipping')}</label>
+                <Select
+                  value={form.watch('isFastShippingAvailable') ? '1' : '0'}
+                  onValueChange={(value) => form.setValue('isFastShippingAvailable', value === '1')}
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      {form.watch('isFastShippingAvailable') ? t('productsForm.yes') : t('productsForm.no')}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t('productsForm.yes')}</SelectItem>
+                    <SelectItem value="0">{t('productsForm.no')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {getError('isFastShippingAvailable') && (
+                  <p className="text-xs text-destructive">{getError('isFastShippingAvailable')}</p>
+                )}
               </div>
             </div>
           </div>
@@ -1051,7 +1179,7 @@ export function ProductForm({ onSuccess, onCancel, productId, initialValues }: P
             id="images"
             type="file"
             multiple
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/gif"
             onChange={handleImageChange}
           />
           {getError('images') && <p className="text-xs text-destructive">{getError('images')}</p>}
