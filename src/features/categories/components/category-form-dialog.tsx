@@ -80,10 +80,25 @@ export function CategoryFormDialog({
   useEffect(() => {
     if (isEditing && category && categoryDetail?.data) {
       const d = categoryDetail.data;
-      form.setValue('nameEn', d.name);
-      form.setValue('nameAr', d.name);
-      form.setValue('detailsEn', d.details || '');
-      form.setValue('detailsAr', d.details || '');
+      // The detail endpoint returns localized fields as {en, ar} objects
+      // (name) or JSON strings (details) — unlike the list endpoint, which
+      // returns plain strings. Parse defensively to cover both shapes.
+      let parsedName: Record<string, string>;
+      try {
+        parsedName = typeof d.name === 'string' ? JSON.parse(d.name) : d.name;
+      } catch {
+        parsedName = { en: d.name, ar: d.name };
+      }
+      form.setValue('nameEn', parsedName.en || '');
+      form.setValue('nameAr', parsedName.ar || '');
+      let parsedDetails: Record<string, string>;
+      try {
+        parsedDetails = typeof d.details === 'string' ? JSON.parse(d.details) : d.details || {};
+      } catch {
+        parsedDetails = { en: d.details || '', ar: d.details || '' };
+      }
+      form.setValue('detailsEn', parsedDetails.en || '');
+      form.setValue('detailsAr', parsedDetails.ar || '');
       form.setValue('parentId', d.parent_id ?? null);
       form.setValue('status', d.status);
       setDesktopPreview(d.image?.desktop || null);
