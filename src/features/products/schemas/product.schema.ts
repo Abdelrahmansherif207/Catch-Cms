@@ -1,10 +1,23 @@
 import { z } from 'zod';
 
 export const variantFormSchema = z.object({
+  /**
+   * Identifies an EXISTING product_variants row on update (verified doc:
+   * `variants.*.id` — sometimes, exists:product_variants,id). Absent on
+   * create payloads; new variants added during edit also omit it.
+   */
+  id: z.number().optional(),
   price: z.coerce.number().positive('validation.pricePositive'),
   quantity: z.coerce.number().int().positive('validation.quantityPositive'),
   sku: z.string().optional(),
   attributeValueIds: z.array(z.number()).min(1, 'validation.atLeastOneAttribute'),
+  /**
+   * Label-shaped attribute pair from the show endpoint (verified): used to
+   * re-resolve attributeValueIds when editing; never sent to the API.
+   */
+  attributes: z
+    .array(z.object({ attribute_name: z.string(), value: z.string() }))
+    .optional(),
   height: z.coerce.number().optional(),
   width: z.coerce.number().optional(),
   length: z.coerce.number().optional(),
@@ -24,12 +37,14 @@ const productFormSchemaBase = z.object({
   nameAr: z.string().min(1, 'validation.nameArRequired').max(255, 'validation.nameMaxLength'),
   descriptionEn: z.string().min(1, 'validation.descriptionEnRequired').max(10000, 'validation.descriptionMaxLength'),
   descriptionAr: z.string().min(1, 'validation.descriptionArRequired').max(10000, 'validation.descriptionMaxLength'),
+  sku: z.string().max(255, 'validation.skuMaxLength').optional(),
   price: z.coerce.number().optional(),
   quantity: z.coerce.number().int().optional(),
   inStock: z.boolean(),
   status: z.boolean(),
   categoryIds: z.array(z.number()),
   brandIds: z.array(z.number()),
+  tagIds: z.array(z.number()),
   bannerIds: z.array(z.number()),
   sliderIds: z.array(z.number()),
   hasDiscount: z.boolean(),
@@ -44,6 +59,10 @@ const productFormSchemaBase = z.object({
   width: z.coerce.number().optional(),
   length: z.coerce.number().optional(),
   weight: z.coerce.number().optional(),
+  pieceBarcode: z.string().max(64, 'validation.barcodeMaxLength').optional(),
+  cartonBarcode: z.string().max(64, 'validation.barcodeMaxLength').optional(),
+  piecesPerCarton: z.coerce.number().int().min(1, 'validation.quantityPositive').optional(),
+  isFastShippingAvailable: z.boolean().default(false),
   images: z.array(z.instanceof(File)).optional(),
   variants: z.array(variantFormSchema).default([]),
 }).superRefine((data, ctx) => {
@@ -106,6 +125,29 @@ export function buildProductFormSchema(isCreate: boolean) {
       ctx.addIssue({ code: 'custom', path: ['flashSaleId'], message: 'validation.flashSaleRequired' });
     }
 
+    /**
+     * Client-side mirror of the backend image rules (`mimes:jpeg,png,jpg,gif`,
+     * `max:2048` KB) — avoids a 422 round-trip per mistake. Files are optional
+     * on update but validated the same way whenever they are provided.
+     */
+    const imageFiles = data.images ?? [];
+    if (imageFiles.length > 0) {
+      let badFormat = false;
+      let tooLarge = false;
+      for (const file of imageFiles) {
+        const formatOk =
+          (file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') &&
+          /\.(jpe?g|png|gif)$/i.test(file.name);
+        if (!formatOk) badFormat = true;
+        if (file.size > 2048 * 1024) tooLarge = true;
+      }
+      if (badFormat) {
+        ctx.addIssue({ code: 'custom', path: ['images'], message: 'validation.productImageFormat' });
+      } else if (tooLarge) {
+        ctx.addIssue({ code: 'custom', path: ['images'], message: 'validation.imageMaxSize' });
+      }
+    }
+
     if (data.taxEnabled) {
       if (data.taxRate === undefined || data.taxRate === null || Number.isNaN(data.taxRate)) {
         ctx.addIssue({ code: 'custom', path: ['taxRate'], message: 'validation.taxRateRequired' });
@@ -146,12 +188,14 @@ export const productFormDefaults: ProductFormValues = {
   nameAr: '',
   descriptionEn: '',
   descriptionAr: '',
+  sku: '',
   price: undefined,
   quantity: undefined,
   inStock: true,
   status: true,
   categoryIds: [],
   brandIds: [],
+  tagIds: [],
   bannerIds: [],
   sliderIds: [],
   hasDiscount: false,
@@ -166,6 +210,10 @@ export const productFormDefaults: ProductFormValues = {
   width: undefined,
   length: undefined,
   weight: undefined,
+  pieceBarcode: undefined,
+  cartonBarcode: undefined,
+  piecesPerCarton: undefined,
+  isFastShippingAvailable: false,
   images: [],
   variants: [],
 };
@@ -176,6 +224,7 @@ export function toApiFormat(values: ProductFormValues) {
     'name[ar]': values.nameAr,
     'description[en]': values.descriptionEn || undefined,
     'description[ar]': values.descriptionAr || undefined,
+    sku: values.sku || undefined,
     product_type: values.productType,
     item_type: values.itemType,
     tax_enabled: values.taxEnabled ? '1' : '0',
@@ -184,6 +233,7 @@ export function toApiFormat(values: ProductFormValues) {
     status: values.status ? '1' : '0',
     'categories[]': values.categoryIds,
     'brands[]': values.brandIds,
+    'tags[]': values.tagIds,
     'banners[]': values.bannerIds,
     'sliders[]': values.sliderIds,
     has_discount: values.hasDiscount ? '1' : '0',
@@ -194,6 +244,7 @@ export function toApiFormat(values: ProductFormValues) {
     end_date: values.hasDiscount ? (values.endDate || undefined) : undefined,
     has_flash_sale: values.hasFlashSale ? '1' : '0',
     flash_sale_id: values.hasFlashSale ? (values.flashSaleId || undefined) : undefined,
+    is_fast_shipping_available: values.isFastShippingAvailable ? '1' : '0',
     'images[]': values.images?.length ? values.images : undefined,
   };
 
@@ -207,13 +258,20 @@ export function toApiFormat(values: ProductFormValues) {
       width: isPhysical ? values.width || undefined : undefined,
       length: isPhysical ? values.length || undefined : undefined,
       weight: isPhysical ? values.weight || undefined : undefined,
+      piece_barcode: isPhysical ? values.pieceBarcode || undefined : undefined,
+      carton_barcode: isPhysical ? values.cartonBarcode || undefined : undefined,
+      pieces_per_carton: isPhysical ? values.piecesPerCarton || undefined : undefined,
     };
   }
 
   const isPhysical = values.itemType === 'PHYSICAL';
   return {
     ...base,
+    piece_barcode: isPhysical ? values.pieceBarcode || undefined : undefined,
+    carton_barcode: isPhysical ? values.cartonBarcode || undefined : undefined,
+    pieces_per_carton: isPhysical ? values.piecesPerCarton || undefined : undefined,
     variants: values.variants.map((v) => ({
+      id: v.id || undefined,
       price: v.price,
       quantity: v.quantity,
       sku: v.sku || undefined,

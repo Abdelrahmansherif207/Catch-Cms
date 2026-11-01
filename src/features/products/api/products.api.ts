@@ -19,6 +19,12 @@ import type {
 } from '../types/product.types';
 
 export interface CreateVariantData {
+  /**
+   * Product_variants row identity — REQUIRED on update payloads
+   * (`variants.*.id` selects the existing row to patch). Never sent by
+   * the create endpoint flow.
+   */
+  id?: number;
   price: number;
   quantity: number;
   sku?: string;
@@ -34,6 +40,7 @@ export interface CreateProductData {
   'name[ar]': string;
   'description[en]'?: string;
   'description[ar]'?: string;
+  sku?: string;
   product_type: string;
   item_type?: 'PHYSICAL' | 'DIGITAL';
   tax_enabled?: string;
@@ -44,6 +51,7 @@ export interface CreateProductData {
   status: string;
   'categories[]'?: number[];
   'brands[]'?: number[];
+  'tags[]'?: number[];
   'banners[]'?: number[];
   'sliders[]'?: number[];
   has_discount: string;
@@ -58,6 +66,10 @@ export interface CreateProductData {
   width?: number;
   length?: number;
   weight?: number;
+  piece_barcode?: string;
+  carton_barcode?: string;
+  pieces_per_carton?: number;
+  is_fast_shipping_available?: string;
   'images[]'?: File[];
   variants?: CreateVariantData[];
 }
@@ -132,6 +144,7 @@ export async function updateProduct(id: number, payload: UpdateProductData): Pro
 
   formData.append('product_type', payload.product_type);
   if (payload.item_type) formData.append('item_type', payload.item_type);
+  if (payload.sku) formData.append('sku', payload.sku);
   if (payload.tax_enabled !== undefined) formData.append('tax_enabled', payload.tax_enabled);
   if (payload.tax_rate !== undefined) formData.append('tax_rate', payload.tax_rate.toString());
   formData.append('in_stock', payload.in_stock);
@@ -148,12 +161,20 @@ export async function updateProduct(id: number, payload: UpdateProductData): Pro
   if (payload['brands[]']?.length) {
     payload['brands[]'].forEach((id) => formData.append('brands[]', id.toString()));
   }
+  if (payload['tags[]']?.length) {
+    payload['tags[]'].forEach((id) => formData.append('tags[]', id.toString()));
+  }
   if (payload['banners[]']?.length) {
     payload['banners[]'].forEach((id) => formData.append('banners[]', id.toString()));
   }
   if (payload['sliders[]']?.length) {
     payload['sliders[]'].forEach((id) => formData.append('sliders[]', id.toString()));
   }
+
+  if (payload.piece_barcode) formData.append('piece_barcode', payload.piece_barcode);
+  if (payload.carton_barcode) formData.append('carton_barcode', payload.carton_barcode);
+  if (payload.pieces_per_carton !== undefined) formData.append('pieces_per_carton', payload.pieces_per_carton.toString());
+  if (payload.is_fast_shipping_available !== undefined) formData.append('is_fast_shipping_available', payload.is_fast_shipping_available);
 
   formData.append('has_discount', payload.has_discount);
   if (payload.has_discount === '1') {
@@ -182,6 +203,7 @@ export async function updateProduct(id: number, payload: UpdateProductData): Pro
 
   if (payload.variants?.length) {
     payload.variants.forEach((variant, i) => {
+      if (variant.id) formData.append(`variants[${i}][id]`, variant.id.toString());
       formData.append(`variants[${i}][price]`, variant.price.toString());
       formData.append(`variants[${i}][quantity]`, variant.quantity.toString());
       if (variant.sku) formData.append(`variants[${i}][sku]`, variant.sku);
@@ -209,6 +231,7 @@ export async function createProduct(payload: CreateProductData): Promise<ApiResp
 
   formData.append('product_type', payload.product_type);
   if (payload.item_type) formData.append('item_type', payload.item_type);
+  if (payload.sku) formData.append('sku', payload.sku);
   if (payload.tax_enabled !== undefined) formData.append('tax_enabled', payload.tax_enabled);
   if (payload.tax_rate !== undefined) formData.append('tax_rate', payload.tax_rate.toString());
   formData.append('in_stock', payload.in_stock);
@@ -225,12 +248,20 @@ export async function createProduct(payload: CreateProductData): Promise<ApiResp
   if (payload['brands[]']?.length) {
     payload['brands[]'].forEach((id) => formData.append('brands[]', id.toString()));
   }
+  if (payload['tags[]']?.length) {
+    payload['tags[]'].forEach((id) => formData.append('tags[]', id.toString()));
+  }
   if (payload['banners[]']?.length) {
     payload['banners[]'].forEach((id) => formData.append('banners[]', id.toString()));
   }
   if (payload['sliders[]']?.length) {
     payload['sliders[]'].forEach((id) => formData.append('sliders[]', id.toString()));
   }
+
+  if (payload.piece_barcode) formData.append('piece_barcode', payload.piece_barcode);
+  if (payload.carton_barcode) formData.append('carton_barcode', payload.carton_barcode);
+  if (payload.pieces_per_carton !== undefined) formData.append('pieces_per_carton', payload.pieces_per_carton.toString());
+  if (payload.is_fast_shipping_available !== undefined) formData.append('is_fast_shipping_available', payload.is_fast_shipping_available);
 
   formData.append('has_discount', payload.has_discount);
   if (payload.has_discount === '1') {

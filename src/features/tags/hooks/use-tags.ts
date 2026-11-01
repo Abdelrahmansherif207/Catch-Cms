@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/shared/lib/query-keys';
 import {
   fetchTags,
+  fetchAllTags,
   fetchTagById,
   createTag,
   updateTag,
@@ -23,6 +24,15 @@ export function useTags(params: FetchTagsParams = {}) {
     queryKey: queryKeys.tags.list(params),
     queryFn: () => fetchTags(params),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAllTags(enabled?: boolean) {
+  return useQuery({
+    queryKey: queryKeys.tags.allList(),
+    queryFn: () => fetchAllTags(),
+    staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 

@@ -1,4 +1,4 @@
-import { axiosClient } from '@/shared/api';
+import { axiosClient, fetchAllPages } from '@/shared/api';
 import type {
   TagsListResponse,
   ApiResponse,
@@ -32,6 +32,10 @@ export async function fetchTags({
 
   const { data } = await axiosClient.get<TagsListResponse>('/tags?' + params.toString());
   return data;
+}
+
+export async function fetchAllTags(): Promise<Tag[]> {
+  return fetchAllPages((page) => fetchTags({ page, perPage: 200 }).then((res) => res.data));
 }
 
 export async function fetchTagById(id: number): Promise<Tag> {
