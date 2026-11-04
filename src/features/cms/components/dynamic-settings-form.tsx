@@ -136,7 +136,7 @@ export function DynamicSettingsForm({
                 <SelectItem value="__none__">
                   {t('sections.noTemplate')}
                 </SelectItem>
-                {(productTypesData || []).map((pt) => (
+                {(productTypesData?.data ?? []).map((pt) => (
                   <SelectItem key={pt} value={pt}>
                     {pt.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())}
                   </SelectItem>
