@@ -3,6 +3,7 @@ import type {
   SectionsListResponse,
   SectionDetailResponse,
   SectionTypesResponse,
+  ProductTypesResponse,
   TypeSettingsResponse,
   ApiResponse,
   Section,
@@ -71,8 +72,8 @@ export async function fetchTypeSettings(typeName: string): Promise<TypeSettingsR
   return data;
 }
 
-export async function fetchProductTypes(): Promise<string[]> {
-  const { data } = await axiosClient.get<string[]>('/product-type');
+export async function fetchProductTypes(): Promise<ProductTypesResponse> {
+  const { data } = await axiosClient.get<ProductTypesResponse>('/product-type');
   return data;
 }
 

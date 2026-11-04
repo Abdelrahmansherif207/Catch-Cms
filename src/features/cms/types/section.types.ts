@@ -27,6 +27,7 @@ export interface ApiResponse<T> {
 export type SectionsListResponse = ApiResponse<Section[]>;
 export type SectionDetailResponse = ApiResponse<Section>;
 export type SectionTypesResponse = ApiResponse<string[]>;
+export type ProductTypesResponse = ApiResponse<string[]>;
 export type TypeSettingsResponse = ApiResponse<{
   front: Record<string, unknown>;
   back: Record<string, unknown>;
