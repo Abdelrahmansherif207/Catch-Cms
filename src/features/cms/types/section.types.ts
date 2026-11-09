@@ -27,7 +27,15 @@ export interface ApiResponse<T> {
 export type SectionsListResponse = ApiResponse<Section[]>;
 export type SectionDetailResponse = ApiResponse<Section>;
 export type SectionTypesResponse = ApiResponse<string[]>;
-export type ProductTypesResponse = ApiResponse<string[]>;
+/** Documented `/product-type` payload: a plain object map of key → display label. */
+export type ProductTypesResponse = Record<string, string>;
+
+/** Normalized product-template option. `value` is the original API key. */
+export interface ProductTypeOption {
+  value: string;
+  label: string;
+}
+
 export type TypeSettingsResponse = ApiResponse<{
   front: Record<string, unknown>;
   back: Record<string, unknown>;
