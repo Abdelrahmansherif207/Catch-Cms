@@ -49,7 +49,11 @@ export function SectionFormDialog({
   const isEditing = !!section;
   const createMutation = useCreateSection();
   const updateMutation = useUpdateSection();
-  const { data: sectionDetail, isLoading: isDetailLoading } = useSection(section?.id ?? 0);
+  // Fetch detail only while the dialog is open — avoids background refetches
+  // for a hidden dialog; cached data is still reused when it reopens.
+  const { data: sectionDetail, isLoading: isDetailLoading } = useSection(
+    open && section ? section.id : 0
+  );
   const { data: sectionTypesData } = useSectionTypes();
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
 
@@ -84,7 +88,12 @@ export function SectionFormDialog({
 
   // ─── Populate on edit ─────────────────────────────────────────
 
+  // `open` must be a dependency: after the reset effect clears everything on
+  // open, this re-applies the section's saved values in the same commit. For
+  // cached data (same references as last open) this is the only trigger,
+  // otherwise reopening the same section would show an empty form.
   useEffect(() => {
+    if (!open) return;
     if (isEditing && section && sectionDetail?.data) {
       const d = sectionDetail.data;
 
@@ -114,7 +123,7 @@ export function SectionFormDialog({
         setBackSettings(back);
       }
     }
-  }, [sectionDetail, isEditing, section, form]);
+  }, [open, sectionDetail, isEditing, section, form]);
 
   // ─── Auto-scroll to config on type change ─────────────────────
   useEffect(() => {

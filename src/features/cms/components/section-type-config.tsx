@@ -51,7 +51,9 @@ export function SectionTypeConfig({
   const val = (key: string) => frontSettings[key];
 
   const shape = (val('shape') as string) || 'square';
-  const layout = (val('layout') as string) || 'grid';
+  const layout =
+    (val('layout') as string) ||
+    (type === 'flash-sales' ? 'slider' : 'grid');
   const autoplay = !!val('autoplay');
 
   return (
@@ -128,6 +130,11 @@ export function SectionTypeConfig({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                {type === 'flash-sales' && (
+                  <SelectItem value="slider">
+                    {t('sections.layoutSlider')}
+                  </SelectItem>
+                )}
                 <SelectItem value="grid">
                   {t('sections.layoutGrid')}
                 </SelectItem>

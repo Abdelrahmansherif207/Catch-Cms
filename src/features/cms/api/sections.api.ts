@@ -4,6 +4,7 @@ import type {
   SectionDetailResponse,
   SectionTypesResponse,
   ProductTypesResponse,
+  ProductTypeOption,
   TypeSettingsResponse,
   ApiResponse,
   Section,
@@ -72,9 +73,41 @@ export async function fetchTypeSettings(typeName: string): Promise<TypeSettingsR
   return data;
 }
 
-export async function fetchProductTypes(): Promise<ProductTypesResponse> {
+// ─── Product Types ───────────────────────────────────────────────
+
+/**
+ * Thrown when `/product-type` does not match the documented
+ * `{ [key: string]: string }` object map.
+ */
+export class ProductTypeResponseError extends Error {
+  constructor() {
+    super('Malformed product-type response');
+    this.name = 'ProductTypeResponseError';
+  }
+}
+
+/**
+ * Converts the documented raw `{ key: label }` map into a stable option list.
+ * The original key is preserved as `value`; the API string is display-only.
+ * Throws on malformed payloads so React Query surfaces an error state instead
+ * of silently rendering an empty dropdown.
+ */
+export function normalizeProductTypes(payload: unknown): ProductTypeOption[] {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new ProductTypeResponseError();
+  }
+
+  return Object.entries(payload as Record<string, unknown>).map(([value, label]) => {
+    if (typeof label !== 'string') {
+      throw new ProductTypeResponseError();
+    }
+    return { value, label };
+  });
+}
+
+export async function fetchProductTypes(): Promise<ProductTypeOption[]> {
   const { data } = await axiosClient.get<ProductTypesResponse>('/product-type');
-  return data;
+  return normalizeProductTypes(data);
 }
 
 export interface EntitySearchItem {

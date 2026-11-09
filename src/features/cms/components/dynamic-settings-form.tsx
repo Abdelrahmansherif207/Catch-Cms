@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/shared/ui/input';
+import { Button } from '@/shared/ui/button';
 import {
   Select,
   SelectContent,
@@ -8,7 +9,8 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { useTypeSettings, useProductTypes } from '../hooks/use-sections';
-import { Loader2 } from 'lucide-react';
+import { ProductTypeResponseError } from '../api/sections.api';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { SearchableMultiSelect } from './searchable-multi-select';
 import { SearchableSelect } from './searchable-select';
 
@@ -45,6 +47,20 @@ const PRODUCTS_TEMPLATE_HIDDEN_FIELDS = [
   'couponsId',
 ];
 
+// Front-settings keys that are already rendered by the curated inline panel
+// (SectionTypeConfig). Filtered out of the template-driven front list so the
+// same setting is not edited in two places. Keep in sync with
+// `section-type-config.tsx`.
+const INLINE_FRONT_KEYS: Record<string, string[]> = {
+  banners: ['columns_count'],
+  promotions: ['columns_count'],
+  categories: ['columns_count'],
+  'flash-sales': ['columns_count', 'show_timer', 'timer_end_at'],
+  products: ['columns_count', 'badge_text'],
+  sliders: ['autoplay', 'slider_speed'],
+  brands: ['columns_count'],
+};
+
 // ─── Props ───────────────────────────────────────────────────────
 
 interface DynamicSettingsFormProps {
@@ -70,7 +86,13 @@ export function DynamicSettingsForm({
 }: DynamicSettingsFormProps) {
   const { t } = useTranslation();
   const { data: typeSettingsData, isLoading: isLoadingSettings } = useTypeSettings(sectionType);
-  const { data: productTypesData, isLoading: isLoadingProductTypes } = useProductTypes();
+  const {
+    data: productTypes = [],
+    isLoading: isLoadingProductTypes,
+    isError: isProductTypesError,
+    error: productTypesError,
+    refetch: refetchProductTypes,
+  } = useProductTypes();
 
   const isProductsType = sectionType === 'products';
   const hasProductTemplate = isProductsType && !!productType;
@@ -93,6 +115,12 @@ export function DynamicSettingsForm({
 
   const frontTemplate = settingsTemplate.front || {};
   const backTemplate = settingsTemplate.back || {};
+
+  // Skip front keys the curated inline panel already renders.
+  const inlineKeys = INLINE_FRONT_KEYS[sectionType] || [];
+  const templateFrontFields = Object.entries(frontTemplate).filter(
+    ([key]) => !inlineKeys.includes(key)
+  );
 
   const handleFrontFieldChange = (key: string, value: unknown) => {
     onFrontChange({ ...frontSettings, [key]: value });
@@ -124,25 +152,52 @@ export function DynamicSettingsForm({
               <Loader2 className="h-4 w-4 animate-spin" />
               {t('common.loading')}
             </div>
-          ) : (
-            <Select
-              value={productType || '__none__'}
-              onValueChange={(v) => onProductTypeChange(v === '__none__' ? null : v)}
+          ) : isProductTypesError ? (
+            <div
+              role="alert"
+              className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
             >
-              <SelectTrigger>
-                <SelectValue placeholder={t('sections.selectProductTemplate')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">
-                  {t('sections.noTemplate')}
-                </SelectItem>
-                {(productTypesData?.data ?? []).map((pt) => (
-                  <SelectItem key={pt} value={pt}>
-                    {pt.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())}
+              <span>
+                {productTypesError instanceof ProductTypeResponseError
+                  ? t('sections.productTypesMalformed')
+                  : t('sections.productTypesLoadError')}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetchProductTypes()}
+              >
+                <RefreshCw className="h-4 w-4" />
+                {t('common.retry')}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Select
+                value={productType || '__none__'}
+                onValueChange={(v) => onProductTypeChange(v === '__none__' ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('sections.selectProductTemplate')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">
+                    {t('sections.noTemplate')}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  {productTypes.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {productTypes.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t('sections.productTypesEmpty')}
+                </p>
+              )}
+            </>
           )}
           <p className="text-xs text-muted-foreground">
             {hasProductTemplate
@@ -153,13 +208,13 @@ export function DynamicSettingsForm({
       )}
 
       {/* ─── Front Settings (Display) ─── */}
-      {Object.keys(frontTemplate).length > 0 && (
+      {templateFrontFields.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {t('sections.displaySettings')}
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
-            {Object.entries(frontTemplate).map(([key, templateValue]) => (
+            {templateFrontFields.map(([key, templateValue]) => (
               <SettingsField
                 key={key}
                 sectionType={sectionType}
