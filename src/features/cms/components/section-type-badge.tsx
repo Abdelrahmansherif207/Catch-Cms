@@ -9,6 +9,8 @@ const TYPE_STYLES: Record<string, { label: string; variant: string }> = {
   'flash-sales': { label: 'Flash Sales', variant: 'bg-red-500/15 text-red-700 dark:text-red-400' },
   brands: { label: 'Brands', variant: 'bg-orange-500/15 text-orange-700 dark:text-orange-400' },
   coupons: { label: 'Coupons', variant: 'bg-pink-500/15 text-pink-700 dark:text-pink-400' },
+  hero: { label: 'Hero', variant: 'bg-violet-500/15 text-violet-700 dark:text-violet-400' },
+  tags: { label: 'Tags', variant: 'bg-teal-500/15 text-teal-700 dark:text-teal-400' },
 };
 
 interface SectionTypeBadgeProps {

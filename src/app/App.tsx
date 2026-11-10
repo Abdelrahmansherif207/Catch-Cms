@@ -48,6 +48,8 @@ const InvoiceDetailPage = lazy(() => import("@/features/invoices/pages/invoice-d
 const MyInvoicesPage = lazy(() => import("@/features/invoices/pages/my-invoices-page").then(m => ({ default: m.MyInvoicesPage })));
 const InvoiceVerifyPage = lazy(() => import("@/features/invoices/pages/invoice-verify-page").then(m => ({ default: m.InvoiceVerifyPage })));
 const SectionsPage = lazy(() => import("@/features/cms/pages/sections-page").then(m => ({ default: m.SectionsPage })));
+const SectionCreatePage = lazy(() => import("@/features/cms/pages/section-create-page").then(m => ({ default: m.SectionCreatePage })));
+const SectionEditPage = lazy(() => import("@/features/cms/pages/section-edit-page").then(m => ({ default: m.SectionEditPage })));
 const StaticPagesPage = lazy(() => import("@/features/static-pages/pages/static-pages-page").then(m => ({ default: m.StaticPagesPage })));
 const StaticPageDetailPage = lazy(() => import("@/features/static-pages/pages/static-page-detail-page").then(m => ({ default: m.StaticPageDetailPage })));
 const StaticPagePreviewPage = lazy(() => import("@/features/static-pages/pages/static-page-preview-page").then(m => ({ default: m.StaticPagePreviewPage })));
@@ -56,6 +58,7 @@ const NotificationsPage = lazy(() => import("@/features/notifications/pages/noti
 const ReviewsPage = lazy(() => import("@/features/reviews/pages/reviews-page").then(m => ({ default: m.ReviewsPage })));
 const SiteReviewsPage = lazy(() => import("@/features/site-reviews/pages/site-reviews-page").then(m => ({ default: m.SiteReviewsPage })));
 const BannersPage = lazy(() => import("@/features/banners/pages/banners-page").then(m => ({ default: m.BannersPage })));
+const HeroesPage = lazy(() => import("@/features/heroes/pages/heroes-page").then(m => ({ default: m.HeroesPage })));
 const PickupLocationsPage = lazy(() => import("@/features/pickup-locations/pages/pickup-locations-page").then(m => ({ default: m.PickupLocationsPage })));
 const CountriesPage = lazy(() => import("@/features/shipping/pages/countries-page").then(m => ({ default: m.CountriesPage })));
 const GovernoratesPage = lazy(() => import("@/features/shipping/pages/governorates-page").then(m => ({ default: m.GovernoratesPage })));
@@ -166,6 +169,8 @@ export default function App() {
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.sections.view} />}>
                 <Route path="/cms" element={<SectionsPage />} />
+                <Route path="/cms/new" element={<SectionCreatePage />} />
+                <Route path="/cms/:id/edit" element={<SectionEditPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.staticPages.view} />}>
                 <Route path="/static-pages" element={<StaticPagesPage />} />
@@ -183,6 +188,11 @@ export default function App() {
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.banners.view} />}>
                 <Route path="/banners" element={<BannersPage />} />
+              </Route>
+              {/* TODO: switch to a dedicated view-hero permission once the
+                  backend registers hero permission slots. */}
+              <Route element={<PermissionRoute permission={PERMISSIONS.sections.view} />}>
+                <Route path="/heroes" element={<HeroesPage />} />
               </Route>
               <Route element={<PermissionRoute permission={PERMISSIONS.pickupLocations.view} />}>
                 <Route path="/pickup-locations" element={<PickupLocationsPage />} />

@@ -11,6 +11,7 @@ import {
   Megaphone,
   FileText,
   Image,
+  Sparkles,
   HelpCircle,
   Tag,
   Mail,
@@ -183,6 +184,14 @@ export function useNavGroups(): NavGroup[] {
           url: '/banners',
           icon: Image,
           permissions: [PERMISSIONS.banners.view],
+        },
+        {
+          title: t('sidebar.heroes'),
+          url: '/heroes',
+          icon: Sparkles,
+          // TODO: switch to a dedicated view-hero permission once the
+          // backend registers hero permission slots.
+          permissions: [PERMISSIONS.sections.view],
         },
         {
           title: t('sidebar.faqs'),

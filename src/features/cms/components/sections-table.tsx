@@ -96,6 +96,7 @@ function SortableRow({
         <button
           type="button"
           className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+          aria-label={t('common.reorder')}
           {...attributes}
           {...listeners}
         >
@@ -127,6 +128,7 @@ function SortableRow({
             onClick={() => onChangeStatus(section)}
             disabled={isPendingStatus}
             title={section.is_active ? t('sections.deactivate') : t('sections.activate')}
+            aria-label={section.is_active ? t('sections.deactivate') : t('sections.activate')}
           >
             {section.is_active ? (
               <Power className="h-4 w-4 text-success" />
@@ -135,7 +137,15 @@ function SortableRow({
             )}
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t('common.actions')}
+                />
+              }
+            >
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -201,7 +211,7 @@ export function SectionsTable({
 
   return (
     <>
-      <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
+      <div className="rounded-2xl border bg-card shadow-card overflow-x-auto">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -266,7 +276,7 @@ export function SectionsTable({
 
 function TableSkeleton() {
   return (
-    <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
+    <div className="rounded-2xl border bg-card shadow-card overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,0 +1,31 @@
+{
+  "_note": "Backup taken before clearing back.start_date/back.end_date from the sliders (id 1) and brands (id 13) sections of Catch's home content page. Host: https://catch.mohammedtareq.me/api/v1. Rollback: PUT /sections/{id} with the 'before' payload below.",
+  "captured_at": "2026-11-04",
+  "sections_compact_list": "id=1 sliders title='Sliders' order=1 active=true | id=2 banners 'Banners' order=2 | id=3 promotions 'Promotions' order=3 | id=4 tags 'Tags' order=4 | id=5 categories 'Best Category' order=5 | id=6 flash-sales 'Flash Sales' order=6 active=FALSE | id=7 products 'Best Product Sales' order=7 | id=8 products 'New Arrivals' order=8 | id=9 products 'Flash Sales Products' order=9 | id=10 products 'Flash Sale End Today' order=10 | id=11 products 'Flash Sale End Week' order=11 | id=12 products 'Brands Products' order=12 | id=13 brands 'Brand' order=13 | id=14 products 'Product Discount Days' order=14 | id=15 products 'All Discount Product' order=15 | id=16 products 'Product For Parent' order=16 | id=17 categories 'Parent Category' order=17 | id=18 coupons 'Coupons' order=18",
+  "sections": [
+    {
+      "id": 1,
+      "type": "sliders",
+      "title": "Sliders",
+      "is_active": true,
+      "endpoint": "general/sliders?start_date=2026-10-14&end_date=2026-11-14&limit=10&slidersId%5B0%5D=4&slidersId%5B1%5D=1&slidersId%5B2%5D=2&slidersId%5B3%5D=3&slidersId%5B4%5D=5&slidersId%5B5%5D=7&slidersId%5B6%5D=8&order=desc",
+      "order": 1,
+      "setting": {
+        "front": { "autoplay": true, "slider_speed": 5000 },
+        "back": { "start_date": "2026-10-14", "end_date": "2026-11-14", "limit": 10, "slidersId": [4, 1, 2, 3, 5, 7, 8], "order": "desc" }
+      }
+    },
+    {
+      "id": 13,
+      "type": "brands",
+      "title": "Brand",
+      "is_active": true,
+      "endpoint": "general/brands?start_date=2026-10-14&end_date=2026-11-14&limit=10&brandsId%5B0%5D=1&brandsId%5B1%5D=2&brandsId%5B2%5D=3&brandsId%5B3%5D=4&brandsId%5B4%5D=5&brandsId%5B5%5D=6&order=desc",
+      "order": 13,
+      "setting": {
+        "front": { "autoplay": true, "slider_speed": 5000 },
+        "back": { "start_date": "2026-10-14", "end_date": "2026-11-14", "limit": 10, "brandsId": [1, 2, 3, 4, 5, 6], "order": "desc" }
+      }
+    }
+  ]
+}

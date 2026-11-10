@@ -68,6 +68,13 @@ export const queryKeys = {
     detail: (id: number | string) => ['banners', 'detail', id] as const,
     productSearch: (q: string) => ['banners', 'product-search', q] as const,
   },
+  heroes: {
+    all: ['heroes'] as const,
+    lists: () => ['heroes', 'list'] as const,
+    list: <P extends object>(params: P) => ['heroes', 'list', params] as const,
+    details: () => ['heroes', 'detail'] as const,
+    detail: (id: number | string) => ['heroes', 'detail', id] as const,
+  },
   orders: {
     all: ['orders'] as const,
     lists: () => ['orders', 'list'] as const,
