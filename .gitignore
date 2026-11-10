@@ -27,3 +27,5 @@ dist-ssr
 # MCP/Jira config (local dev only, contains secrets)
 .jira-config.json
 .opencode/opencode.json
+screens
+بيانات الصنف ومكوناته والباركود.xlsx

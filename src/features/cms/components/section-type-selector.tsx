@@ -73,6 +73,7 @@ export function SectionTypeSelector({
             key={type}
             type="button"
             disabled={disabled}
+            aria-pressed={isSelected}
             onClick={() => onChange(type)}
             className={cn(
               'group relative flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all',

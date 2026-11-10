@@ -29,17 +29,21 @@ import {
   SECTION_VIDEO_ACCEPT,
   SECTION_VIDEO_MAX_BYTES,
   STATIC_SECTION_TYPES,
+  extractSectionServerErrors,
   isMediaSectionType,
   sectionFormDefaultsFor,
   sectionFormSchema,
+  selectSectionMediaFile,
+  selectSectionRemoveMedia,
   toCreateSectionPayload,
   toUpdateSectionPayload,
   tryParseConfigText,
+  validateSectionMedia,
   type SectionFormValues,
+  type SectionMediaSelection,
 } from '../../schemas/static-page.schema';
 import { useCreateStaticPageSection, useUpdateStaticPageSection } from '../../hooks/use-static-pages';
 import type { JsonObject, LocaleMap, StaticPageSection } from '../../types/static-page.types';
-import type { ApiErrorResponse } from '@/shared/api';
 
 interface SectionFormDialogProps {
   slug: string;
@@ -49,10 +53,8 @@ interface SectionFormDialogProps {
   onSuccess: () => void;
 }
 
-function mediaCollectionFor(type: string): 'static-section-image' | 'static-section-video' | null {
-  if (type === 'image' || type === 'screenshot') return 'static-section-image';
-  if (type === 'video') return 'static-section-video';
-  return null;
+function maxBytesFor(type: string): number {
+  return type === 'video' ? SECTION_VIDEO_MAX_BYTES : SECTION_IMAGE_MAX_BYTES;
 }
 
 function formatBytes(bytes: number): string {
@@ -99,7 +101,7 @@ export function SectionFormDialog({
   const watchedActive = form.watch('isActive');
   const isMediaType = isMediaSectionType(wantedType(watchedType));
   const accept = watchedType === 'video' ? SECTION_VIDEO_ACCEPT : SECTION_IMAGE_ACCEPT;
-  const maxBytes = watchedType === 'video' ? SECTION_VIDEO_MAX_BYTES : SECTION_IMAGE_MAX_BYTES;
+  const maxBytes = maxBytesFor(watchedType);
 
   const newFilePreviewUrl = useMemo(() => {
     if (!mediaFile) return null;
@@ -117,29 +119,32 @@ export function SectionFormDialog({
     setContentValidation({});
   };
 
-  const validateMedia = (): string | null => {
-    // text sections must not carry a file (contract: media prohibited).
-    if (!isMediaType && mediaFile) {
-      return t('staticPages.validation.mediaProhibited', 'Media files are not allowed for text sections.');
+  const applyMediaSelection = (selection: SectionMediaSelection) => {
+    setMediaFile(selection.mediaFile);
+    setRemoveMedia(selection.removeMedia);
+  };
+
+  const validateMedia = (type: string): string | null => {
+    const typeMaxBytes = maxBytesFor(type);
+    const error = validateSectionMedia({
+      isEditing,
+      type,
+      mediaFile,
+      removeMedia,
+      originalType: section?.type,
+      existingMedia: section?.media ?? null,
+      maxBytes: typeMaxBytes,
+    });
+    if (!error) return null;
+    if (error === 'staticPages.validation.mediaProhibited') {
+      return t(error, 'Media files are not allowed for text sections.');
     }
-    if (mediaFile && mediaFile.size > maxBytes) {
-      return t('staticPages.validation.mediaTooLarge', `File is too large (max ${formatBytes(maxBytes)}).`, {
-        max: formatBytes(maxBytes),
+    if (error === 'staticPages.validation.mediaTooLarge') {
+      return t(error, `File is too large (max ${formatBytes(typeMaxBytes)}).`, {
+        max: formatBytes(typeMaxBytes),
       });
     }
-    if (!isEditing && isMediaType && !mediaFile) {
-      return t('staticPages.validation.mediaRequired', 'A media file is required for this section type.');
-    }
-    if (isEditing && isMediaType && !mediaFile) {
-      const needed = mediaCollectionFor(watchedType);
-      const existingCollection = section?.media?.collection_name ?? null;
-      const cleared = removeMedia || !section?.media;
-      // Switching collections (image↔video) without a replacement file → 422.
-      if (cleared || (needed && existingCollection && needed !== existingCollection)) {
-        return t('staticPages.validation.mediaRequired', 'A media file is required for this section type.');
-      }
-    }
-    return null;
+    return t(error, 'A media file is required for this section type.');
   };
 
   const onSubmit = (values: SectionFormValues) => {
@@ -167,7 +172,7 @@ export function SectionFormDialog({
       return;
     }
 
-    const mediaErr = validateMedia();
+    const mediaErr = validateMedia(values.type);
     if (mediaErr) {
       setMediaError(mediaErr);
       return;
@@ -175,12 +180,10 @@ export function SectionFormDialog({
 
     const commonOptions = {
       onError: (error: unknown) => {
-        const apiError = error as ApiErrorResponse;
-        if (apiError?.status === 422 && apiError.errors) {
-          setServerErrors(apiError.errors);
-          if (apiError.errors.media) setMediaError(apiError.errors.media[0]);
-          if (apiError.errors.config) setConfigError(apiError.errors.config[0]);
-        }
+        const state = extractSectionServerErrors(error);
+        setServerErrors(state.serverErrors);
+        setMediaError(state.mediaError);
+        setConfigError(state.configError);
       },
     };
 
@@ -188,6 +191,8 @@ export function SectionFormDialog({
       // type=text without a replacement clears media server-side; reflect
       // that when the user switches to text with no new file.
       const switchingToText = wantedType(values.type) === 'text' && values.type !== (section.type ?? 'text');
+      // A replacement file always wins: never send `remove_media` alongside it.
+      const shouldRemoveMedia = !mediaFile && (removeMedia || switchingToText);
       const payload = toUpdateSectionPayload(
         values,
         content,
@@ -196,7 +201,7 @@ export function SectionFormDialog({
         {
           config: parsed.config,
           ...(mediaFile ? { media: mediaFile } : {}),
-          ...(removeMedia || switchingToText ? { removeMedia: true } : {}),
+          ...(shouldRemoveMedia ? { removeMedia: true } : {}),
         }
       );
       updateMutation.mutate(
@@ -337,7 +342,13 @@ export function SectionFormDialog({
             <div className="space-y-2 rounded-lg border p-3">
               <label className="text-sm font-medium">{t('staticPages.media', 'Media')} *</label>
               {showExistingMedia && (
-                <ExistingMediaPreview section={section!} onRemove={() => setRemoveMedia(true)} />
+                <ExistingMediaPreview
+                  section={section!}
+                  onRemove={() => {
+                    applyMediaSelection(selectSectionRemoveMedia(true));
+                    setMediaError(null);
+                  }}
+                />
               )}
               {removeMedia && !mediaFile && (
                 <p className="text-xs text-warning">{t('staticPages.mediaWillBeRemoved', 'Existing media will be removed on save. Pick a file below to replace it instead.')}</p>
@@ -363,7 +374,10 @@ export function SectionFormDialog({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setMediaFile(null)}
+                    onClick={() => {
+                      applyMediaSelection(selectSectionMediaFile(null, removeMedia));
+                      setMediaError(null);
+                    }}
                     className="shrink-0 text-muted-foreground hover:text-destructive"
                     aria-label={t('staticPages.mediaClear', 'Remove selected file')}
                   >
@@ -376,9 +390,8 @@ export function SectionFormDialog({
                   accept={accept}
                   onChange={(e) => {
                     const file = e.target.files?.[0] ?? null;
-                    setMediaFile(file);
+                    applyMediaSelection(selectSectionMediaFile(file, removeMedia));
                     setMediaError(null);
-                    if (file) setRemoveMedia(false);
                   }}
                 />
               )}
@@ -387,12 +400,15 @@ export function SectionFormDialog({
                   ? t('staticPages.mediaHintVideo', `MP4, WebM, OGG, MOV or AVI up to ${formatBytes(SECTION_VIDEO_MAX_BYTES)}.`, { max: formatBytes(SECTION_VIDEO_MAX_BYTES) })
                   : t('staticPages.mediaHintImage', `JPEG, PNG, WebP or GIF up to ${formatBytes(SECTION_IMAGE_MAX_BYTES)}.`, { max: formatBytes(SECTION_IMAGE_MAX_BYTES) })}
               </p>
-              {!mediaFile && isEditing && section?.media && (
+              {isEditing && section?.media && (
                 <label className="flex cursor-pointer items-center gap-2 text-xs">
                   <input
                     type="checkbox"
                     checked={removeMedia}
-                    onChange={(e) => setRemoveMedia(e.target.checked)}
+                    onChange={(e) => {
+                      applyMediaSelection(selectSectionRemoveMedia(e.target.checked));
+                      setMediaError(null);
+                    }}
                     className="size-4 shrink-0 cursor-pointer accent-primary"
                   />
                   {t('staticPages.removeMedia', 'Remove existing media')}

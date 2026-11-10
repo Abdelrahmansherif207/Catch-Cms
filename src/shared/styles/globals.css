@@ -61,3 +61,28 @@
 .tox-tinymce:focus-within {
   border-color: var(--ring) !important;
 }
+
+/*
+ * Rich text rendered from TinyMCE output (.rich-html). Tailwind preflight
+ * strips list markers globally, so re-apply them inside rich text
+ * containers. Logical padding keeps RTL descriptions aligned correctly.
+ */
+.rich-html ul {
+  list-style: disc outside;
+  margin: 0.5rem 0;
+  padding-inline-start: 1.25rem;
+}
+.rich-html ol {
+  list-style: decimal outside;
+  margin: 0.5rem 0;
+  padding-inline-start: 1.25rem;
+}
+.rich-html li {
+  margin: 0.25rem 0;
+}
+.rich-html ul ul,
+.rich-html ul ol,
+.rich-html ol ul,
+.rich-html ol ol {
+  margin: 0.25rem 0;
+}
