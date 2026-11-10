@@ -8,27 +8,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { cn } from '@/shared/lib/utils';
-
-import categoriesSvg from '@/shared/sectiontypes/categories.svg';
-import categoriesCircleSvg from '@/shared/sectiontypes/categories-circle.svg';
-import slidersSvg from '@/shared/sectiontypes/sliders.svg';
-import promotionsSvg from '@/shared/sectiontypes/promotions.svg';
-import flashSalesSvg from '@/shared/sectiontypes/flash-sales.svg';
-import couponsSvg from '@/shared/sectiontypes/coupons.svg';
-import brandsSvg from '@/shared/sectiontypes/brands.svg';
-import productsSvg from '@/shared/sectiontypes/products.svg';
-import bannersSvg from '@/shared/sectiontypes/banners.svg';
-
-const TYPE_SVG_MAP: Record<string, string> = {
-  sliders: slidersSvg,
-  promotions: promotionsSvg,
-  'flash-sales': flashSalesSvg,
-  coupons: couponsSvg,
-  brands: brandsSvg,
-  categories: categoriesSvg,
-  products: productsSvg,
-  banners: bannersSvg,
-};
+import { sectionTypeImage } from '../lib/section-type-images';
 
 interface SectionTypeConfigProps {
   type: string;
@@ -55,26 +35,16 @@ export function SectionTypeConfig({
     (val('layout') as string) ||
     (type === 'flash-sales' ? 'slider' : 'grid');
   const autoplay = !!val('autoplay');
+  const previewImage = sectionTypeImage(type, { shape });
 
   return (
     <div className="space-y-4">
-      {/* ─── Categories live preview ─── */}
-      {type === 'categories' && (
+      {/* ─── Type preview ─── */}
+      {previewImage && (
         <div className="flex justify-center rounded-lg border bg-muted/20 p-3">
           <img
-            src={shape === 'circle' ? categoriesCircleSvg : categoriesSvg}
-            alt={`Categories ${shape}`}
-            className="h-auto w-full max-w-[260px] rounded-md"
-          />
-        </div>
-      )}
-
-      {/* ─── General type preview ─── */}
-      {type !== 'categories' && TYPE_SVG_MAP[type] && (
-        <div className="flex justify-center rounded-lg border bg-muted/20 p-3">
-          <img
-            src={TYPE_SVG_MAP[type]}
-            alt={type}
+            src={previewImage}
+            alt={type === 'categories' ? `Categories ${shape}` : type}
             className="h-auto w-full max-w-[260px] rounded-md"
           />
         </div>

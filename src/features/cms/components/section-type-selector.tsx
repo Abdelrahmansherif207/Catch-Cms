@@ -2,26 +2,7 @@ import { Check, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
-
-import slidersSvg from '@/shared/sectiontypes/sliders.svg';
-import promotionsSvg from '@/shared/sectiontypes/promotions.svg';
-import flashSalesSvg from '@/shared/sectiontypes/flash-sales.svg';
-import couponsSvg from '@/shared/sectiontypes/coupons.svg';
-import brandsSvg from '@/shared/sectiontypes/brands.svg';
-import categoriesSvg from '@/shared/sectiontypes/categories.svg';
-import productsSvg from '@/shared/sectiontypes/products.svg';
-import bannersSvg from '@/shared/sectiontypes/banners.svg';
-
-const SVG_MAP: Record<string, string> = {
-  sliders: slidersSvg,
-  promotions: promotionsSvg,
-  'flash-sales': flashSalesSvg,
-  coupons: couponsSvg,
-  brands: brandsSvg,
-  categories: categoriesSvg,
-  products: productsSvg,
-  banners: bannersSvg,
-};
+import { sectionTypeImage } from '../lib/section-type-images';
 
 function formatTypeName(type: string): string {
   return type
@@ -48,7 +29,7 @@ export function SectionTypeSelector({
   // so the full picker grid would just be a wall of unclickable cards — show
   // only the current type as a read-only card instead.
   if (disabled) {
-    const svg = SVG_MAP[value];
+    const svg = sectionTypeImage(value);
 
     return (
       <div className="flex">
@@ -84,7 +65,7 @@ export function SectionTypeSelector({
   return (
     <div className="grid grid-cols-3 gap-3">
       {types.map((type) => {
-        const svg = SVG_MAP[type];
+        const svg = sectionTypeImage(type);
         const isSelected = value === type;
 
         return (
