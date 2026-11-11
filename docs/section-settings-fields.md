@@ -27,6 +27,40 @@ Categories `shape` stays in the preview panel (`SectionTypeConfig`) because it
 switches the preview image — keep `INLINE_FRONT_KEYS` in
 `dynamic-settings-form.tsx` in sync with that panel.
 
+## Categories: responsive layout settings
+
+The categories section mirrors the storefront `SectionFrontSetting` contract.
+Its `front` fields are declared in the registry so they stay editable even when
+the backend template omits them:
+
+| Key | Kind | Range / options | Default |
+| --- | --- | --- | --- |
+| `show_product_count` | boolean | — | — |
+| `columns_count` | number | 2–8 | 8 |
+| `layout` | select | `grid`, `list`, `slider` | — |
+| `rows_count` | number | 1–4 | 1 |
+| `tablet_columns_count` | number | 2–6 | 4 |
+| `tablet_rows_count` | number | 1–4 | 2 |
+| `mobile_columns_count` | number | 2–4 | 4 |
+| `mobile_rows_count` | number | 1–4 | 2 |
+| `balance_last_row` | boolean | — | true |
+| `subtitle` | localized | — | — |
+| `show_view_all` | boolean | — | — |
+| `action_label` | localized | — | — |
+| `action_href` | string | — | — |
+
+`shape` (`square` / `circle`) is still edited in the Layout & Display preview
+panel, not in Display Settings.
+
+The category `back` registry declares `parent_only` (boolean), `limit`
+(number), `categoriesId` (category multi-select), `order` (asc/desc),
+`pest_category` (boolean), and `parent` (boolean).
+
+New sections are seeded with the documented defaults above by
+`defaultFrontSettingsForType()` in `src/features/cms/lib/section-settings.ts`.
+Edit mode never applies those defaults over stored values, preserving the
+save-without-changes contract described below.
+
 ## Field kinds
 
 `boolean`, `number` (min/max/step), `string`, `localized` (`{ en, ar }` dual
