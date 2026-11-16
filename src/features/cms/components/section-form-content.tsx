@@ -10,6 +10,7 @@ import { useUnsavedGuard } from '@/shared/hooks/use-unsaved-guard';
 import { DynamicSettingsForm } from './dynamic-settings-form';
 import { SectionTypeSelector } from './section-type-selector';
 import { SectionTypeConfig } from './section-type-config';
+import { defaultFrontSettingsForType } from '../lib/section-settings';
 import {
   sectionFormSchema,
   sectionFormDefaults,
@@ -105,7 +106,7 @@ export function SectionFormContent({
     (newType: string | null) => {
       if (!newType) return;
       form.setValue('type', newType, { shouldDirty: true });
-      setFrontSettings({});
+      setFrontSettings(defaultFrontSettingsForType(newType));
       setBackSettings({});
       setProductType(null);
       setSettingsTouched(true);

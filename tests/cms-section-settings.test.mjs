@@ -10,6 +10,7 @@ let isPlainTitle;
 let mergeSettingsFields;
 let normalizeFieldSpec;
 let inferKind;
+let defaultFrontSettingsForType;
 let heroMediaPatch;
 let findLinkedHero;
 
@@ -29,6 +30,7 @@ before(async () => {
     mergeSettingsFields,
     normalizeFieldSpec,
     inferKind,
+    defaultFrontSettingsForType,
     heroMediaPatch,
     findLinkedHero,
   } = await server.ssrLoadModule('/src/features/cms/lib/section-settings.ts'));
@@ -159,6 +161,83 @@ test('mergeSettingsFields hides inline and explicitly hidden keys', () => {
   const keys = [...fields, ...extra].map((field) => field.key);
   assert.equal(keys.includes('shape'), false);
   assert.equal(keys.includes('hero_key'), false);
+});
+
+// ─── Categories responsive layout contract ──────────────────────
+
+test('categories front registry exposes the responsive layout fields', () => {
+  const { fields, extra } = mergeSettingsFields('categories', 'front', {}, {});
+  const byKey = new Map(fields.map((field) => [field.key, field]));
+
+  assert.equal(extra.length, 0);
+  assert.equal(byKey.get('show_product_count').kind, 'boolean');
+
+  assert.equal(byKey.get('columns_count').kind, 'number');
+  assert.equal(byKey.get('columns_count').min, 2);
+  assert.equal(byKey.get('columns_count').max, 8);
+
+  assert.equal(byKey.get('layout').kind, 'select');
+  assert.deepEqual(byKey.get('layout').options, ['grid', 'list', 'slider']);
+
+  assert.equal(byKey.get('rows_count').min, 1);
+  assert.equal(byKey.get('rows_count').max, 4);
+
+  assert.equal(byKey.get('tablet_columns_count').min, 2);
+  assert.equal(byKey.get('tablet_columns_count').max, 6);
+  assert.equal(byKey.get('tablet_rows_count').min, 1);
+  assert.equal(byKey.get('tablet_rows_count').max, 4);
+
+  assert.equal(byKey.get('mobile_columns_count').min, 2);
+  assert.equal(byKey.get('mobile_columns_count').max, 4);
+  assert.equal(byKey.get('mobile_rows_count').min, 1);
+  assert.equal(byKey.get('mobile_rows_count').max, 4);
+
+  assert.equal(byKey.get('balance_last_row').kind, 'boolean');
+});
+
+test('categories back registry declares the full data-settings set', () => {
+  const { fields, extra } = mergeSettingsFields('categories', 'back', {}, {});
+  const byKey = new Map(fields.map((field) => [field.key, field]));
+
+  assert.equal(extra.length, 0);
+  assert.equal(byKey.get('parent_only').kind, 'boolean');
+  assert.equal(byKey.get('limit').kind, 'number');
+  assert.equal(byKey.get('limit').min, 1);
+  assert.equal(byKey.get('categoriesId').kind, 'ids');
+  assert.equal(byKey.get('order').kind, 'order');
+  assert.equal(byKey.get('pest_category').kind, 'boolean');
+  assert.equal(byKey.get('parent').kind, 'boolean');
+});
+
+test('categories template defaults are enriched by registry metadata', () => {
+  const template = { columns_count: 8, mobile_rows_count: 2, balance_last_row: true };
+  const { fields } = mergeSettingsFields('categories', 'front', template, template);
+  const byKey = new Map(fields.map((field) => [field.key, field]));
+
+  assert.equal(byKey.get('columns_count').min, 2);
+  assert.equal(byKey.get('columns_count').max, 8);
+  assert.equal(byKey.get('mobile_rows_count').max, 4);
+  assert.equal(byKey.get('balance_last_row').kind, 'boolean');
+});
+
+test('defaultFrontSettingsForType seeds the documented category defaults', () => {
+  assert.deepEqual(defaultFrontSettingsForType('categories'), {
+    columns_count: 8,
+    rows_count: 1,
+    tablet_columns_count: 4,
+    tablet_rows_count: 2,
+    mobile_columns_count: 4,
+    mobile_rows_count: 2,
+    balance_last_row: true,
+  });
+  assert.deepEqual(defaultFrontSettingsForType('sliders'), {});
+});
+
+test('defaultFrontSettingsForType returns a fresh copy each call', () => {
+  const defaults = defaultFrontSettingsForType('categories');
+  defaults.columns_count = 2;
+
+  assert.equal(defaultFrontSettingsForType('categories').columns_count, 8);
 });
 
 // ─── Kind inference / select promotion ──────────────────────────

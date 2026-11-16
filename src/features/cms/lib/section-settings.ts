@@ -109,12 +109,27 @@ const KEY_SELECT_OPTIONS: Record<string, string[]> = {
 
 /** Existing i18n labels; new keys fall back to a derived label. */
 const KEY_LABEL_I18N: Record<string, string> = {
+  action_href: 'sections.actionHref',
+  action_label: 'sections.actionLabel',
   autoplay: 'sections.autoplay',
   badge_text: 'sections.badgeText',
+  balance_last_row: 'sections.balanceLastRow',
+  categoriesId: 'sections.categories',
   columns_count: 'sections.columnsCount',
   layout: 'sections.layout',
+  limit: 'sections.limit',
+  mobile_columns_count: 'sections.mobileColumnsCount',
+  mobile_rows_count: 'sections.mobileRowsCount',
+  order: 'sections.order',
+  parent_only: 'sections.parentOnly',
+  rows_count: 'sections.rowsCount',
+  show_product_count: 'sections.showProductCount',
   show_timer: 'sections.showTimer',
+  show_view_all: 'sections.showViewAll',
   slider_speed: 'sections.sliderSpeed',
+  subtitle: 'sections.subtitle',
+  tablet_columns_count: 'sections.tabletColumnsCount',
+  tablet_rows_count: 'sections.tabletRowsCount',
   theme: 'sections.theme',
   timer_end_at: 'sections.timerEndAt',
 };
@@ -252,14 +267,30 @@ export const SECTION_FIELD_FALLBACKS: Record<string, TypeFieldRegistry> = {
   },
   categories: {
     front: [
-      COLUMNS(8),
-      { key: 'subtitle', kind: 'localized' },
-      { key: 'show_view_all', kind: 'boolean' },
-      { key: 'action_label', kind: 'localized' },
-      { key: 'action_href', kind: 'string' },
-      { key: 'show_product_count', kind: 'boolean' },
+      // Mirrors the storefront SectionFrontSetting contract. `shape` is
+      // rendered by SectionTypeConfig (preview panel), not in this list.
+      { key: 'show_product_count', kind: 'boolean', labelKey: 'sections.showProductCount' },
+      { key: 'columns_count', kind: 'number', labelKey: 'sections.columnsCount', min: 2, max: 8 },
+      { key: 'layout', kind: 'select', options: KEY_SELECT_OPTIONS.layout, labelKey: 'sections.layout' },
+      { key: 'rows_count', kind: 'number', labelKey: 'sections.rowsCount', min: 1, max: 4 },
+      { key: 'tablet_columns_count', kind: 'number', labelKey: 'sections.tabletColumnsCount', min: 2, max: 6 },
+      { key: 'tablet_rows_count', kind: 'number', labelKey: 'sections.tabletRowsCount', min: 1, max: 4 },
+      { key: 'mobile_columns_count', kind: 'number', labelKey: 'sections.mobileColumnsCount', min: 2, max: 4 },
+      { key: 'mobile_rows_count', kind: 'number', labelKey: 'sections.mobileRowsCount', min: 1, max: 4 },
+      { key: 'balance_last_row', kind: 'boolean', labelKey: 'sections.balanceLastRow' },
+      { key: 'subtitle', kind: 'localized', labelKey: 'sections.subtitle' },
+      { key: 'show_view_all', kind: 'boolean', labelKey: 'sections.showViewAll' },
+      { key: 'action_label', kind: 'localized', labelKey: 'sections.actionLabel' },
+      { key: 'action_href', kind: 'string', labelKey: 'sections.actionHref' },
     ],
-    back: [],
+    back: [
+      { key: 'parent_only', kind: 'boolean', labelKey: 'sections.parentOnly' },
+      { key: 'limit', kind: 'number', labelKey: 'sections.limit', min: 1 },
+      { key: 'categoriesId', kind: 'ids', labelKey: 'sections.categories' },
+      { key: 'order', kind: 'order', labelKey: 'sections.order' },
+      { key: 'pest_category', kind: 'boolean' },
+      { key: 'parent', kind: 'boolean' },
+    ],
   },
   products: {
     front: [
@@ -277,6 +308,29 @@ export const SECTION_FIELD_FALLBACKS: Record<string, TypeFieldRegistry> = {
     back: [],
   },
 };
+
+// ─── New-section defaults ────────────────────────────────────────
+//
+// Documented defaults for a type's `setting.front`. Applied only when the user
+// selects a type in create mode; edit mode always starts from stored values so
+// saving without changes stays byte-identical (see docs/section-settings-fields.md).
+
+export const SECTION_FRONT_DEFAULTS: Record<string, Record<string, unknown>> = {
+  categories: {
+    columns_count: 8,
+    rows_count: 1,
+    tablet_columns_count: 4,
+    tablet_rows_count: 2,
+    mobile_columns_count: 4,
+    mobile_rows_count: 2,
+    balance_last_row: true,
+  },
+};
+
+/** Fresh defaults object so callers can't mutate the shared registry. */
+export function defaultFrontSettingsForType(type: string): Record<string, unknown> {
+  return { ...(SECTION_FRONT_DEFAULTS[type] ?? {}) };
+}
 
 // ─── Merging ─────────────────────────────────────────────────────
 
