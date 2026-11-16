@@ -3,16 +3,32 @@ import type { CreateSectionPayload, UpdateSectionPayload } from '../types/sectio
 
 // ─── Form Schema ─────────────────────────────────────────────────
 
-export const sectionFormSchema = z.object({
-  type: z.string().min(1, 'sections.validation.typeRequired'),
-  titleEn: z.string().min(1, 'sections.validation.titleEnRequired').max(50),
-  titleAr: z.string().min(1, 'sections.validation.titleArRequired').max(50),
-  isActive: z.boolean().default(true),
-  titleVisible: z.boolean().default(true),
-  frontSettings: z.record(z.string(), z.unknown()).optional(),
-  backSettings: z.record(z.string(), z.unknown()).optional(),
-  productType: z.string().nullable().optional(),
-});
+function buildSectionFormSchema(requireTitle: boolean) {
+  const titleField = (requiredMessage: string) =>
+    requireTitle
+      ? z.string().min(1, requiredMessage).max(50)
+      : z.string().max(50);
+
+  return z.object({
+    type: z.string().min(1, 'sections.validation.typeRequired'),
+    titleEn: titleField('sections.validation.titleEnRequired'),
+    titleAr: titleField('sections.validation.titleArRequired'),
+    isActive: z.boolean().default(true),
+    titleVisible: z.boolean().default(true),
+    frontSettings: z.record(z.string(), z.unknown()).optional(),
+    backSettings: z.record(z.string(), z.unknown()).optional(),
+    productType: z.string().nullable().optional(),
+  });
+}
+
+/** Create requires both title locales (backend contract). */
+export const sectionFormSchema = buildSectionFormSchema(true);
+
+/**
+ * Edit allows empty title locales: stored sections such as the hero can have
+ * a null title, and saving unrelated settings must not be blocked.
+ */
+export const sectionEditFormSchema = buildSectionFormSchema(false);
 
 export type SectionFormValues = z.infer<typeof sectionFormSchema>;
 
@@ -82,13 +98,41 @@ export function isPlainTitle(title: unknown): boolean {
 
 // ─── Transform to API format ─────────────────────────────────────
 
+// Storefront-removed settings: stripped from `setting.front` on every save so
+// stored sections converge on the keys the storefront still reads.
+const DEAD_FRONT_KEYS: Record<string, string[]> = {
+  categories: ['balance_last_row'],
+};
+
+function stripDeadFrontKeys(
+  type: string,
+  front: Record<string, unknown>
+): Record<string, unknown> {
+  const dead = DEAD_FRONT_KEYS[type];
+  if (!dead?.length) return front;
+  const next = { ...front };
+  for (const key of dead) delete next[key];
+  return next;
+}
+
+/**
+ * Products always save an explicit `back.type`: the chosen template in Preset
+ * mode, or `null` in Custom mode (the backend then applies the plain filters
+ * and honors `order`). The saved key is unchanged — only the value semantics.
+ */
+function applyProductBackType(
+  values: SectionFormValues,
+  backSettings: Record<string, unknown>
+): void {
+  if (values.type === 'products') {
+    backSettings.type = values.productType ?? null;
+  }
+}
+
 export function toCreatePayload(values: SectionFormValues): CreateSectionPayload {
   const backSettings = { ...(values.backSettings || {}) };
 
-  // If products type with a template, set the type field
-  if (values.type === 'products' && values.productType) {
-    backSettings.type = values.productType;
-  }
+  applyProductBackType(values, backSettings);
 
   return {
     type: values.type,
@@ -100,7 +144,7 @@ export function toCreatePayload(values: SectionFormValues): CreateSectionPayload
     is_active: values.isActive ? 1 : 0,
     title_visible: values.titleVisible ? 1 : 0,
     setting: {
-      front: values.frontSettings || {},
+      front: stripDeadFrontKeys(values.type, values.frontSettings || {}),
       back: backSettings,
     },
   };
@@ -120,15 +164,13 @@ export function toUpdatePayload(
 ): UpdateSectionPayload {
   const backSettings = { ...(values.backSettings || {}) };
 
-  if (values.type === 'products' && values.productType) {
-    backSettings.type = values.productType;
-  }
+  applyProductBackType(values, backSettings);
 
   const payload: UpdateSectionPayload = {
     is_active: values.isActive ? 1 : 0,
     title_visible: values.titleVisible ? 1 : 0,
     setting: {
-      front: values.frontSettings || {},
+      front: stripDeadFrontKeys(values.type, values.frontSettings || {}),
       back: backSettings,
     },
   };

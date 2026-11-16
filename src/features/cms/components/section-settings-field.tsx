@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import {
   Select,
@@ -22,6 +23,22 @@ interface SettingsFieldProps {
   currentValue: unknown;
   onChange: (value: unknown) => void;
   sectionType?: string;
+  /** Current sibling `limit` value (id lists only) — used for the cap warning. */
+  limitValue?: unknown;
+  /** Sets the sibling `limit` key when the user accepts the warning action. */
+  onLimitChange?: (limit: number) => void;
+}
+
+/** Boolean values may arrive as booleans, 0/1, or "0"/"1" strings. */
+export function toEffectiveBoolean(value: unknown, fallback: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  }
+  return fallback === true;
 }
 
 // The real endpoint is singular even though the setting key is plural.
@@ -41,7 +58,14 @@ function idsEndpoint(key: string): string {
     .toLowerCase();
 }
 
-export function SettingsField({ spec, currentValue, onChange, sectionType }: SettingsFieldProps) {
+export function SettingsField({
+  spec,
+  currentValue,
+  onChange,
+  sectionType,
+  limitValue,
+  onLimitChange,
+}: SettingsFieldProps) {
   const { t } = useTranslation();
   const fieldId = useId();
   const label = spec.labelKey
@@ -50,23 +74,27 @@ export function SettingsField({ spec, currentValue, onChange, sectionType }: Set
 
   const setDraftString = (text: string) => onChange(text ? text : null);
 
-  // Banner slug: pick a banner from a searchable dropdown instead of typing it
+  // Banner slug: pick a banner from a searchable dropdown instead of typing it.
+  // Labeled "Banner" (not the derived "Slug") — the control selects a banner.
   if (sectionType === 'banners' && spec.key === 'slug') {
     return (
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">{label}</label>
+        <label className="text-sm font-medium">{t('sections.banner')}</label>
         <SearchableSelect
           endpoint="banners"
           value={currentValue ? String(currentValue) : null}
           onChange={(v) => onChange(v)}
-          placeholder={`Select ${label.toLowerCase()}...`}
+          placeholder={`Select ${t('sections.banner').toLowerCase()}...`}
         />
       </div>
     );
   }
 
   switch (spec.kind) {
-    case 'boolean':
+    case 'boolean': {
+      // Unset keys show the storefront's effective default (display only);
+      // the first click stores an explicit value.
+      const checked = toEffectiveBoolean(currentValue, spec.defaultValue);
       return (
         <div className="flex items-center justify-between rounded-lg border p-3">
           <label htmlFor={fieldId} className="text-sm font-medium">{label}</label>
@@ -74,20 +102,21 @@ export function SettingsField({ spec, currentValue, onChange, sectionType }: Set
             id={fieldId}
             type="button"
             role="switch"
-            aria-checked={!!currentValue}
-            onClick={() => onChange(!currentValue)}
+            aria-checked={checked}
+            onClick={() => onChange(!checked)}
             className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors ${
-              currentValue ? 'bg-primary' : 'bg-input'
+              checked ? 'bg-primary' : 'bg-input'
             }`}
           >
             <span
               className={`pointer-events-none absolute start-0.5 top-0.5 block h-4 w-4 rounded-full bg-background shadow-sm transition-[inset-inline-start] ${
-                currentValue ? 'start-[18px]' : ''
+                checked ? 'start-[18px]' : ''
               }`}
             />
           </button>
         </div>
       );
+    }
 
     case 'number':
       return (
@@ -152,8 +181,14 @@ export function SettingsField({ spec, currentValue, onChange, sectionType }: Set
         spec.kind === 'order'
           ? ['asc', 'desc']
           : spec.options ?? [];
-      const currentText =
+      const savedText =
         currentValue !== null && currentValue !== undefined ? String(currentValue) : '';
+      const defaultText =
+        spec.defaultValue !== null && spec.defaultValue !== undefined
+          ? String(spec.defaultValue)
+          : '';
+      // Fall back to the storefront default when the key is unset.
+      const currentText = savedText || defaultText;
 
       // No declared options, or a saved value outside the accepted list:
       // keep editing as text instead of hiding/destroying the stored value
@@ -234,6 +269,15 @@ export function SettingsField({ spec, currentValue, onChange, sectionType }: Set
             ? [currentValue]
             : [];
 
+      const parsedLimit =
+        typeof limitValue === 'number'
+          ? limitValue
+          : typeof limitValue === 'string' && limitValue.trim()
+            ? Number(limitValue)
+            : NaN;
+      const hasLimit = Number.isFinite(parsedLimit) && parsedLimit > 0;
+      const exceedsLimit = hasLimit && selectedIds.length > parsedLimit;
+
       return (
         <div className="space-y-1.5">
           <label className="text-sm font-medium">{label}</label>
@@ -243,6 +287,26 @@ export function SettingsField({ spec, currentValue, onChange, sectionType }: Set
             onChange={(ids) => onChange(ids)}
             placeholder={`Select ${label.toLowerCase()}...`}
           />
+          {exceedsLimit && (
+            <div className="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-2">
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                {t('sections.selectionExceedsLimit', {
+                  selected: selectedIds.length,
+                  limit: parsedLimit,
+                })}
+              </p>
+              {onLimitChange && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLimitChange(selectedIds.length)}
+                >
+                  {t('sections.setLimitToSelection', { count: selectedIds.length })}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       );
     }
