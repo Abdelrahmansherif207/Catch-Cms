@@ -1,4 +1,5 @@
 import { axiosClient } from '@/shared/api';
+import { extractPreviewTotal } from '../lib/section-preview';
 import type {
   SectionsListResponse,
   SectionDetailResponse,
@@ -108,6 +109,18 @@ export function normalizeProductTypes(payload: unknown): ProductTypeOption[] {
 export async function fetchProductTypes(): Promise<ProductTypeOption[]> {
   const { data } = await axiosClient.get<ProductTypesResponse>('/product-type');
   return normalizeProductTypes(data);
+}
+
+// ─── Section endpoint preview ────────────────────────────────────
+
+/**
+ * Calls a built section endpoint (see `lib/section-preview.ts`) with a small
+ * limit and extracts the paginator total. Returns null when the response
+ * shape is not recognizable — the preview treats that as "no count".
+ */
+export async function fetchSectionPreviewCount(endpoint: string): Promise<number | null> {
+  const { data } = await axiosClient.get(endpoint);
+  return extractPreviewTotal(data);
 }
 
 export interface EntitySearchItem {

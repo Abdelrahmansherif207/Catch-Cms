@@ -1410,6 +1410,18 @@
     "square": "مربع",
     "circle": "دائري",
     "badgeText": "نص الشارة",
+    "showTitle": "إظهار العنوان",
+    "showHashtag": "إظهار علامة الهاشتاغ",
+    "tone": "النمط اللوني",
+    "imageDesktop": "صورة (كمبيوتر)",
+    "imageMobile": "صورة (هاتف)",
+    "videoDesktop": "فيديو (كمبيوتر)",
+    "videoMobile": "فيديو (هاتف)",
+    "poster": "صورة الغلاف",
+    "heroMediaPaths": "مسارات الوسائط اليدوية",
+    "heroMediaPathsHint": "مسارات التخزين أو روابط كاملة لكل نسخة — نفس الحقول التي يملؤها الهيرو المرتبط. اترك المسار فارغًا إذا لم يُستخدم.",
+    "selectionExceedsLimit": "تم اختيار {{selected}} عنصرًا بينما الحد {{limit}} — العناصر الإضافية لن تُعاد.",
+    "setLimitToSelection": "تعيين الحد إلى {{count}}",
     "titleEn": "العنوان (إنجليزي)",
     "titleAr": "العنوان (عربي)",
     "untouchedLocaleHint": "لم يتم تعديل هذا العنوان، لذا ستبقى الترجمة المحفوظة دون تغيير.",
@@ -1437,6 +1449,51 @@
     "productTemplate": "قالب المنتج",
     "selectProductTemplate": "اختر قالب منتج...",
     "noTemplate": "بدون (إعدادات مخصصة)",
+    "templateGroups": {
+      "performance": "الأداء",
+      "discounts": "التخفيضات",
+      "flashSales": "العروض السريعة",
+      "catalog": "الكتالوج",
+      "other": "أخرى"
+    },
+    "templates": {
+      "best_product_sales": {
+        "label": "الأكثر مبيعاً",
+        "description": "المنتجات الأعلى مبيعاً حسب المبيعات"
+      },
+      "new_arrivals": {
+        "label": "أحدث المنتجات",
+        "description": "أحدث المنتجات أولاً (الأحدث دائماً أولاً)"
+      },
+      "brands_product": {
+        "label": "منتج واحد لكل ماركة",
+        "description": "منتج واحد من كل ماركة بترتيب الماركات. لا يمكن تقييدها بماركات مختارة: استخدم الوضع المخصص مع فلتر الماركات."
+      },
+      "all_product_discounts": {
+        "label": "المنتجات المخفضة",
+        "description": "المنتجات التي عليها تخفيض ساري"
+      },
+      "product_discount_today_or_low_qty": {
+        "label": "مخفض اليوم أو كميته منخفضة",
+        "description": "منتجات خُفّضت اليوم بالإضافة إلى منتجات كميتها منخفضة"
+      },
+      "flash_sales_product": {
+        "label": "كل العروض السريعة النشطة",
+        "description": "منتجات كل العروض السريعة الجارية الآن. لعرض سريع محدد استخدم الوضع المخصص مع فلتر العروض السريعة."
+      },
+      "flash_sales_end_today": {
+        "label": "عروض سريعة تنتهي اليوم",
+        "description": "منتجات العروض المنتهية اليوم. قد تكون النتيجة فارغة."
+      },
+      "flash_sales_end_week": {
+        "label": "عروض سريعة تنتهي هذا الأسبوع",
+        "description": "منتجات العروض المنتهية خلال الأيام السبعة القادمة"
+      },
+      "product_for_parent_category": {
+        "label": "منتجات الفئات الرئيسية",
+        "description": "منتجات الفئات الرئيسية (العليا)"
+      }
+    },
     "productTypesLoadError": "تعذر تحميل قوالب المنتجات.",
     "productTypesMalformed": "تم استلام استجابة غير صالحة لقوالب المنتجات.",
     "productTypesEmpty": "لا توجد قوالب منتجات متاحة.",
@@ -1447,6 +1504,54 @@
     "unsavedChangesConfirm": "لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟",
     "templateSelectedHint": "تم اختيار القالب — فقط النوع والترتيب والحد مطلوبة.",
     "templateNoneHint": "لم يتم اختيار قالب — جميع حقول الإعدادات متاحة.",
+    "ctaLabel": "نص الزر",
+    "ctaHref": "رابط الزر",
+    "mediaType": "نوع الوسائط",
+    "loop": "تكرار الفيديو",
+    "muted": "كتم صوت الفيديو",
+    "showCta": "إظهار الزر",
+    "showOverlay": "إظهار طبقة التعتيم",
+    "showMobileContent": "إظهار المحتوى على الجوال",
+    "eyebrow": "نص فوق العنوان",
+    "heading": "العنوان الرئيسي",
+    "pestCategory": "أفضل الفئات (قائمة منتقاة)",
+    "parentFlag": "الفئات التي لها فئات فرعية فقط",
+    "banner": "البانر",
+    "tabGroupGeneral": "عام",
+    "tabGroupContent": "المحتوى",
+    "tabGroupLayout": "التخطيط",
+    "tabGroupMedia": "الوسائط",
+    "tabGroupExtras": "إضافات",
+    "tabGroupAdvanced": "متقدم",
+    "otherSettingsInvalidJson": "يجب أن تكون القيمة بصيغة JSON صالحة.",
+    "otherSettingsTypeChanged": "تغيّر نوع القيمة من {{from}} إلى {{to}}.",
+    "otherSettingsSaveAnyway": "احفظ على أي حال",
+    "otherSettingsRemoveTitle": "إزالة إعداد",
+    "otherSettingsRemoveConfirm": "إزالة \"{{key}}\" من الإعدادات المحفوظة؟ سيُحذف من هذا القسم عند الحفظ.",
+    "otherSettingsShowMore": "إظهار المزيد",
+    "otherSettingsShowLess": "إظهار أقل",
+    "productsDataMode": "مصدر البيانات",
+    "modePreset": "قالب جاهز",
+    "modeCustom": "مخصص",
+    "productsCustomHint": "يجب أن تطابق المنتجات كل الفلاتر التي تحددها. اختيار عدة قيم داخل فلتر واحد يطابق أيًّا منها.",
+    "productsPresetNoTemplate": "اختر قالبًا أو عُد إلى الوضع المخصص — الحفظ بدون قالب يخزّن قسمًا مخصصًا بلا فلاتر.",
+    "modeSwitchToPresetTitle": "التبديل إلى قالب جاهز؟",
+    "modeSwitchToPresetConfirm": "القالب يحدد الاستعلام في هذا الوضع: سيُحذف {{count}} من قيم الفلاتر/الترتيب المحفوظة. يُبقى على الحد (والقالب الذي تختاره بعدها) فقط.",
+    "modeSwitchToCustomTitle": "التبديل إلى مخصص؟",
+    "modeSwitchToCustomConfirm": "سيُحذف القالب المختار وتُمسح {{count}} من قيم الفلاتر/الترتيب المحفوظة — ستبدأ بفلاتر فارغة.",
+    "modeSwitchConfirm": "متابعة",
+    "ignoredSettings": "إعدادات متجاهَلة",
+    "ignoredSettingsHint": "قيم محفوظة لا يستخدمها القسم في وضع القالب الجاهز (فلاتر، ترتيب). تبقى محفوظة حتى تزيلها.",
+    "ignoredSettingsRemove": "إزالة الإعدادات المتجاهَلة",
+    "ignoredSettingsRemoveTitle": "إزالة الإعدادات المتجاهَلة؟",
+    "ignoredSettingsRemoveConfirm": "إزالة {{count}} من الإعدادات المتجاهَلة من هذا القسم؟ ستُحذف عند الحفظ.",
+    "previewEndpoint": "الرابط الناتج",
+    "previewChecking": "جاري التحقق من العناصر...",
+    "previewCount": "≈ {{count}} عنصرًا يطابق هذا الاستعلام",
+    "previewEmpty": "لن يعرض هذا القسم شيئًا",
+    "previewUnavailable": "المعاينة الحية غير متاحة.",
+    "arabicEmptyWarning": "النص العربي فارغ — ستعرض الواجهة النسخة الإنجليزية بدلًا منه.",
+    "arabicSameWarning": "النص العربي مطابق للنص الإنجليزي.",
     "creating": "جاري الإنشاء...",
     "updating": "جاري التحديث...",
     "deleting": "جاري الحذف...",

@@ -9,9 +9,9 @@ import { PageBackHeader } from '@/shared/components/page-header';
 import { useUnsavedGuard } from '@/shared/hooks/use-unsaved-guard';
 import { DynamicSettingsForm } from './dynamic-settings-form';
 import { SectionTypeSelector } from './section-type-selector';
-import { SectionTypeConfig } from './section-type-config';
 import { defaultFrontSettingsForType } from '../lib/section-settings';
 import {
+  sectionEditFormSchema,
   sectionFormSchema,
   sectionFormDefaults,
   isPlainTitle,
@@ -36,6 +36,18 @@ interface SectionFormContentProps {
 }
 
 // ─── Initial values ─────────────────────────────────────────────
+
+/** API flags can be booleans, 0/1 numbers, or "0"/"1" strings. */
+function toFlag(value: unknown, fallback: boolean): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  }
+  return fallback;
+}
 
 function initialSettings(section?: Section) {
   const front = section?.setting?.front ?? {};
@@ -77,15 +89,18 @@ export function SectionFormContent({
   const titleDraft = toTitleDraft(section?.title);
 
   const form = useForm<SectionFormValues>({
-    resolver: zodResolver(sectionFormSchema) as unknown as Resolver<SectionFormValues>,
+    // Edit mode allows an empty title (some stored sections have a null one).
+    resolver: zodResolver(
+      isEditing ? sectionEditFormSchema : sectionFormSchema
+    ) as unknown as Resolver<SectionFormValues>,
     defaultValues: section
       ? {
           ...sectionFormDefaults,
           type: section.type,
           titleEn: titleDraft.en,
           titleAr: titleDraft.ar,
-          isActive: section.is_active,
-          titleVisible: section.title_visible ?? true,
+          isActive: toFlag(section.is_active, true),
+          titleVisible: toFlag(section.title_visible, true),
         }
       : sectionFormDefaults,
   });
@@ -99,6 +114,19 @@ export function SectionFormContent({
   const loadedTitleIsPlain = isPlainTitle(section?.title);
   const titleEnDirty = !!form.formState.dirtyFields.titleEn;
   const titleArDirty = !!form.formState.dirtyFields.titleAr;
+
+  // Non-blocking Arabic title warnings: empty while the English title has
+  // content, or byte-identical to it. The create schema still requires both.
+  const titleArValue = form.watch('titleAr');
+  const titleEnValue = form.watch('titleEn');
+  const titleArTrim = (titleArValue ?? '').trim();
+  const titleEnTrim = (titleEnValue ?? '').trim();
+  const titleArWarning =
+    titleEnTrim && !titleArTrim
+      ? t('sections.arabicEmptyWarning')
+      : titleEnTrim && titleArTrim && titleEnTrim === titleArTrim
+        ? t('sections.arabicSameWarning')
+        : null;
 
   // ─── Handlers ────────────────────────────────────────────────
 
@@ -164,7 +192,16 @@ export function SectionFormContent({
 
       updateMutation.mutate(
         { id: section.id, data: toUpdatePayload(merged, changedLocales) },
-        { ...commonOptions, onSuccess }
+        {
+          ...commonOptions,
+          // The edit page keeps the user here after a save: clear the dirty
+          // state so the unsaved-changes guard doesn't block leaving.
+          onSuccess: () => {
+            setSettingsTouched(false);
+            form.reset({ ...form.getValues() });
+            onSuccess();
+          },
+        }
       );
     } else {
       createMutation.mutate(toCreatePayload(merged), { ...commonOptions, onSuccess });
@@ -193,131 +230,128 @@ export function SectionFormContent({
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <div className="space-y-5 rounded-2xl border bg-card p-4 shadow-card sm:p-6">
-          {/* ─── Type ─── */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('sections.sectionType')} *</label>
-            <SectionTypeSelector
-              types={sectionTypes}
-              value={selectedType}
-              onChange={handleTypeChange}
-              disabled={isEditing}
+          {/* ─── Settings tabs (General holds the section-level controls) ─── */}
+          {selectedType && (
+            <DynamicSettingsForm
+              key={selectedType}
+              sectionType={selectedType}
+              frontSettings={frontSettings}
+              backSettings={backSettings}
+              productType={productType}
+              savedEndpoint={section?.endpoint ?? null}
+              onFrontChange={handleFrontChange}
+              onBackChange={handleBackChange}
+              onProductTypeChange={handleProductTypeChange}
+              generalSlot={
+                <>
+                  {/* ─── Type ─── */}
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">{t('sections.sectionType')} *</label>
+                    <SectionTypeSelector
+                      types={sectionTypes}
+                      value={selectedType}
+                      onChange={handleTypeChange}
+                      disabled={isEditing}
+                    />
+                    {getError('type') && (
+                      <p className="text-xs text-destructive">{getError('type')}</p>
+                    )}
+                  </div>
+
+                  {/* ─── Titles ─── */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label htmlFor="titleEn" className="text-sm font-medium">
+                        {t('sections.titleEn')}
+                        {!isEditing && ' *'}
+                      </label>
+                      <Input
+                        id="titleEn"
+                        placeholder="e.g. Flash Sales"
+                        {...form.register('titleEn')}
+                      />
+                      {getError('titleEn') && (
+                        <p className="text-xs text-destructive">{getError('titleEn')}</p>
+                      )}
+                      {loadedTitleIsPlain && !titleEnDirty && titleArDirty && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('sections.untouchedLocaleHint')}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="titleAr" className="text-sm font-medium">
+                        {t('sections.titleAr')}
+                        {!isEditing && ' *'}
+                      </label>
+                      <Input
+                        id="titleAr"
+                        dir="rtl"
+                        placeholder="مثال: العروض"
+                        {...form.register('titleAr')}
+                      />
+                      {getError('titleAr') && (
+                        <p className="text-xs text-destructive">{getError('titleAr')}</p>
+                      )}
+                      {loadedTitleIsPlain && !titleArDirty && titleEnDirty && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('sections.untouchedLocaleHint')}
+                        </p>
+                      )}
+                      {titleArWarning && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                          {titleArWarning}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ─── Toggles ─── */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="flex items-center justify-between rounded-lg border p-3">
+                      <label className="text-sm font-medium">{t('sections.isActive')}</label>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={form.watch('isActive')}
+                        aria-label={t('sections.isActive')}
+                        onClick={() => form.setValue('isActive', !form.getValues('isActive'), { shouldDirty: true })}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors ${
+                          form.watch('isActive') ? 'bg-primary' : 'bg-input'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none absolute start-0.5 top-0.5 block h-4 w-4 rounded-full bg-background shadow-sm transition-[inset-inline-start] ${
+                            form.watch('isActive') ? 'start-[18px]' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border p-3">
+                      <label className="text-sm font-medium">{t('sections.titleVisible')}</label>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={form.watch('titleVisible')}
+                        aria-label={t('sections.titleVisible')}
+                        onClick={() => form.setValue('titleVisible', !form.getValues('titleVisible'), { shouldDirty: true })}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors ${
+                          form.watch('titleVisible') ? 'bg-primary' : 'bg-input'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none absolute start-0.5 top-0.5 block h-4 w-4 rounded-full bg-background shadow-sm transition-[inset-inline-start] ${
+                            form.watch('titleVisible') ? 'start-[18px]' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              }
             />
-            {getError('type') && (
-              <p className="text-xs text-destructive">{getError('type')}</p>
-            )}
-          </div>
-
-          {/* ─── Titles ─── */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label htmlFor="titleEn" className="text-sm font-medium">
-                {t('sections.titleEn')} *
-              </label>
-              <Input
-                id="titleEn"
-                placeholder="e.g. Flash Sales"
-                {...form.register('titleEn')}
-              />
-              {getError('titleEn') && (
-                <p className="text-xs text-destructive">{getError('titleEn')}</p>
-              )}
-              {loadedTitleIsPlain && !titleEnDirty && titleArDirty && (
-                <p className="text-xs text-muted-foreground">
-                  {t('sections.untouchedLocaleHint')}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="titleAr" className="text-sm font-medium">
-                {t('sections.titleAr')} *
-              </label>
-              <Input
-                id="titleAr"
-                dir="rtl"
-                placeholder="مثال: العروض"
-                {...form.register('titleAr')}
-              />
-              {getError('titleAr') && (
-                <p className="text-xs text-destructive">{getError('titleAr')}</p>
-              )}
-              {loadedTitleIsPlain && !titleArDirty && titleEnDirty && (
-                <p className="text-xs text-muted-foreground">
-                  {t('sections.untouchedLocaleHint')}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ─── Toggles ─── */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <label className="text-sm font-medium">{t('sections.isActive')}</label>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.watch('isActive')}
-                aria-label={t('sections.isActive')}
-                onClick={() => form.setValue('isActive', !form.getValues('isActive'), { shouldDirty: true })}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors ${
-                  form.watch('isActive') ? 'bg-primary' : 'bg-input'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none absolute start-0.5 top-0.5 block h-4 w-4 rounded-full bg-background shadow-sm transition-[inset-inline-start] ${
-                    form.watch('isActive') ? 'start-[18px]' : ''
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <label className="text-sm font-medium">{t('sections.titleVisible')}</label>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.watch('titleVisible')}
-                aria-label={t('sections.titleVisible')}
-                onClick={() => form.setValue('titleVisible', !form.getValues('titleVisible'), { shouldDirty: true })}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors ${
-                  form.watch('titleVisible') ? 'bg-primary' : 'bg-input'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none absolute start-0.5 top-0.5 block h-4 w-4 rounded-full bg-background shadow-sm transition-[inset-inline-start] ${
-                    form.watch('titleVisible') ? 'start-[18px]' : ''
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* ─── Inline Type Config ─── */}
-          {selectedType && (
-            <div className="space-y-3 rounded-lg border p-4">
-              <h3 className="text-sm font-semibold">{t('sections.typeConfig')}</h3>
-              <SectionTypeConfig
-                type={selectedType}
-                frontSettings={frontSettings}
-                onFrontChange={handleFrontChange}
-              />
-            </div>
-          )}
-
-          {/* ─── Dynamic Settings ─── */}
-          {selectedType && (
-            <div className="space-y-3 rounded-lg border p-4">
-              <h3 className="text-sm font-semibold">{t('sections.advancedSettings')}</h3>
-              <DynamicSettingsForm
-                sectionType={selectedType}
-                frontSettings={frontSettings}
-                backSettings={backSettings}
-                productType={productType}
-                onFrontChange={handleFrontChange}
-                onBackChange={handleBackChange}
-                onProductTypeChange={handleProductTypeChange}
-              />
-            </div>
           )}
 
           {/* ─── Server Errors ─── */}

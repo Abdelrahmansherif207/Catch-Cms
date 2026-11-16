@@ -51,7 +51,10 @@ export function SectionEditPage() {
     <SectionFormContent
       key={detail.id}
       section={detail}
-      onSuccess={() => navigate('/cms')}
+      // Stay on the edit page after a successful update — the detail query is
+      // refreshed by the mutation's cache invalidation and a toast confirms
+      // the save. Only Cancel navigates back to the list.
+      onSuccess={() => {}}
       onCancel={() => navigate('/cms')}
     />
   );

@@ -27,6 +27,15 @@ interface HeroMediaPickerProps {
   onApply: (patch: Record<string, unknown>) => void;
 }
 
+/** Media path fields edited manually inside this picker. */
+const HERO_PATH_FIELDS = [
+  { key: 'image_desktop', labelKey: 'sections.imageDesktop' },
+  { key: 'image_mobile', labelKey: 'sections.imageMobile' },
+  { key: 'video_desktop', labelKey: 'sections.videoDesktop' },
+  { key: 'video_mobile', labelKey: 'sections.videoMobile' },
+  { key: 'poster', labelKey: 'sections.poster' },
+] as const;
+
 function heroLabel(hero: Hero): string {
   const description = heroDescriptionOf(hero);
   return description.en || description.ar || `Hero #${hero.id}`;
@@ -185,6 +194,31 @@ export function HeroMediaPicker({ values, onApply }: HeroMediaPickerProps) {
           <p className="text-xs text-muted-foreground">{t('sections.heroMediaNotLinked')}</p>
         )
       )}
+
+      {/* Manual media paths — the same keys the picker fills */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">{t('sections.heroMediaPaths')}</label>
+        <p className="text-xs text-muted-foreground">{t('sections.heroMediaPathsHint')}</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {HERO_PATH_FIELDS.map(({ key, labelKey }) => (
+            <div key={key} className="space-y-1">
+              <label
+                htmlFor={`hero-path-${key}`}
+                className="block text-xs font-medium uppercase text-muted-foreground"
+              >
+                {t(labelKey)}
+              </label>
+              <Input
+                id={`hero-path-${key}`}
+                type="text"
+                dir="ltr"
+                value={typeof values[key] === 'string' ? (values[key] as string) : ''}
+                onChange={(e) => onApply({ [key]: e.target.value || null })}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {linkedHero?.type === 'video' && (
         <p className="text-[11px] text-muted-foreground">
