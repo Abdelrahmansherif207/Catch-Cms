@@ -27,6 +27,8 @@ interface SettingsFieldProps {
   limitValue?: unknown;
   /** Sets the sibling `limit` key when the user accepts the warning action. */
   onLimitChange?: (limit: number) => void;
+  /** Reports labels the entity picker has already cached (no new requests). */
+  onLabelsChange?: (labels: Record<number, string>) => void;
 }
 
 /** Boolean values may arrive as booleans, 0/1, or "0"/"1" strings. */
@@ -65,6 +67,7 @@ export function SettingsField({
   sectionType,
   limitValue,
   onLimitChange,
+  onLabelsChange,
 }: SettingsFieldProps) {
   const { t } = useTranslation();
   const fieldId = useId();
@@ -286,6 +289,7 @@ export function SettingsField({
             selectedIds={selectedIds}
             onChange={(ids) => onChange(ids)}
             placeholder={`Select ${label.toLowerCase()}...`}
+            onLabelsChange={onLabelsChange}
           />
           {exceedsLimit && (
             <div className="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-2">

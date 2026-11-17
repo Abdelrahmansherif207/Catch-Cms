@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2,
@@ -22,6 +22,7 @@ import { useTypeSettings, useProductTypes } from '../hooks/use-sections';
 import { ProductTypeResponseError } from '../api/sections.api';
 import {
   mergeSettingsFields,
+  formatFieldLabel,
   toLocalizedDraft,
   type FieldGroup,
   type SettingsFieldSpec,
@@ -29,15 +30,23 @@ import {
 import { sectionTypeImage } from '../lib/section-type-images';
 import { buildSectionEndpoint } from '../lib/section-preview';
 import {
+  SECTION_PREVIEW_MAX_ITEMS,
+  type SectionPreviewType,
+} from '../lib/section-preview-data';
+import {
   buildProductTemplateOptions,
   cleanPresetBack,
   ignoredPresetKeys,
+  PRODUCTS_FILTER_KEYS,
   PRODUCTS_PRESET_IGNORED_KEYS,
   type ProductsDataMode,
 } from '../lib/product-templates';
 import { ProductsTemplatePicker } from './products-template-picker';
 import { SettingsField, toEffectiveBoolean } from './section-settings-field';
-import { SectionEndpointPreview } from './section-endpoint-preview';
+import {
+  SectionEndpointPreview,
+  type SectionPreviewFilter,
+} from './section-endpoint-preview';
 import { HeroMediaPicker } from './hero-media-picker';
 import { SectionTypeConfig } from './section-type-config';
 
@@ -75,6 +84,89 @@ const HIDDEN_BACK_KEYS: Record<string, string[]> = {
 // by any storefront component or query. Hidden from the form for all types;
 // new sections never get it written and saved values are never deleted.
 const GLOBALLY_HIDDEN_BACK_KEYS = ['order_price'];
+
+// ─── Result preview ─────────────────────────────────────────────
+
+/** Section types whose endpoint returns a renderable result list. */
+const RESULT_PREVIEW_TYPES = new Set<string>([
+  'products',
+  'categories',
+  'brands',
+  'coupons',
+]);
+
+/** Storefront column defaults when neither the form nor the template sets one. */
+const PREVIEW_COLUMNS_FALLBACK: Record<string, number> = {
+  products: 5,
+  categories: 8,
+  brands: 6,
+  coupons: 4,
+};
+
+/** Custom product filters shown in the preview caption. */
+const PREVIEW_FILTER_LABELS: Record<
+  string,
+  { plural: string; singular: string }
+> = {
+  productsId: {
+    plural: 'sections.previewFilter.products',
+    singular: 'sections.previewFilter.product',
+  },
+  categoriesId: {
+    plural: 'sections.previewFilter.categories',
+    singular: 'sections.previewFilter.category',
+  },
+  brandsId: {
+    plural: 'sections.previewFilter.brands',
+    singular: 'sections.previewFilter.brand',
+  },
+  flashSalesId: {
+    plural: 'sections.previewFilter.flashSales',
+    singular: 'sections.previewFilter.flashSale',
+  },
+  promotionsId: {
+    plural: 'sections.previewFilter.promotions',
+    singular: 'sections.previewFilter.promotion',
+  },
+  couponsId: {
+    plural: 'sections.previewFilter.coupons',
+    singular: 'sections.previewFilter.coupon',
+  },
+  bannersId: {
+    plural: 'sections.previewFilter.banners',
+    singular: 'sections.previewFilter.banner',
+  },
+};
+
+function toPositiveInteger(value: unknown): number | null {
+  const parsed =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && value.trim()
+        ? Number(value)
+        : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : null;
+}
+
+function toIdList(value: unknown): number[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => {
+      if (entry === null || entry === undefined || entry === '') return [];
+      const parsed = Number(entry);
+      return Number.isFinite(parsed) ? [parsed] : [];
+    });
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) return [value];
+  if (typeof value === 'string' && value.trim()) {
+    return value
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => Number(part))
+      .filter((entry) => Number.isFinite(entry));
+  }
+  return [];
+}
 
 // ─── Visibility rules ────────────────────────────────────────────
 
@@ -148,6 +240,18 @@ export function DynamicSettingsForm({
   // needed and a stale intent can never leak across types.
   const [presetIntent, setPresetIntent] = useState(false);
   const [pendingMode, setPendingMode] = useState<ProductsDataMode | null>(null);
+  // Labels the entity pickers already loaded in this session. The form itself
+  // stores IDs only; this cache lets the preview show a name instead of a
+  // count without making any extra requests.
+  const [previewLabels, setPreviewLabels] = useState<
+    Record<string, Record<number, string>>
+  >({});
+  const handlePreviewLabelsChange = useCallback(
+    (key: string, labels: Record<number, string>) => {
+      setPreviewLabels((prev) => ({ ...prev, [key]: labels }));
+    },
+    []
+  );
   const mode: ProductsDataMode = productType || presetIntent ? 'preset' : 'custom';
   const templateOptions = useMemo(
     () => buildProductTemplateOptions(productTypes),
@@ -284,12 +388,71 @@ export function DynamicSettingsForm({
   const hasShapePreview = sectionType === 'categories';
   const hasTypePreview = !!sectionTypeImage(sectionType);
 
-  // Live endpoint preview: types with back (query) settings only — the hero
-  // has none, so it gets no Content tab preview at all.
-  const showEndpointPreview = isProductsType || backContent.length > 0;
-  const previewEndpoint = showEndpointPreview
-    ? buildSectionEndpoint(sectionType, backSettings, productType, savedEndpoint)
-    : '';
+  // Live result preview: only the endpoints whose data renders as a list.
+  // Banners/hero keep their existing form and get no result preview.
+  const showEndpointPreview = RESULT_PREVIEW_TYPES.has(sectionType);
+  const previewEnabled = !(isProductsType && mode === 'preset' && !productType);
+  const previewEndpoint =
+    showEndpointPreview && previewEnabled
+      ? buildSectionEndpoint(sectionType, backSettings, productType, savedEndpoint)
+      : '';
+
+  const previewColumnsField = frontMerged.fields.find(
+    (field) => field.key === 'columns_count'
+  );
+  // Coupons render in a fixed grid on the storefront: `columns_count` is a
+  // hidden no-op for that type, so the preview must not honour it either.
+  const previewColumns =
+    sectionType === 'coupons'
+      ? PREVIEW_COLUMNS_FALLBACK.coupons
+      : Math.min(
+          8,
+          Math.max(
+            1,
+            toPositiveInteger(frontSettings.columns_count) ??
+              toPositiveInteger(previewColumnsField?.defaultValue) ??
+              PREVIEW_COLUMNS_FALLBACK[sectionType] ??
+              4
+          )
+        );
+  const previewSectionLimit = toPositiveInteger(backSettings.limit);
+  const previewRequestLimit = Math.min(
+    previewSectionLimit ?? SECTION_PREVIEW_MAX_ITEMS,
+    SECTION_PREVIEW_MAX_ITEMS
+  );
+
+  const previewTemplate = productType
+    ? templateOptions.find((option) => option.value === productType)
+    : undefined;
+  const previewPresetLabel = productType
+    ? previewTemplate?.labelKey
+      ? t(previewTemplate.labelKey)
+      : (previewTemplate?.fallbackLabel ?? formatFieldLabel(productType))
+    : null;
+  const previewFilters: SectionPreviewFilter[] =
+    isProductsType && mode === 'custom'
+      ? PRODUCTS_FILTER_KEYS.flatMap((key) => {
+          const ids = toIdList(backSettings[key]);
+          if (ids.length === 0) return [];
+          const labels = PREVIEW_FILTER_LABELS[key];
+          if (!labels) return [];
+          const cached =
+            ids.length === 1 ? previewLabels[key]?.[ids[0]] : undefined;
+          // Picker placeholders ("Item #12") are not real names; fall back to
+          // the count instead of leaking an id into the caption.
+          const cachedLabel =
+            cached && !/^(Item\s*)?#\d+$/i.test(cached.trim())
+              ? cached
+              : null;
+          return [
+            {
+              label: t(cachedLabel ? labels.singular : labels.plural),
+              count: ids.length,
+              singleValue: cachedLabel,
+            },
+          ];
+        })
+      : [];
 
   // Non-blocking Arabic warnings for the localized subtitle (title warnings
   // live next to the title inputs in the General slot).
@@ -304,7 +467,7 @@ export function DynamicSettingsForm({
   })();
 
   const visibleGroups = new Set<FieldGroup>(['general']);
-  if (backContent.length > 0 || isProductsType) visibleGroups.add('content');
+  if (backContent.length > 0 || isProductsType || showEndpointPreview) visibleGroups.add('content');
   if (frontLayout.length > 0 || hasShapePreview || hasTypePreview) visibleGroups.add('layout');
   if (isHero) visibleGroups.add('media');
   if (frontExtras.length > 0) visibleGroups.add('extras');
@@ -445,8 +608,20 @@ export function DynamicSettingsForm({
             values={backSettings}
             onChange={handleBackFieldChange}
             sectionType={sectionType}
+            onLabelsChange={handlePreviewLabelsChange}
           />
-          {previewEndpoint && <SectionEndpointPreview endpoint={previewEndpoint} />}
+          {showEndpointPreview && (
+            <SectionEndpointPreview
+              endpoint={previewEndpoint}
+              sectionType={sectionType as SectionPreviewType}
+              mode={isProductsType ? mode : 'custom'}
+              presetLabel={previewPresetLabel}
+              filters={previewFilters}
+              enabled={previewEnabled}
+              columnsCount={previewColumns}
+              requestLimit={previewRequestLimit}
+            />
+          )}
         </TabsContent>
       )}
 
@@ -574,9 +749,17 @@ interface FieldGridProps {
   values: Record<string, unknown>;
   onChange: (key: string, value: unknown) => void;
   sectionType: string;
+  /** Reports labels cached by an entity picker, keyed by field name. */
+  onLabelsChange?: (key: string, labels: Record<number, string>) => void;
 }
 
-function FieldGrid({ fields, values, onChange, sectionType }: FieldGridProps) {
+function FieldGrid({
+  fields,
+  values,
+  onChange,
+  sectionType,
+  onLabelsChange,
+}: FieldGridProps) {
   if (fields.length === 0) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">
@@ -589,6 +772,11 @@ function FieldGrid({ fields, values, onChange, sectionType }: FieldGridProps) {
           sectionType={sectionType}
           limitValue={values.limit}
           onLimitChange={(limit) => onChange('limit', limit)}
+          onLabelsChange={
+            onLabelsChange
+              ? (labels) => onLabelsChange(spec.key, labels)
+              : undefined
+          }
         />
       ))}
     </div>

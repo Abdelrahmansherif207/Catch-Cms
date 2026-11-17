@@ -12,7 +12,6 @@ import {
   fetchSectionTypes,
   fetchTypeSettings,
   fetchProductTypes,
-  fetchSectionPreviewCount,
   searchEntities,
 } from '../api/sections.api';
 import type { CreateSectionPayload, UpdateSectionPayload, SectionsListResponse } from '../types/section.types';
@@ -69,21 +68,6 @@ export function useProductTypes() {
     queryKey: queryKeys.sections.productTypes(),
     queryFn: fetchProductTypes,
     staleTime: 15 * 60 * 1000,
-  });
-}
-
-/**
- * Live item count for a built section endpoint. Disabled until an endpoint
- * exists; failures stay non-blocking (the preview shows a muted error with
- * a retry).
- */
-export function useSectionPreviewCount(endpoint: string | undefined) {
-  return useQuery({
-    queryKey: queryKeys.sections.preview(endpoint ?? ''),
-    queryFn: () => fetchSectionPreviewCount(endpoint as string),
-    enabled: !!endpoint,
-    staleTime: 30 * 1000,
-    retry: 1,
   });
 }
 
