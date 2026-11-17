@@ -1,5 +1,4 @@
 import { axiosClient } from '@/shared/api';
-import { extractPreviewTotal } from '../lib/section-preview';
 import type {
   SectionsListResponse,
   SectionDetailResponse,
@@ -114,13 +113,16 @@ export async function fetchProductTypes(): Promise<ProductTypeOption[]> {
 // ─── Section endpoint preview ────────────────────────────────────
 
 /**
- * Calls a built section endpoint (see `lib/section-preview.ts`) with a small
- * limit and extracts the paginator total. Returns null when the response
- * shape is not recognizable — the preview treats that as "no count".
+ * Fetches a built section endpoint for the live preview. React Query passes
+ * its AbortSignal so a superseded request is cancelled instead of resolving
+ * into stale cards.
  */
-export async function fetchSectionPreviewCount(endpoint: string): Promise<number | null> {
-  const { data } = await axiosClient.get(endpoint);
-  return extractPreviewTotal(data);
+export async function fetchSectionPreviewItems(
+  endpoint: string,
+  signal?: AbortSignal
+): Promise<unknown> {
+  const { data } = await axiosClient.get(endpoint, { signal });
+  return data;
 }
 
 export interface EntitySearchItem {

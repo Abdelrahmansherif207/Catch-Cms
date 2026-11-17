@@ -170,20 +170,88 @@ picked template warns that saving stores a Custom section with no filters.
 `PRODUCTS_TEMPLATE_HIDDEN_FIELDS` was removed — back-field visibility is
 derived from the same mode logic.
 
-## Phase 4 (planned): preview and validation
+## Phase 4: live result preview
 
-## Phase 4: preview and validation
+The Content tab previews what the section will actually render on the
+storefront. It covers **products, categories, brands and coupons**; the other
+types (banners, hero, flash sales, sliders, promotions, tags) keep their form
+without a result preview.
 
-The Content tab shows the **resulting endpoint** — rebuilt from the current
-editor state with effective params only (preset: `type` + `limit`; custom:
-filters + `limit` + `order`; `order_price` and categories `parent_only` are
-no-ops and never sent) — plus a live item count fetched with a small limit
-(`SECTION_PREVIEW_LIMIT`). The path comes from the section's saved
-`endpoint` (backend ground truth); create mode falls back to the per-type
-storefront path map. A zero count warns "This section will render nothing"
-(this also covers the `flash_sales_end_today` template); request failures
-are non-blocking with a retry. `useDeferredValue` keeps the count call one
-render behind the keystrokes.
+The **resulting endpoint** is rebuilt from the current (unsaved) form state
+with effective params only — preset: `type` + `limit`; custom: filters +
+`limit` + `order`. `order_price` and categories `parent_only` are no-ops and
+are never sent. The path comes from the section's saved `endpoint` (backend
+ground truth); create mode falls back to the per-type storefront path map.
+`lib/section-preview.ts` owns the query building and is unchanged by the
+preview UI.
+
+### Requests and caching
+
+- The preview requests `min(section limit, 12)` items
+  (`SECTION_PREVIEW_MAX_ITEMS` via `withPreviewLimit`). The technical panel
+  still shows the full effective endpoint without the preview cap.
+- Endpoint changes are debounced by 500 ms (`useSectionPreview`).
+- A superseded request is aborted through React Query's `AbortSignal`; the
+  preview never renders results for stale params.
+- Results are cached for 45 s per effective endpoint + dashboard language, so
+  returning to the same settings is instant.
+- The preview never blocks saving: it can fail, stall or be absent and **Save**
+  stays enabled.
+
+### Cards and layout
+
+- Products: image, localized name (dashboard language, falling back to the
+  other), and the discounted price when a flash sale or discount is active
+  (the original price is struck through). A product without an active discount
+  shows its normal price.
+- Categories and brands: image (brands fall back to `logo`) plus name.
+- Coupons: code and value (percentage or amount).
+- Cards sit in a single row sized by the effective `columns_count` and scroll
+  horizontally when the panel is narrower than that row. A skeleton row is
+  shown while loading. Coupons always preview four columns: that type has no
+  `columns_count` setting, and its storefront layout is fixed.
+- When there are more cards than columns, **Show all N** expands to a wrapped
+  grid; **Show fewer** collapses it again.
+- A small **Refresh** button re-runs the check. **Technical details** is a
+  collapsed disclosure containing the effective endpoint and a Copy button.
+
+### Caption
+
+The caption prefixes the subject — the preset label for a preset section, or a
+custom filter summary — and then the match count:
+
+- `Categories: 2 · Brands: 1: 23 products match. Showing the first 10.`
+- `All products: 3,167 match. Showing the first 10.`
+- `Category: Fragrance: 45 products match.`
+- `Brands: 3: 12 products match.`
+
+Rules:
+
+- The exact total is used when the endpoint returns paginator metadata.
+- Without a total, the received count is exact only when it comes back short
+  of the request limit. If it fills the limit, the caption says
+  `"N or more"` — never an approximation (`≈`).
+- **Showing the first &lt;limit&gt;.** is appended only when more results exist
+  than the preview fetched.
+- Empty filter groups are skipped. A filter with one selected value uses the
+  name only if the entity picker already cached it (`Category: Fragrance`);
+  otherwise it shows the count (`Categories: 1`). The preview never shows raw
+  `#123` ids and never makes extra requests to resolve names.
+- With two or more active filter groups, a hint explains
+  **Products must match every filter.**
+
+### Empty, unavailable and order
+
+- Empty products: "No products match these settings. This section will be
+  empty on the storefront." In Custom mode with filters, the message adds
+  "Products must match every filter you set. Try removing one."
+- Preset selected without a template: "Choose a preset to see what this
+  section will show." with no request.
+- A failed check shows "Couldn't check right now." plus **Retry**, styled as an
+  error and distinct from the empty state.
+- The storefront renders these endpoints in the order they are returned; it
+  does not sort or shuffle them, so the preview caption carries no ordering
+  note.
 
 Non-blocking amber warnings appear under the Arabic title input (in the
 General slot) and under the localized subtitle when the Arabic value is
