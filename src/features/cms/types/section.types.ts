@@ -12,6 +12,7 @@ export interface Section {
   endpoint: string;
   order: number;
   is_active: boolean;
+  title_visible?: boolean;
   setting?: SectionSetting;
 }
 
@@ -27,7 +28,15 @@ export interface ApiResponse<T> {
 export type SectionsListResponse = ApiResponse<Section[]>;
 export type SectionDetailResponse = ApiResponse<Section>;
 export type SectionTypesResponse = ApiResponse<string[]>;
-export type ProductTypesResponse = ApiResponse<string[]>;
+/** Documented `/product-type` payload: a plain object map of key → display label. */
+export type ProductTypesResponse = Record<string, string>;
+
+/** Normalized product-template option. `value` is the original API key. */
+export interface ProductTypeOption {
+  value: string;
+  label: string;
+}
+
 export type TypeSettingsResponse = ApiResponse<{
   front: Record<string, unknown>;
   back: Record<string, unknown>;
@@ -55,7 +64,8 @@ export interface CreateSectionPayload {
 }
 
 export interface UpdateSectionPayload {
-  title?: { en: string; ar: string };
+  /** The backend merges `title` per locale, so either locale may be omitted. */
+  title?: { en?: string; ar?: string };
   order?: number;
   is_active?: number;
   title_visible?: number;

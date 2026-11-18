@@ -11,6 +11,8 @@ interface SearchableMultiSelectProps {
   selectedIds: number[];
   onChange: (ids: number[]) => void;
   placeholder?: string;
+  /** Reports the label cache so other UI can reuse names without fetching. */
+  onLabelsChange?: (labels: Record<number, string>) => void;
 }
 
 export function SearchableMultiSelect({
@@ -18,8 +20,11 @@ export function SearchableMultiSelect({
   selectedIds,
   onChange,
   placeholder,
+  onLabelsChange,
 }: SearchableMultiSelectProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+  const alternateLanguage = language === 'ar' ? 'en' : 'ar';
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -33,17 +38,35 @@ export function SearchableMultiSelect({
 
   const { data, isLoading } = useEntitySearch(endpoint, searchTerm);
   const [nameCache, setNameCache] = useState<Record<number, string>>({});
+  const onLabelsChangeRef = useRef(onLabelsChange);
+
+  useEffect(() => {
+    onLabelsChangeRef.current = onLabelsChange;
+  }, [onLabelsChange]);
+
+  // Publish the cache (never triggers a request) so the preview can show a
+  // selected entity's name when this picker has already loaded it.
+  useEffect(() => {
+    if (Object.keys(nameCache).length === 0) return;
+    onLabelsChangeRef.current?.(nameCache);
+  }, [nameCache]);
 
   const availableItems = useMemo(() => {
     const meta = data?.data;
     return Array.isArray(meta) ? meta : meta?.data ?? [];
   }, [data]);
 
-  const processedRef = useRef<typeof availableItems | null>(null);
+  const processedRef = useRef<{
+    items: typeof availableItems;
+    language: string;
+  } | null>(null);
   useEffect(() => {
     if (availableItems.length === 0) return;
-    if (processedRef.current === availableItems) return;
-    processedRef.current = availableItems;
+    const processed = processedRef.current;
+    if (processed?.items === availableItems && processed.language === language) {
+      return;
+    }
+    processedRef.current = { items: availableItems, language };
     setNameCache((prev) => {
       let changed = false;
       const next = { ...prev };
@@ -53,22 +76,26 @@ export function SearchableMultiSelect({
         if (typeof item.name === 'string') {
           try {
             const parsed = JSON.parse(item.name);
-            nameStr = parsed.en || parsed.ar || item.name;
+            nameStr =
+              parsed[language] || parsed[alternateLanguage] || item.name;
           } catch {
             nameStr = item.name;
           }
-        } else if (item.name?.en) {
-          nameStr = item.name.en;
+        } else if (item.name?.[language] || item.name?.[alternateLanguage]) {
+          nameStr =
+            item.name[language] || item.name[alternateLanguage] || '';
         } else if (item.title) {
           if (typeof item.title === 'string') {
             try {
               const parsed = JSON.parse(item.title);
-              nameStr = parsed.en || parsed.ar || item.title;
+              nameStr =
+                parsed[language] || parsed[alternateLanguage] || item.title;
             } catch {
               nameStr = item.title;
             }
-          } else if (item.title?.en) {
-            nameStr = item.title.en;
+          } else if (item.title?.[language] || item.title?.[alternateLanguage]) {
+            nameStr =
+              item.title[language] || item.title[alternateLanguage] || '';
           }
         } else if (item.slug) {
           nameStr = item.slug;
@@ -82,7 +109,7 @@ export function SearchableMultiSelect({
       });
       return changed ? next : prev;
     });
-  }, [availableItems]);
+  }, [availableItems, language, alternateLanguage]);
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -220,8 +247,14 @@ export function SearchableMultiSelect({
                       </div>
                       <span className="text-sm truncate">
                         {nameCache[id] ||
-                          (typeof item.name === 'string' ? item.name : item.name?.en) ||
-                          (typeof item.title === 'string' ? item.title : item.title?.en) ||
+                          (typeof item.name === 'string'
+                            ? item.name
+                            : item.name?.[language] ||
+                              item.name?.[alternateLanguage]) ||
+                          (typeof item.title === 'string'
+                            ? item.title
+                            : item.title?.[language] ||
+                              item.title?.[alternateLanguage]) ||
                           item.slug ||
                           `Item #${id}`}
                       </span>

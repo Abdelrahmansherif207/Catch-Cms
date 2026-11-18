@@ -28,7 +28,10 @@ function handleApiError(error: unknown, fallbackMessage: string): ApiErrorRespon
 
 export function useSections() {
   return useQuery({
-    queryKey: queryKeys.sections.all,
+    // Must match the key every mutation invalidates and optimistically
+    // updates (`queryKeys.sections.lists()`), otherwise the mounted list
+    // never refreshes after create/update/delete/toggle/reorder.
+    queryKey: queryKeys.sections.lists(),
     queryFn: fetchSections,
     staleTime: 10 * 60 * 1000,
   });

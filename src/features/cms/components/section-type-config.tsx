@@ -7,28 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { cn } from '@/shared/lib/utils';
-
-import categoriesSvg from '@/shared/sectiontypes/categories.svg';
-import categoriesCircleSvg from '@/shared/sectiontypes/categories-circle.svg';
-import slidersSvg from '@/shared/sectiontypes/sliders.svg';
-import promotionsSvg from '@/shared/sectiontypes/promotions.svg';
-import flashSalesSvg from '@/shared/sectiontypes/flash-sales.svg';
-import couponsSvg from '@/shared/sectiontypes/coupons.svg';
-import brandsSvg from '@/shared/sectiontypes/brands.svg';
-import productsSvg from '@/shared/sectiontypes/products.svg';
-import bannersSvg from '@/shared/sectiontypes/banners.svg';
-
-const TYPE_SVG_MAP: Record<string, string> = {
-  sliders: slidersSvg,
-  promotions: promotionsSvg,
-  'flash-sales': flashSalesSvg,
-  coupons: couponsSvg,
-  brands: brandsSvg,
-  categories: categoriesSvg,
-  products: productsSvg,
-  banners: bannersSvg,
-};
+import { sectionTypeImage } from '../lib/section-type-images';
 
 interface SectionTypeConfigProps {
   type: string;
@@ -36,6 +15,12 @@ interface SectionTypeConfigProps {
   onFrontChange: (settings: Record<string, unknown>) => void;
 }
 
+/**
+ * Composite preview wiring only — the per-type display/data settings are
+ * rendered generically by `DynamicSettingsForm` (template + registry).
+ * Keep `INLINE_FRONT_KEYS` in dynamic-settings-form.tsx in sync with this:
+ * any key handled here must be listed there so the two never duplicate.
+ */
 export function SectionTypeConfig({
   type,
   frontSettings,
@@ -50,251 +35,69 @@ export function SectionTypeConfig({
 
   const val = (key: string) => frontSettings[key];
 
-  const shape = (val('shape') as string) || 'square';
-  const layout = (val('layout') as string) || 'grid';
-  const autoplay = !!val('autoplay');
+  const shapeRaw = val('shape');
+  const shapeText =
+    typeof shapeRaw === 'string'
+      ? shapeRaw
+      : shapeRaw === null || shapeRaw === undefined
+        ? ''
+        : String(shapeRaw);
+  const isUnknownShape = shapeText !== '' && !isShape(shapeText);
+  // Unknown values keep the preview on the registry default without rewriting
+  // the stored value — the text input below edits it only when the user does.
+  const shape = isShape(shapeText) ? shapeText : 'square';
+  const previewImage = sectionTypeImage(type, { shape });
 
   return (
     <div className="space-y-4">
-      {/* ─── Categories live preview ─── */}
+      {/* ─── Type preview ─── */}
+      {previewImage && (
+        <div className="flex justify-center rounded-lg border bg-muted/20 p-3">
+          <img
+            src={previewImage}
+            alt={type === 'categories' ? `Categories ${shape}` : type}
+            className="h-auto w-full max-w-[260px] rounded-md"
+          />
+        </div>
+      )}
+
+      {/* ─── shape (categories only) — toggles the preview too ─── */}
       {type === 'categories' && (
-        <div className="flex justify-center rounded-lg border bg-muted/20 p-3">
-          <img
-            src={shape === 'circle' ? categoriesCircleSvg : categoriesSvg}
-            alt={`Categories ${shape}`}
-            className="h-auto w-full max-w-[260px] rounded-md"
-          />
+        <div className="mx-auto max-w-[260px] space-y-1.5">
+          <label htmlFor="section-shape" className="text-sm font-medium">
+            {t('sections.shape')}
+          </label>
+          {isUnknownShape ? (
+            <>
+              {/* Unknown saved value: keep it editable as text (the backend
+                  stores settings as free-form data) instead of coercing it. */}
+              <Input
+                id="section-shape"
+                type="text"
+                value={shapeText}
+                onChange={(e) => set('shape', e.target.value)}
+              />
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {t('sections.unknownSelectValue', { value: shapeText })}
+              </p>
+            </>
+          ) : (
+            <Select value={shape} onValueChange={(v) => set('shape', v)}>
+              <SelectTrigger id="section-shape">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="square">{t('sections.square')}</SelectItem>
+                <SelectItem value="circle">{t('sections.circle')}</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
-
-      {/* ─── General type preview ─── */}
-      {type !== 'categories' && TYPE_SVG_MAP[type] && (
-        <div className="flex justify-center rounded-lg border bg-muted/20 p-3">
-          <img
-            src={TYPE_SVG_MAP[type]}
-            alt={type}
-            className="h-auto w-full max-w-[260px] rounded-md"
-          />
-        </div>
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        {/* columns_count */}
-        {(type === 'promotions' ||
-          type === 'flash-sales' ||
-          type === 'coupons' ||
-          type === 'brands' ||
-          type === 'categories' ||
-          type === 'products' ||
-          type === 'banners') && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.columnsCount')}
-            </label>
-            <Input
-              type="number"
-              min={1}
-              max={type === 'categories' ? 8 : undefined}
-              value={
-                val('columns_count') !== undefined && val('columns_count') !== null
-                  ? String(val('columns_count'))
-                  : ''
-              }
-              onChange={(e) =>
-                set(
-                  'columns_count',
-                  e.target.value ? Number(e.target.value) : null
-                )
-              }
-              placeholder={type === 'categories' ? '4' : '4'}
-            />
-          </div>
-        )}
-
-        {/* layout */}
-        {(type === 'promotions' ||
-          type === 'flash-sales' ||
-          type === 'coupons' ||
-          type === 'brands') && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.layout')}
-            </label>
-            <Select
-              value={layout}
-              onValueChange={(v) => set('layout', v)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="grid">
-                  {t('sections.layoutGrid')}
-                </SelectItem>
-                <SelectItem value="list">
-                  {t('sections.layoutList')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* autoplay */}
-        {(type === 'sliders' ||
-          type === 'promotions' ||
-          type === 'flash-sales') && (
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <label className="text-sm font-medium">
-              {t('sections.autoplay')}
-            </label>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={autoplay}
-              onClick={() => set('autoplay', !autoplay)}
-              className={cn(
-                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors',
-                autoplay ? 'bg-primary' : 'bg-input'
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none block h-4 w-4 rounded-full bg-background shadow-sm transition-transform',
-                  autoplay ? 'translate-x-4' : 'translate-x-0.5'
-                )}
-              />
-            </button>
-          </div>
-        )}
-
-        {/* slider_speed */}
-        {(type === 'sliders' || type === 'promotions') && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.sliderSpeed')}
-            </label>
-            <Input
-              type="number"
-              min={500}
-              step={500}
-              value={
-                val('slider_speed') !== undefined && val('slider_speed') !== null
-                  ? String(val('slider_speed'))
-                  : ''
-              }
-              onChange={(e) =>
-                set(
-                  'slider_speed',
-                  e.target.value ? Number(e.target.value) : null
-                )
-              }
-              placeholder="3000"
-            />
-          </div>
-        )}
-
-        {/* show_timer */}
-        {type === 'flash-sales' && (
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <label className="text-sm font-medium">
-              {t('sections.showTimer')}
-            </label>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={!!val('show_timer')}
-              onClick={() => set('show_timer', !val('show_timer'))}
-              className={cn(
-                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors',
-                val('show_timer') ? 'bg-primary' : 'bg-input'
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none block h-4 w-4 rounded-full bg-background shadow-sm transition-transform',
-                  val('show_timer') ? 'translate-x-4' : 'translate-x-0.5'
-                )}
-              />
-            </button>
-          </div>
-        )}
-
-        {/* timer_end_at */}
-        {type === 'flash-sales' && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.timerEndAt')}
-            </label>
-            <Input
-              type="datetime-local"
-              value={(val('timer_end_at') as string) || ''}
-              onChange={(e) => set('timer_end_at', e.target.value || null)}
-            />
-          </div>
-        )}
-
-        {/* theme */}
-        {type === 'flash-sales' && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.theme')}
-            </label>
-            <Select
-              value={(val('theme') as string) || 'dark'}
-              onValueChange={(v) => set('theme', v)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="colorful">Colorful</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* shape (categories only) */}
-        {type === 'categories' && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.shape')}
-            </label>
-            <Select
-              value={shape}
-              onValueChange={(v) => set('shape', v)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="square">
-                  {t('sections.square')}
-                </SelectItem>
-                <SelectItem value="circle">
-                  {t('sections.circle')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* badge_text */}
-        {type === 'products' && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {t('sections.badgeText')}
-            </label>
-            <Input
-              type="text"
-              value={(val('badge_text') as string) || ''}
-              onChange={(e) => set('badge_text', e.target.value || null)}
-              placeholder="e.g. Best Seller"
-            />
-          </div>
-        )}
-      </div>
     </div>
   );
+}
+
+function isShape(value: unknown): value is string {
+  return value === 'square' || value === 'circle';
 }
