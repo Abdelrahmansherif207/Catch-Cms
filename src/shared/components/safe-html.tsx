@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import DOMPurify from 'dompurify';
+import { cn } from '@/shared/lib/utils';
 
 interface SafeHtmlProps {
   html: string | null | undefined;
@@ -28,7 +29,7 @@ export function SafeHtml({ html, className, dir }: SafeHtmlProps) {
 
   return (
     <div
-      className={className}
+      className={cn('rich-html', className)}
       dir={dir}
       // Sanitized above — safe to inject.
       dangerouslySetInnerHTML={{ __html: clean }}

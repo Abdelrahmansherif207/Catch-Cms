@@ -79,6 +79,8 @@ interface PageBackHeaderProps {
   backLabel?: string;
   actions?: ReactNode;
   className?: string;
+  /** Optional navigation guard; return false to block leaving the page. */
+  onBack?: () => boolean;
 }
 
 /**
@@ -92,6 +94,7 @@ export function PageBackHeader({
   backLabel,
   actions,
   className,
+  onBack,
 }: PageBackHeaderProps) {
   const { t } = useTranslation();
   return (
@@ -100,6 +103,9 @@ export function PageBackHeader({
         <Link
           to={backTo}
           aria-label={backLabel ?? t('common.back')}
+          onClick={(event) => {
+            if (onBack && onBack() === false) event.preventDefault();
+          }}
           className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'shrink-0 rounded-full shadow-xs')}
         >
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />

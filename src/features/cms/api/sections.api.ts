@@ -3,7 +3,7 @@ import type {
   SectionsListResponse,
   SectionDetailResponse,
   SectionTypesResponse,
-  ProductTypesResponse,
+  ProductTypeOption,
   TypeSettingsResponse,
   ApiResponse,
   Section,
@@ -72,8 +72,83 @@ export async function fetchTypeSettings(typeName: string): Promise<TypeSettingsR
   return data;
 }
 
-export async function fetchProductTypes(): Promise<ProductTypesResponse> {
-  const { data } = await axiosClient.get<ProductTypesResponse>('/product-type');
+// ─── Product Types ───────────────────────────────────────────────
+
+/**
+ * Thrown when `/product-type` does not match the documented
+ * `{ [key: string]: string }` object map.
+ */
+export class ProductTypeResponseError extends Error {
+  constructor() {
+    super('Malformed product-type response');
+    this.name = 'ProductTypeResponseError';
+  }
+}
+
+/**
+ * Converts the documented raw `{ key: label }` map into a stable option list.
+ * The original key is preserved as `value`; the API string is display-only.
+ * Throws on malformed payloads so React Query surfaces an error state instead
+ * of silently rendering an empty dropdown.
+ */
+export function normalizeProductTypes(payload: unknown): ProductTypeOption[] {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new ProductTypeResponseError();
+  }
+
+  return Object.entries(payload as Record<string, unknown>).map(([value, label]) => {
+    if (typeof label !== 'string') {
+      throw new ProductTypeResponseError();
+    }
+    return { value, label };
+  });
+}
+
+export async function fetchProductTypes(): Promise<ProductTypeOption[]> {
+  const { data } = await axiosClient.get<unknown>('/product-type');
+  const payload = unwrapProductTypeEnvelope(data);
+  // A wrapped deployment may return a plain string list instead of the
+  // documented key→label map; expose it as options with the key as label.
+  if (payload !== data && Array.isArray(payload)) {
+    return payload.map((value) => {
+      if (typeof value !== 'string') {
+        throw new ProductTypeResponseError();
+      }
+      return { value, label: value };
+    });
+  }
+  return normalizeProductTypes(payload);
+}
+
+/**
+ * The deployment backend may return `/product-type` inside the standard
+ * `{ status, message, success, data }` envelope while the documented shape is
+ * a raw key→label map. Only unwrap well-formed envelopes so every other shape
+ * still reaches the strict normalizer and surfaces an error state.
+ */
+function unwrapProductTypeEnvelope(payload: unknown): unknown {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    return payload;
+  }
+  const record = payload as Record<string, unknown>;
+  if (typeof record.success === 'boolean' && 'data' in record) {
+    return record.data;
+  }
+  return payload;
+}
+
+// ─── Section endpoint preview ────────────────────────────────────
+
+/**
+ * Fetches a built section endpoint for the live preview. React Query passes
+ * its AbortSignal so a superseded request is cancelled instead of resolving
+ * into stale cards.
+ */
+export async function fetchSectionPreviewItems(
+  endpoint: string,
+  signal?: AbortSignal
+): Promise<unknown> {
+  const { data } = await axiosClient.get(endpoint, { signal });
   return data;
 }
 

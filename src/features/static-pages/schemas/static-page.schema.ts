@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import type { Language } from '@/shared/constants/api';
+import type { ApiErrorResponse } from '@/shared/api';
 import type {
   LocaleMap,
   JsonObject,
   StaticPageUpdatePayload,
   CreateSectionPayload,
   UpdateSectionPayload,
+  StaticSectionMedia,
 } from '../types/static-page.types';
 
 // ─── Page form (Task 2) ──────────────────────────────────────────
@@ -67,6 +69,100 @@ export const SECTION_VIDEO_ACCEPT = 'video/mp4,video/webm,video/ogg,video/quickt
 
 export function isMediaSectionType(type: string | undefined): boolean {
   return type === 'image' || type === 'video' || type === 'screenshot';
+}
+
+// ─── Section media rules (R3) ───────────────────────────────────
+// Pure rules shared by the dialog and tests. Media types (image, video,
+// screenshot) always need a file on create and when switching type; on
+// edit, existing media may be kept or explicitly removed without one.
+
+export type SectionMediaValidationError =
+  | 'staticPages.validation.mediaProhibited'
+  | 'staticPages.validation.mediaTooLarge'
+  | 'staticPages.validation.mediaRequired';
+
+export interface SectionMediaValidationInput {
+  isEditing: boolean;
+  type: string;
+  mediaFile: File | null;
+  /** Intentional removal of existing media needs no replacement file. */
+  removeMedia: boolean;
+  originalType?: string;
+  existingMedia?: StaticSectionMedia | null;
+  maxBytes: number;
+}
+
+export function validateSectionMedia(
+  input: SectionMediaValidationInput
+): SectionMediaValidationError | null {
+  const { isEditing, type, mediaFile, originalType, existingMedia, maxBytes } = input;
+
+  // Text sections never carry media; removing media is implicit there.
+  if (!isMediaSectionType(type)) {
+    return mediaFile ? 'staticPages.validation.mediaProhibited' : null;
+  }
+
+  // A selected replacement file must respect the per-type size limit.
+  if (mediaFile) {
+    return mediaFile.size > maxBytes ? 'staticPages.validation.mediaTooLarge' : null;
+  }
+
+  // Creating a media section always requires a file.
+  if (!isEditing) return 'staticPages.validation.mediaRequired';
+
+  // Switching between image/video/screenshot requires a replacement file.
+  // This is checked before removal so `removeMedia` cannot bypass it.
+  if (originalType !== undefined && type !== originalType) {
+    return 'staticPages.validation.mediaRequired';
+  }
+
+  // Same media type: existing media is either preserved or removed
+  // (`removeMedia: true`); neither case needs a new upload. `removeMedia`
+  // deliberately does not change validity — it only changes the payload.
+  if (existingMedia) return null;
+
+  return 'staticPages.validation.mediaRequired';
+}
+
+export interface SectionMediaSelection {
+  mediaFile: File | null;
+  removeMedia: boolean;
+}
+
+/** Choosing a replacement file always clears a pending removal. */
+export function selectSectionMediaFile(
+  file: File | null,
+  currentRemoveMedia = false
+): SectionMediaSelection {
+  return {
+    mediaFile: file,
+    // Cancelling the file picker keeps the removal choice.
+    removeMedia: file ? false : currentRemoveMedia,
+  };
+}
+
+/** Choosing removal clears any selected replacement file and its preview. */
+export function selectSectionRemoveMedia(remove: boolean): SectionMediaSelection {
+  return { mediaFile: null, removeMedia: remove };
+}
+
+export interface SectionServerErrorState {
+  serverErrors: Record<string, string[]>;
+  mediaError: string | null;
+  configError: string | null;
+}
+
+/** Map a 422 API error to the dialog's field-level error state. */
+export function extractSectionServerErrors(error: unknown): SectionServerErrorState {
+  const apiError = error as ApiErrorResponse | null | undefined;
+  if (!apiError || apiError.status !== 422 || !apiError.errors) {
+    return { serverErrors: {}, mediaError: null, configError: null };
+  }
+  return {
+    serverErrors: apiError.errors,
+    mediaError: apiError.errors.media?.[0] ?? null,
+    configError: apiError.errors.config?.[0] ?? null,
+  };
 }
 
 export const sectionFormSchema = z.object({
@@ -217,8 +313,13 @@ export function toUpdateSectionPayload(
     }
   }
 
-  if (extra?.media instanceof File) payload.media = extra.media;
-  if (extra?.removeMedia) payload.remove_media = true;
+  // A replacement file and a removal are mutually exclusive: when a file is
+  // present it wins, so `media` and `remove_media` never travel together.
+  if (extra?.media instanceof File) {
+    payload.media = extra.media;
+  } else if (extra?.removeMedia) {
+    payload.remove_media = true;
+  }
 
   return payload;
 }

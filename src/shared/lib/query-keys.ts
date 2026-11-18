@@ -73,6 +73,13 @@ export const queryKeys = {
     detail: (id: number | string) => ['banners', 'detail', id] as const,
     productSearch: (q: string) => ['banners', 'product-search', q] as const,
   },
+  heroes: {
+    all: ['heroes'] as const,
+    lists: () => ['heroes', 'list'] as const,
+    list: <P extends object>(params: P) => ['heroes', 'list', params] as const,
+    details: () => ['heroes', 'detail'] as const,
+    detail: (id: number | string) => ['heroes', 'detail', id] as const,
+  },
   orders: {
     all: ['orders'] as const,
     lists: () => ['orders', 'list'] as const,
@@ -182,6 +189,8 @@ export const queryKeys = {
     productTypes: () => ['sections', 'product-types'] as const,
     entitySearch: (endpoint: string, q: string) => ['sections', 'entity-search', endpoint, q] as const,
     entitySearchInfinite: (endpoint: string, q: string) => ['sections', 'entity-search-infinite', endpoint, q] as const,
+    previewItems: (endpoint: string, language: string) =>
+      ['sections', 'preview-items', endpoint, language] as const,
   },
   promotions: {
     all: ['promotions'] as const,
