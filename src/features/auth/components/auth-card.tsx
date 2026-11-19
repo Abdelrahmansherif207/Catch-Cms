@@ -36,7 +36,7 @@ export function AuthCard({ title, subtitle, quote, children, footer }: AuthCardP
               </p>
             )}
             {quote && (
-              <p className="mt-3 text-2xl italic font-medium text-foreground">
+              <p className="mt-3 text-2xl italic font-normal text-muted-foreground">
                 {quote}
               </p>
             )}
