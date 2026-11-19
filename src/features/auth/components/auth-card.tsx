@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface AuthCardProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   quote?: string;
   children: ReactNode;
@@ -27,9 +27,11 @@ export function AuthCard({ title, subtitle, quote, children, footer }: AuthCardP
             <span className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/[0.07] p-2.5 ring-1 ring-border">
               <img src="/meem-logo.svg" alt={t('sidebar.brand')} className="h-full w-auto rounded-lg object-contain" />
             </span>
-            <h1 className="text-2xl font-bold tracking-tight text-balance text-foreground">
-              {title}
-            </h1>
+            {title && (
+              <h1 className="text-2xl font-bold tracking-tight text-balance text-foreground">
+                {title}
+              </h1>
+            )}
             {subtitle && (
               <p className="mt-2 max-w-xs text-[0.9375rem] leading-relaxed text-muted-foreground">
                 {subtitle}
