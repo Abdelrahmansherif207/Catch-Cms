@@ -12,6 +12,7 @@ import { DataErrorState } from '@/shared/components/data-state';
 import { useGovernorates } from '../hooks/use-shipping';
 import { GovernoratesTable } from '../components/governorates-table';
 import { GovernorateFormDialog } from '../components/governorate-form-dialog';
+import { normalizeShippingList } from '../lib/normalize-list';
 import type { Governorate } from '../types/shipping.types';
 
 export function GovernoratesPage() {
@@ -26,8 +27,7 @@ export function GovernoratesPage() {
   const [editingGov, setEditingGov] = useState<Governorate | null>(null);
 
   const { data, isLoading, isError, refetch } = useGovernorates({ page, perPage: 15, search, status: status || undefined, country_id: countryId });
-  const governorates = data?.data?.data || [];
-  const pagination = data?.data;
+  const { items: governorates, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);

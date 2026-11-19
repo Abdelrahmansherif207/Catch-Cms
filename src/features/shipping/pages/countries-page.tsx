@@ -12,6 +12,7 @@ import { DataErrorState } from '@/shared/components/data-state';
 import { useCountries } from '../hooks/use-shipping';
 import { CountriesTable } from '../components/countries-table';
 import { CountryFormDialog } from '../components/country-form-dialog';
+import { normalizeShippingList } from '../lib/normalize-list';
 import type { Country } from '../types/shipping.types';
 
 export function CountriesPage() {
@@ -24,8 +25,7 @@ export function CountriesPage() {
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
 
   const { data, isLoading, isError, refetch } = useCountries({ page, perPage: 15, search, status: status || undefined });
-  const countries = data?.data?.data || [];
-  const pagination = data?.data;
+  const { items: countries, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);

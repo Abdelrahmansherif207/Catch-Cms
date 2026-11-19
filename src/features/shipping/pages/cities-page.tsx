@@ -10,6 +10,7 @@ import { DataErrorState } from '@/shared/components/data-state';
 import { useCities } from '../hooks/use-shipping';
 import { CitiesTable } from '../components/cities-table';
 import { CityFormDialog } from '../components/city-form-dialog';
+import { normalizeShippingList } from '../lib/normalize-list';
 import type { City } from '../types/shipping.types';
 
 export function CitiesPage() {
@@ -24,8 +25,7 @@ export function CitiesPage() {
   const [editingCity, setEditingCity] = useState<City | null>(null);
 
   const { data, isLoading, isError, refetch } = useCities({ page, perPage: 15, search, governorate_id: governorateId });
-  const cities = data?.data?.data || [];
-  const pagination = data?.data;
+  const { items: cities, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);

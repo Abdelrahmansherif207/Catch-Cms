@@ -59,7 +59,7 @@ export interface ApiPaginatedResponse<T> {
   status: number;
   message: string;
   success: boolean;
-  data: PaginatedResponse<T>;
+  data: PaginatedResponse<T> | T[];
 }
 
 export interface ApiDetailResponse<T> {
