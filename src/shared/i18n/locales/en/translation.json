@@ -84,7 +84,7 @@
   },
   "sidebar": {
     "rightsReserved": "All rights reserved to",
-    "brand": "Catch Beauty",
+    "brand": "Meem Market",
     "overview": "Overview",
     "dashboard": "Dashboard",
     "commerce": "Commerce",
@@ -464,6 +464,7 @@
   "auth": {
     "welcomeBack": "Welcome back",
     "signInSubtitle": "Sign in to your admin account",
+    "loginQuote": "Riyadh — where ambition becomes tomorrow.",
     "emailOrPhone": "Email or Phone Number",
     "password": "Password",
     "signIn": "Sign in",
