@@ -30,7 +30,7 @@ export function LoginPage() {
   };
 
   return (
-    <AuthCard title={t('auth.welcomeBack')} subtitle={t('auth.signInSubtitle')}>
+    <AuthCard title={t('auth.welcomeBack')} subtitle={t('auth.signInSubtitle')} quote={t('auth.loginQuote')}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <div className="space-y-2">
               <label htmlFor="identifier" className="text-sm font-medium">

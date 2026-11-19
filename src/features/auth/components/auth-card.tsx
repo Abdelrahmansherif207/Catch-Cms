@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 interface AuthCardProps {
   title: string;
   subtitle?: string;
+  quote?: string;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -12,7 +13,7 @@ interface AuthCardProps {
  * Shared auth shell: brand canvas with a soft radial glow,
  * elevated card, logo tile, and centered heading block.
  */
-export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
+export function AuthCard({ title, subtitle, quote, children, footer }: AuthCardProps) {
   const { t } = useTranslation();
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-canvas p-4">
@@ -33,6 +34,11 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
               <p className="mt-2 max-w-xs text-[0.9375rem] leading-relaxed text-muted-foreground">
                 {subtitle}
               </p>
+            )}
+            {quote && (
+              <blockquote className="mt-4 max-w-sm border-s-2 border-primary/40 ps-3 text-start text-sm italic leading-relaxed text-muted-foreground">
+                {quote}
+              </blockquote>
             )}
           </div>
 
