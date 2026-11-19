@@ -36,9 +36,9 @@ export function AuthCard({ title, subtitle, quote, children, footer }: AuthCardP
               </p>
             )}
             {quote && (
-              <blockquote className="mt-4 max-w-sm border-s-2 border-primary/40 ps-3 text-start text-sm italic leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-sm font-medium text-foreground">
                 {quote}
-              </blockquote>
+              </p>
             )}
           </div>
 
