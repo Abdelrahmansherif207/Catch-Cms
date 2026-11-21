@@ -47,7 +47,7 @@ export function SiteReviewsPage() {
     status: statusFilter === 'all' ? '' : (statusFilter as SiteReviewStatus),
   };
 
-  const { data, isLoading, isError, refetch } = useSiteReviews(params);
+  const { data, isLoading, isError, error, refetch } = useSiteReviews(params);
 
   const reviews = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -134,6 +134,7 @@ export function SiteReviewsPage() {
         data={reviews}
         isLoading={isLoading}
         isError={isError}
+        error={error}
         canApprove={canApprove}
         canReject={canReject}
         hasActiveFilters={hasActiveFilters}

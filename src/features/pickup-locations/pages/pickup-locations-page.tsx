@@ -40,7 +40,7 @@ export function PickupLocationsPage() {
     sortedBy,
   };
 
-  const { data, isLoading, isError, refetch } = usePickupLocations(params);
+  const { data, isLoading, isError, error, refetch } = usePickupLocations(params);
 
   const locations = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -125,7 +125,7 @@ export function PickupLocationsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <PickupLocationsTable

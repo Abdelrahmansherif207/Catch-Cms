@@ -26,7 +26,7 @@ export function GovernoratesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingGov, setEditingGov] = useState<Governorate | null>(null);
 
-  const { data, isLoading, isError, refetch } = useGovernorates({ page, perPage: 15, search, status: status || undefined, country_id: countryId });
+  const { data, isLoading, isError, error, refetch } = useGovernorates({ page, perPage: 15, search, status: status || undefined, country_id: countryId });
   const { items: governorates, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
@@ -98,7 +98,7 @@ export function GovernoratesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <GovernoratesTable

@@ -24,7 +24,7 @@ export function CitiesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingCity, setEditingCity] = useState<City | null>(null);
 
-  const { data, isLoading, isError, refetch } = useCities({ page, perPage: 15, search, governorate_id: governorateId });
+  const { data, isLoading, isError, error, refetch } = useCities({ page, perPage: 15, search, governorate_id: governorateId });
   const { items: cities, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
@@ -77,7 +77,7 @@ export function CitiesPage() {
       />
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <CitiesTable

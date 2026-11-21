@@ -37,7 +37,7 @@ export function HeroesPage() {
     type: heroType,
   };
 
-  const { data, isLoading, isError, refetch } = useHeroes(params);
+  const { data, isLoading, isError, error, refetch } = useHeroes(params);
 
   const heroes = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -133,7 +133,7 @@ export function HeroesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <HeroesTable

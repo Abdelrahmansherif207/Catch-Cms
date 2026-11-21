@@ -25,7 +25,7 @@ export function ExchangeRatesPage() {
 
   const selectedCurrency = currencies.find((c) => c.id === selectedCurrencyId);
 
-  const { data: ratesData, isLoading: ratesLoading, isError: ratesError, refetch: refetchRates } = useExchangeRates({
+  const { data: ratesData, isLoading: ratesLoading, isError: ratesError, error, refetch: refetchRates } = useExchangeRates({
     currency_id: selectedCurrencyId ?? undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
@@ -117,7 +117,7 @@ export function ExchangeRatesPage() {
       </FilterBar>
 
       {ratesError && (
-        <DataErrorState onRetry={() => refetchRates()} />
+        <DataErrorState error={error} onRetry={() => refetchRates()} />
       )}
 
       {selectedCurrencyId ? (

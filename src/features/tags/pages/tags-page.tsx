@@ -37,7 +37,7 @@ export function TagsPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useTags(params);
+  const { data, isLoading, isError, error, refetch } = useTags(params);
 
   const tags = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -130,7 +130,7 @@ export function TagsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <TagsTable

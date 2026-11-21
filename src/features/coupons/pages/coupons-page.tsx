@@ -77,7 +77,7 @@ export function CouponsPage() {
     sortedBy: order && sortedBy ? sortedBy : undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useCoupons(params);
+  const { data, isLoading, isError, error, refetch } = useCoupons(params);
 
   const coupons = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -346,6 +346,7 @@ export function CouponsPage() {
 
       {isError && (
         <DataErrorState
+          error={error}
           message={t('coupons.listError')}
           onRetry={() => refetch()}
         />

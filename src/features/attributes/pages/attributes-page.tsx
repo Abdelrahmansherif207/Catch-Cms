@@ -37,7 +37,7 @@ export function AttributesPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useAttributes(params);
+  const { data, isLoading, isError, error, refetch } = useAttributes(params);
 
   const attributes = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -124,7 +124,7 @@ export function AttributesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <AttributesTable

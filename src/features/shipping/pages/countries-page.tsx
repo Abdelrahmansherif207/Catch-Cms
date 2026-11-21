@@ -24,7 +24,7 @@ export function CountriesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
 
-  const { data, isLoading, isError, refetch } = useCountries({ page, perPage: 15, search, status: status || undefined });
+  const { data, isLoading, isError, error, refetch } = useCountries({ page, perPage: 15, search, status: status || undefined });
   const { items: countries, pagination } = normalizeShippingList(data?.data);
 
   const handleSearchChange = (value: string) => {
@@ -95,7 +95,7 @@ export function CountriesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <CountriesTable

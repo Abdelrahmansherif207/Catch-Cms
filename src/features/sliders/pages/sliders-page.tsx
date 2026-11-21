@@ -37,7 +37,7 @@ export function SlidersPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useSliders(params);
+  const { data, isLoading, isError, error, refetch } = useSliders(params);
 
   const sliders = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -132,7 +132,7 @@ export function SlidersPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <SlidersTable

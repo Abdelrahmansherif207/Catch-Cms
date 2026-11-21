@@ -41,7 +41,7 @@ export function BannersPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useBanners(params);
+  const { data, isLoading, isError, error, refetch } = useBanners(params);
 
   const banners = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -145,7 +145,7 @@ export function BannersPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <BannersTable

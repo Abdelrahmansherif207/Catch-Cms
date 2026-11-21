@@ -54,7 +54,7 @@ export function UsersPage() {
     trash: showTrash || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useUsers(params);
+  const { data, isLoading, isError, error, refetch } = useUsers(params);
 
   const users = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -155,6 +155,7 @@ export function UsersPage() {
 
       {isError && (
         <DataErrorState
+          error={error}
           message={t('users.listError')}
           onRetry={() => refetch()}
         />

@@ -41,7 +41,7 @@ export function OrderStatusesPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError, refetch } = useOrderStatuses({
+  const { data, isLoading, isError, error, refetch } = useOrderStatuses({
     page,
     per_page: 50,
     search: search || undefined,
@@ -97,7 +97,7 @@ export function OrderStatusesPage() {
       />
 
       {isError ? (
-        <DataErrorState message={t('orderStatuses.listError')} onRetry={() => refetch()} />
+        <DataErrorState error={error} message={t('orderStatuses.listError')} onRetry={() => refetch()} />
       ) : isLoading ? (
         <div className="rounded-2xl border bg-card p-4 space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (

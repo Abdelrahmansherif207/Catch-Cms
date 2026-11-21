@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AlertCircle, Inbox } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/utils';
+import { getApiErrorMessage } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
 
 interface DataEmptyStateProps {
@@ -52,7 +53,10 @@ export function DataEmptyState({
 }
 
 interface DataErrorStateProps {
+  /** Translated fallback shown when the API did not provide a message. */
   message?: string;
+  /** The rejected query/mutation error — its API message takes precedence. */
+  error?: unknown;
   onRetry?: () => void;
   className?: string;
 }
@@ -60,8 +64,9 @@ interface DataErrorStateProps {
 /**
  * Standard inline error state with retry — failures must never look like "no data".
  */
-export function DataErrorState({ message, onRetry, className }: DataErrorStateProps) {
+export function DataErrorState({ message, error, onRetry, className }: DataErrorStateProps) {
   const { t } = useTranslation();
+  const description = getApiErrorMessage(error) ?? message ?? t('common.loadError');
   return (
     <div
       role="alert"
@@ -74,7 +79,7 @@ export function DataErrorState({ message, onRetry, className }: DataErrorStatePr
         <AlertCircle className="h-6 w-6 text-destructive" aria-hidden strokeWidth={1.75} />
       </span>
       <p className="text-base font-semibold text-foreground">{t('common.loadErrorTitle', { defaultValue: 'Something went wrong' })}</p>
-      <p className="max-w-sm text-sm text-muted-foreground">{message ?? t('common.loadError')}</p>
+      <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry} className="mt-2 bg-card">
           {t('common.retry')}

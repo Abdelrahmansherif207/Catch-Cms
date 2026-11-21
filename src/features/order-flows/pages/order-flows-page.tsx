@@ -25,7 +25,7 @@ export function OrderFlowsPage() {
   const [shippingType, setShippingType] = useState('all');
   const [isActive, setIsActive] = useState('all');
 
-  const { data, isLoading, isError, refetch } = useOrderFlows({
+  const { data, isLoading, isError, error, refetch } = useOrderFlows({
     page,
     per_page: 15,
     search: search || undefined,
@@ -98,7 +98,7 @@ export function OrderFlowsPage() {
       </FilterBar>
 
       {isError ? (
-        <DataErrorState message={t('orderFlows.listError')} onRetry={() => refetch()} />
+        <DataErrorState error={error} message={t('orderFlows.listError')} onRetry={() => refetch()} />
       ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (

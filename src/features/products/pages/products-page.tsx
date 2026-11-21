@@ -227,7 +227,7 @@ export function ProductsPage() {
     if (!open) setSliderSearch('');
   }, []);
 
-  const { data, isLoading, isError, refetch } = useProducts({
+  const { data, isLoading, isError, error, refetch } = useProducts({
     page,
     limit: 15,
     search: search || undefined,
@@ -493,7 +493,7 @@ export function ProductsPage() {
       )}
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <ProductsTable

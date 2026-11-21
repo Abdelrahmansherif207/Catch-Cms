@@ -37,7 +37,7 @@ export function FaqsPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useFaqs(params);
+  const { data, isLoading, isError, error, refetch } = useFaqs(params);
 
   const faqs = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -122,7 +122,7 @@ export function FaqsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <FaqsTable
