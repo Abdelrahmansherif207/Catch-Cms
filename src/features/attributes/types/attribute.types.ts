@@ -1,6 +1,8 @@
+import type { LocalizedName } from '@/shared/lib/localize';
+
 export interface AttributeValue {
   id: number;
-  value: string;
+  value: string | LocalizedName;
   attribute_id: number;
   slug?: string;
   meta?: null;
@@ -8,7 +10,7 @@ export interface AttributeValue {
 
 export interface Attribute {
   id: number;
-  name: string;
+  name: string | LocalizedName;
   slug: string;
   shop_id?: number | null;
   values?: AttributeValue[];

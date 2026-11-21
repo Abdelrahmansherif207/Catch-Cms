@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, Loader2, List } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { getLocalizedName } from '@/shared/lib/localize';
 import { PageBackHeader } from '@/shared/components/page-header';
 import { DetailHero } from '@/shared/components/detail-hero';
 import { CardSection } from '@/shared/components/card-section';
@@ -63,9 +64,9 @@ export function AttributeDetailPage() {
 
   const parsedName: { en: string; ar: string } = typeof attr.name === 'string'
     ? parseJsonField(attr.name)
-    : { en: String(attr.name), ar: String(attr.name) };
+    : { en: attr.name.en || '', ar: attr.name.ar || '' };
 
-  const currentName = lang === 'ar' && parsedName.ar ? parsedName.ar : parsedName.en;
+  const currentName = getLocalizedName(attr.name, lang);
   const values = attr.values ?? [];
 
   return (
@@ -133,7 +134,7 @@ export function AttributeDetailPage() {
             {values.map((v) => {
               const parsedValue: { en: string; ar: string } = typeof v.value === 'string'
                 ? parseJsonField(v.value)
-                : { en: String(v.value), ar: String(v.value) };
+                : { en: v.value.en || '', ar: v.value.ar || '' };
               const displayValue = lang === 'ar' && parsedValue.ar ? parsedValue.ar : parsedValue.en;
               return (
                 <div key={v.id} className="flex items-center justify-between rounded-lg border p-3">

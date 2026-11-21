@@ -74,9 +74,9 @@ export function AttributeFormDialog({
   useEffect(() => {
     if (isEditing && attrDetail?.data) {
       const d = attrDetail.data;
-      let parsedName: Record<string, string> = {};
+      let parsedName: { en?: string; ar?: string } = {};
       if (d.name && typeof d.name === 'object') {
-        parsedName = d.name as Record<string, string>;
+        parsedName = d.name;
       } else if (typeof d.name === 'string') {
         try { parsedName = JSON.parse(d.name); } catch { parsedName = { en: d.name, ar: '' }; }
       }
@@ -87,9 +87,9 @@ export function AttributeFormDialog({
         form.setValue(
           'values',
           d.values.map((v) => {
-            let parsedValue: Record<string, string> = {};
+            let parsedValue: { en?: string; ar?: string } = {};
             if (v.value && typeof v.value === 'object') {
-              parsedValue = v.value as Record<string, string>;
+              parsedValue = v.value;
             } else if (typeof v.value === 'string') {
               try { parsedValue = JSON.parse(v.value); } catch { parsedValue = { en: v.value, ar: '' }; }
             }

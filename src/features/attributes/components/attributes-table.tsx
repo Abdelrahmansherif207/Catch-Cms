@@ -41,6 +41,7 @@ export function AttributesTable({
   onRefresh,
 }: AttributesTableProps) {
   const { t, i18n } = useTranslation();
+  const lang = i18n.language || 'en';
   const [deleteTarget, setDeleteTarget] = useState<Attribute | null>(null);
 
   if (isLoading) {
@@ -71,7 +72,7 @@ export function AttributesTable({
               data.map((attr) => (
                 <TableRow key={attr.id}>
                   <TableCell className="text-xs text-muted-foreground">{attr.id}</TableCell>
-                  <TableCell className="font-medium">{getLocalizedName(attr.name, i18n.language || 'en')}</TableCell>
+                  <TableCell className="font-medium">{getLocalizedName(attr.name, lang)}</TableCell>
                   <TableCell>
                     <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
                       {attr.slug}
@@ -84,7 +85,7 @@ export function AttributesTable({
                       ) : (
                         attr.values.map((v) => (
                           <Badge key={v.id} variant="secondary" className="text-xs">
-                            {v.value}
+                            {getLocalizedName(v.value, lang)}
                           </Badge>
                         ))
                       )}
@@ -120,7 +121,7 @@ export function AttributesTable({
       {deleteTarget && (
         <AttributeDeleteDialog
           attributeId={deleteTarget.id}
-          attributeName={deleteTarget.name}
+          attributeName={getLocalizedName(deleteTarget.name, lang)}
           valuesCount={deleteTarget.values?.length}
           open={!!deleteTarget}
           onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
