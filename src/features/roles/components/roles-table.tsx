@@ -28,6 +28,7 @@ interface RolesTableProps {
   data: Role[];
   isLoading: boolean;
   isError?: boolean;
+  error?: unknown;
   onEdit: (role: Role) => void;
   onRefresh: () => void;
 }
@@ -46,6 +47,7 @@ export function RolesTable({
   data,
   isLoading,
   isError,
+  error,
   onEdit,
   onRefresh,
 }: RolesTableProps) {
@@ -87,7 +89,13 @@ export function RolesTable({
   }
 
   if (isError) {
-    return <DataErrorState message={t('roles.loadError')} onRetry={onRefresh} />;
+    return (
+      <DataErrorState
+        error={error}
+        message={t('roles.loadError')}
+        onRetry={onRefresh}
+      />
+    );
   }
 
   return (

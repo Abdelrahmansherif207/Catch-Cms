@@ -15,7 +15,7 @@ export function RolesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
 
-  const { data, isLoading, isError, refetch } = useRoles({
+  const { data, isLoading, isError, error, refetch } = useRoles({
     limit: 50,
     search: search || undefined,
   });
@@ -64,6 +64,7 @@ export function RolesPage() {
         data={roles}
         isLoading={isLoading}
         isError={isError}
+        error={error}
         onEdit={handleEdit}
         onRefresh={refetch}
       />

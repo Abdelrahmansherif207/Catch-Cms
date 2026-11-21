@@ -35,7 +35,7 @@ export function ReviewsPage() {
     limit: 20,
   });
 
-  const { data: reviewsData, isLoading: reviewsLoading, isError: reviewsError, refetch } = useReviews({
+  const { data: reviewsData, isLoading: reviewsLoading, isError: reviewsError, error, refetch } = useReviews({
     product_id: selectedProduct?.id ?? 0,
   });
 
@@ -118,6 +118,7 @@ export function ReviewsPage() {
         <>
           {reviewsError && (
             <DataErrorState
+              error={error}
               message={t('reviews.listError')}
               onRetry={() => refetch()}
             />

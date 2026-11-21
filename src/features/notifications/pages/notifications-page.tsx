@@ -193,7 +193,7 @@ interface NotificationListContentProps {
 
 function NotificationListContent({ query, page, onPageChange, onSelect }: NotificationListContentProps) {
   const { t } = useTranslation();
-  const { data, isLoading, isError, refetch } = query;
+  const { data, isLoading, isError, error, refetch } = query;
 
   const notifications = data?.data?.data ?? [];
   const pagination = data?.data;
@@ -218,6 +218,7 @@ function NotificationListContent({ query, page, onPageChange, onSelect }: Notifi
   if (isError) {
     return (
       <DataErrorState
+        error={error}
         message={t('notifications.loadError', 'Failed to load notifications')}
         onRetry={() => refetch()}
       />

@@ -42,7 +42,7 @@ export function PromotionsPage() {
     sort: sort || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = usePromotions(params);
+  const { data, isLoading, isError, error, refetch } = usePromotions(params);
 
   const promotions = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -189,7 +189,7 @@ export function PromotionsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <PromotionsTable

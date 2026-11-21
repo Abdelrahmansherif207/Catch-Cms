@@ -29,7 +29,7 @@ export function CurrenciesPage() {
     active: activeFilter === '1' ? true : activeFilter === '0' ? false : undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useCurrencies(params);
+  const { data, isLoading, isError, error, refetch } = useCurrencies(params);
   const currencies = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
   const from = data?.data?.from ?? 0;
@@ -102,7 +102,7 @@ export function CurrenciesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <CurrenciesTable

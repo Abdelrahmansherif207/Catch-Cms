@@ -25,7 +25,7 @@ export function OrdersPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const { data, isLoading, isError, refetch } = useOrders({
+  const { data, isLoading, isError, error, refetch } = useOrders({
     page,
     limit: 15,
     search: search || undefined,
@@ -158,7 +158,7 @@ export function OrdersPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState message={t('orders.listError')} onRetry={() => refetch()} />
+        <DataErrorState error={error} message={t('orders.listError')} onRetry={() => refetch()} />
       )}
 
       <OrdersTable

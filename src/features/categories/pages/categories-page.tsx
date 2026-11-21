@@ -36,7 +36,7 @@ export function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<CategoryListItem | null>(null);
   const [viewTarget, setViewTarget] = useState<CategoryListItem | null>(null);
 
-  const { data, isLoading, isError, refetch } = useCategories({
+  const { data, isLoading, isError, error, refetch } = useCategories({
     page,
     perPage: 15,
     search: search || undefined,
@@ -174,7 +174,7 @@ export function CategoriesPage() {
           </FilterBar>
 
           {isError && (
-            <DataErrorState onRetry={() => refetch()} />
+            <DataErrorState error={error} onRetry={() => refetch()} />
           )}
 
           <CategoriesTable

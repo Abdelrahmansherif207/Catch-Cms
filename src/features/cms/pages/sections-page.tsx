@@ -11,7 +11,7 @@ export function SectionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data, isLoading, isError, refetch } = useSections();
+  const { data, isLoading, isError, error, refetch } = useSections();
   const sections = data?.data ?? [];
 
   return (
@@ -38,7 +38,7 @@ export function SectionsPage() {
       />
 
       {isError ? (
-        <DataErrorState onRetry={() => void refetch()} />
+        <DataErrorState error={error} onRetry={() => void refetch()} />
       ) : (
         <SectionsTable
           data={sections}

@@ -31,7 +31,7 @@ export function ActivityLogsPage() {
     event: event || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useActivityLogs(params);
+  const { data, isLoading, isError, error, refetch } = useActivityLogs(params);
 
   const logs = data?.data ?? [];
   const total = data?.meta?.total ?? 0;
@@ -80,7 +80,7 @@ export function ActivityLogsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <ActivityLogsTable data={logs} isLoading={isLoading} />

@@ -67,7 +67,7 @@ export function ContactsPage() {
     unread: readParam === false ? true : undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useContacts(params);
+  const { data, isLoading, isError, error, refetch } = useContacts(params);
 
   const contacts = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -232,6 +232,7 @@ export function ContactsPage() {
 
       {isError && (
         <DataErrorState
+          error={error}
           message={t('contacts.listError')}
           onRetry={() => refetch()}
         />

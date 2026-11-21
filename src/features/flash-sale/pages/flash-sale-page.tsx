@@ -37,7 +37,7 @@ export function FlashSalePage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useFlashSales(params);
+  const { data, isLoading, isError, error, refetch } = useFlashSales(params);
 
   const flashSales = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -130,7 +130,7 @@ export function FlashSalePage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <FlashSaleTable

@@ -50,7 +50,7 @@ export function InvoicesPage() {
   const parsedOrderId = orderId.trim() === '' ? undefined : Number(orderId);
   const parsedUserId = userId.trim() === '' ? undefined : Number(userId);
 
-  const { data, isLoading, isError, refetch } = useInvoices({
+  const { data, isLoading, isError, error, refetch } = useInvoices({
     page,
     limit: perPage,
     search: search || undefined,
@@ -241,7 +241,7 @@ export function InvoicesPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState message={t('invoices.listError')} onRetry={() => refetch()} />
+        <DataErrorState error={error} message={t('invoices.listError')} onRetry={() => refetch()} />
       )}
 
       <InvoicesTable

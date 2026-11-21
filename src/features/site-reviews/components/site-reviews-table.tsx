@@ -19,6 +19,7 @@ interface SiteReviewsTableProps {
   data: SiteReview[];
   isLoading: boolean;
   isError: boolean;
+  error?: unknown;
   canApprove: boolean;
   canReject: boolean;
   hasActiveFilters: boolean;
@@ -56,6 +57,7 @@ export function SiteReviewsTable({
   data,
   isLoading,
   isError,
+  error,
   canApprove,
   canReject,
   hasActiveFilters,
@@ -76,6 +78,7 @@ export function SiteReviewsTable({
   if (isError) {
     return (
       <DataErrorState
+        error={error}
         message={t('siteReviews.loadError')}
         onRetry={onRefresh}
       />

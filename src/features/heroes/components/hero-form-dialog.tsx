@@ -58,6 +58,7 @@ export function HeroFormDialog({
     data: heroDetail,
     isLoading: isDetailLoading,
     isError: isDetailError,
+    error: heroDetailError,
     refetch: refetchHeroDetail,
   } = useHero(hero?.id ?? 0);
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
@@ -236,6 +237,7 @@ export function HeroFormDialog({
           // Never let a failed detail load fall back to defaults — updating
           // from defaults would overwrite the stored hero.
           <DataErrorState
+            error={heroDetailError}
             message={t('common.loadError')}
             onRetry={() => {
               void refetchHeroDetail();

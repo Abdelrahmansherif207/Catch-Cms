@@ -50,7 +50,7 @@ export function BrandsPage() {
     sortedBy: sortedBy || undefined,
   };
 
-  const { data, isLoading, isError, refetch } = useBrands(params);
+  const { data, isLoading, isError, error, refetch } = useBrands(params);
 
   const brands = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
@@ -177,7 +177,7 @@ export function BrandsPage() {
       </FilterBar>
 
       {isError && (
-        <DataErrorState onRetry={() => refetch()} />
+        <DataErrorState error={error} onRetry={() => refetch()} />
       )}
 
       <BrandsTable
